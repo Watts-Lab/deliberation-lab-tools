@@ -41,14 +41,15 @@
   },
   "scripts": {
     "prepare-submodule": "git submodule update --init --recursive",
+    "copy-validators": "cp ./deliberation-empirica/server/src/preFlight/validateTreatmentFile.ts ./src/zod-validators",
     "test": "vscode-test-web --browserType=chromium --extensionDevelopmentPath=. --extensionTestsPath=dist/web/test/suite/extensionTests.js",
     "pretest": "npm run compile-web",
     "vscode:prepublish": "npm run package-web",
-    "compile-web": "npm run prepare-submodule && tsc && npm run lint && node esbuild.js",
+    "compile-web": "npm run prepare-submodule && npm run copy-validators && tsc && npm run lint && node esbuild.js",
     "watch-web": "npm-run-all -p watch-web:*",
     "watch-web:esbuild": "npm run prepare-submodule && node esbuild.js --watch",
     "watch-web:tsc": "tsc --noEmit --watch --project tsconfig.json",
-    "package-web": "npm run prepare-submodule && npm run check-types && npm run lint && node esbuild.js --production",
+    "package-web": "npm run prepare-submodule && npm run copy-validators && npm run check-types && npm run lint && node esbuild.js --production",
     "check-types": "tsc --noEmit",
     "lint": "eslint src",
     "run-in-browser": "vscode-test-web --browserType=chromium --extensionDevelopmentPath=. ."
