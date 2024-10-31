@@ -1,27 +1,67 @@
-// The module 'vscode' contains the VS Code extensibility API
-// Import the module and reference it with the alias vscode in your code below
-import * as vscode from 'vscode';
+import * as vscode from "vscode";
+import YAML from "yaml";
+import { topSchema } from "../zod-validators/validateTreatmentFile";
+import { ZodError } from "zod";
 
-// This method is called when your extension is activated
-// Your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
+  vscode.window.showInformationMessage("Extension activated");
+  const diagnosticCollection =
+    vscode.languages.createDiagnosticCollection("yamlDiagnostics");
+  context.subscriptions.push(diagnosticCollection);
 
-	// Use the console to output diagnostic information (console.log) and errors (console.error)
-	// This line of code will only be executed once when your extension is activated
-	console.log('Congratulations, your extension "deliberation-lab-tools" is now active in the web extension host!');
+  // Listen for changes in YAML files
+  context.subscriptions.push(
+    vscode.workspace.onDidChangeTextDocument((event) => {
+      if (event.document.languageId === "treatmentsYaml") {
+        console.log("Processing .treatments.yaml file...");
+        const diagnostics: vscode.Diagnostic[] = [];
 
-	// The command has been defined in the package.json file
-	// Now provide the implementation of the command with registerCommand
-	// The commandId parameter must match the command field in package.json
-	const disposable = vscode.commands.registerCommand('deliberation-lab-tools.helloWorld', () => {
-		// The code you place here will be executed every time your command is executed
+        // Parse the YAML content
+        let parsedData;
+        try {
+          parsedData = YAML.parse(event.document.getText());
+        } catch (error) {
+          if (error instanceof Error) {
+            // Type-check error as an instance of Error
+            const range = new vscode.Range(
+              new vscode.Position(0, 0),
+              new vscode.Position(0, 1)
+            );
+            diagnostics.push(
+              new vscode.Diagnostic(
+                range,
+                `YAML syntax error: ${error.message}`,
+                vscode.DiagnosticSeverity.Error
+              )
+            );
+            diagnosticCollection.set(event.document.uri, diagnostics);
+          }
+          return;
+        }
 
-		// Display a message box to the user
-		vscode.window.showInformationMessage('Hello World from Deliberation Lab Experiment Development Tools in a web extension host!');
-	});
+        // Run Zod validation on parsed YAML using topSchema
+        const validationResult = topSchema.safeParse(parsedData);
+        if (!validationResult.success) {
+          console.log("Zod validation failed:", validationResult.error.issues);
+          (validationResult.error as ZodError).issues.forEach((issue) => {
+            // Create diagnostics for each validation error
+            const range = new vscode.Range(
+              new vscode.Position(0, 0), // Adjust this range based on YAML content if possible
+              new vscode.Position(0, 1)
+            );
+            diagnostics.push(
+              new vscode.Diagnostic(
+                range,
+                `Validation error: ${issue.message}`,
+                vscode.DiagnosticSeverity.Warning
+              )
+            );
+          });
+        }
 
-	context.subscriptions.push(disposable);
+        // Update diagnostics in VS Code
+        diagnosticCollection.set(event.document.uri, diagnostics);
+      }
+    })
+  );
 }
-
-// This method is called when your extension is deactivated
-export function deactivate() {}

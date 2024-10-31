@@ -113,7 +113,7 @@ const refineCondition = (obj: any, ctx: any) => {
 
   if (
     ["hasLengthAtLeast", "hasLengthAtMost"].includes(comparator) &&
-    typeof value == "number" &&
+    typeof value === "number" &&
     value < 0
   ) {
     ctx.addIssue({
@@ -401,7 +401,7 @@ export const stageSchema = z
 
 export type StageType = z.infer<typeof stageSchema>;
 
-export const existStepSchema = z
+export const introExitStepSchema = z
   .object({
     name: nameSchema,
     desc: descriptionSchema.optional(),
@@ -425,7 +425,7 @@ export const treatmentSchema = z
     playerCount: z.number(),
     groupComposition: z.array(playerSchema).optional(),
     gameStages: z.array(stageSchema),
-    exitSequence: z.array(existStepSchema).nonempty().optional(),
+    exitSequence: z.array(introExitStepSchema).nonempty().optional(),
   })
   .strict();
 
@@ -535,9 +535,50 @@ export const templateContextSchema = z.object({
     .optional(),
 });
 
+// list all the possible things that could go into a template
+const templateableSchemas = z.union([
+  referenceSchema,
+  introConditionSchema,
+  conditionSchema,
+  elementSchema,
+  stageSchema,
+  introExitStepSchema,
+  playerSchema,
+  treatmentSchema,
+]);
+
+// we have to do most of the validation after templates are filled
 export const templateSchema = z.object({
   templateName: z.string(),
-  templateDesc: z.string(),
+  templateDesc: z.string().optional(),
+  templateContent: z
+    .array(templateContextSchema)
+    .nonempty()
+    .or(templateableSchemas),
 });
 
 // Todo: Check that intro and exit stages that don't have a survey or qualtrics or video have a submit button
+
+export const introSequenceSchema = z
+  .object({
+    name: nameSchema,
+    desc: descriptionSchema.optional(),
+    introSteps: z.array(introExitStepSchema).nonempty(),
+  })
+  .strict();
+
+// validate file
+export const topSchema = z.object({
+  templates: z
+    .array(templateSchema)
+    .min(1, "Templates cannot be empty")
+    .optional(),
+  introSequences: z
+    .array(introSequenceSchema.or(templateContextSchema))
+    .nonempty()
+    .or(templateContextSchema),
+  treatments: z
+    .array(treatmentSchema.or(templateContextSchema))
+    .nonempty()
+    .or(templateContextSchema),
+});

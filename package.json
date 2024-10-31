@@ -9,9 +9,29 @@
   "categories": [
     "Other"
   ],
-  "activationEvents": [],
+  "activationEvents": [
+    "onLanguage:treatmentsYaml"
+  ],
   "browser": "./dist/web/extension.js",
   "contributes": {
+    "languages": [
+      {
+        "id": "treatmentsYaml",
+        "aliases": [
+          "Treatments YAML"
+        ],
+        "extensions": [
+          ".treatments.yaml"
+        ]
+      }
+    ],
+    "grammars": [
+      {
+        "language": "treatmentsYaml",
+        "scopeName": "source.yaml",
+        "path": "./syntaxes/treatmentsYaml.tmLanguage.json"
+      }
+    ],
     "commands": [
       {
         "command": "deliberation-lab-tools.helloWorld",
@@ -24,7 +44,7 @@
     "test": "vscode-test-web --browserType=chromium --extensionDevelopmentPath=. --extensionTestsPath=dist/web/test/suite/extensionTests.js",
     "pretest": "npm run compile-web",
     "vscode:prepublish": "npm run package-web",
-    "compile-web": "npm run prepare-submodule && npm run check-types && npm run lint && node esbuild.js",
+    "compile-web": "npm run prepare-submodule && tsc && npm run lint && node esbuild.js",
     "watch-web": "npm-run-all -p watch-web:*",
     "watch-web:esbuild": "npm run prepare-submodule && node esbuild.js --watch",
     "watch-web:tsc": "tsc --noEmit --watch --project tsconfig.json",
@@ -50,6 +70,7 @@
     "typescript": "^5.6.3"
   },
   "dependencies": {
-    "yaml": "^2.6.0"
+    "yaml": "^2.6.0",
+    "zod": "^3.23.8"
   }
 }
