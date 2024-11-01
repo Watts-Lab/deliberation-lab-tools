@@ -1,6 +1,9 @@
 import * as vscode from "vscode";
 import YAML from "yaml";
-import { topSchema, TopType } from "../zod-validators/validateTreatmentFile";
+import {
+  treatmentFileSchema,
+  TreatmentFileType,
+} from "../zod-validators/validateTreatmentFile";
 import { ZodError, ZodIssue } from "zod";
 import { isMap, isSeq, isScalar } from "yaml"; // Import type-checking functions
 
@@ -115,10 +118,10 @@ export function activate(context: vscode.ExtensionContext) {
           return;
         }
 
-        // Validate YAML content using Zod and TopType
+        // Validate YAML content using Zod and TreatmentFileType
         console.log("Running Zod validation...");
-        const validationResult = topSchema.safeParse(
-          parsedData.toJS() as TopType
+        const validationResult = treatmentFileSchema.safeParse(
+          parsedData.toJS() as TreatmentFileType
         );
 
         if (!validationResult.success) {
@@ -151,7 +154,7 @@ export function activate(context: vscode.ExtensionContext) {
           );
         } else {
           console.log(
-            "Zod validation passed. Types are consistent with TopType."
+            "Zod validation passed. Types are consistent with TreatmentFileType."
           );
         }
 
