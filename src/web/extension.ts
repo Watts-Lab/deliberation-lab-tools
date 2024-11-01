@@ -41,7 +41,9 @@ export function activate(context: vscode.ExtensionContext) {
       // console.log("Current node keys:", Object.keys(currentNode));
 
       currentNode = currentNode.get(segment);
-      currentRange = currentNode.range;
+      if (currentNode.range) {
+        currentRange = currentNode.range;
+      }
     }
     console.log("Found terminal node", currentNode);
     console.log("Terminal node range:", currentRange);
