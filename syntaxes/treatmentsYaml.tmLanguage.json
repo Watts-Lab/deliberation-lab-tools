@@ -9,6 +9,9 @@
   "scopeName": "source.yaml",
   "patterns": [
     {
+      "include": "#template-field"
+    },
+    {
       "include": "#reserved-keys"
     },
     {
@@ -42,6 +45,14 @@
     }
   ],
   "repository": {
+    "template-field": {
+      "patterns": [
+        {
+          "match": "\\$\\{[^{]+?\\}",
+          "name": "variable.other.constant"
+        }
+      ]
+    },
     "comparators": {
       "patterns": [
         {
@@ -53,7 +64,7 @@
     "reserved-keys": {
       "patterns": [
         {
-          "match": "\\b(introSequences|name|desc|introSteps|elements|type|surveyName|file|conditions|reference|comparator|url|value|displayTime|hideTime|endTime|warnTimeRemaining|buttonText|treatments|playerCount|gameStages|duration|exitSequence|discussion|chatType|showNickname|showTitle|shared|style|showToPositions|hideFromPositions|groupComposition|position|title|params|key)\\b",
+          "match": "\\b(introSequences|name|desc|tags|introSteps|elements|type|template|broadcast|surveyName|file|conditions|reference|comparator|url|value|displayTime|hideTime|endTime|warnTimeRemaining|buttonText|treatments|playerCount|gameStages|duration|exitSequence|discussion|chatType|showNickname|showTitle|shared|style|showToPositions|hideFromPositions|groupComposition|position|title|params|key)\\b",
           "name": "support.class"
         }
       ]
@@ -74,6 +85,7 @@
         }
       ]
     },
+
     "block-collection": {
       "patterns": [
         {
@@ -93,6 +105,9 @@
     },
     "block-node": {
       "patterns": [
+        {
+          "include": "#template-field"
+        },
         {
           "include": "#prototype"
         },
@@ -131,6 +146,9 @@
           "name": "meta.block-mapping.yaml",
           "patterns": [
             {
+              "include": "#template-field"
+            },
+            {
               "include": "#block-node"
             }
           ]
@@ -139,6 +157,9 @@
           "begin": "(?x)\n                        (?=\n                            (?x:\n                                  [^\\s[-?:,\\[\\]{}#&*!|>'\"%@`]]\n                                | [?:-] \\S\n                            )\n                            (\n                                  [^\\s:]\n                                | : \\S\n                                | \\s+ (?![#\\s])\n                            )*\n                            \\s*\n                            :\n\t\t\t\t\t\t\t(\\s|$)\n                        )\n                    ",
           "end": "(?x)\n                        (?=\n                              \\s* $\n                            | \\s+ \\#\n                            | \\s* : (\\s|$)\n                        )\n                    ",
           "patterns": [
+            {
+              "include": "#template-field"
+            },
             {
               "include": "#flow-scalar-plain-out-implicit-type"
             },
@@ -179,6 +200,9 @@
         "5": {
           "patterns": [
             {
+              "include": "#template-field"
+            },
+            {
               "include": "#comment"
             },
             {
@@ -190,6 +214,9 @@
       },
       "end": "^(?=\\S)|(?!\\G)",
       "patterns": [
+        {
+          "include": "#template-field"
+        },
         {
           "begin": "^([ ]+)(?! )",
           "end": "^(?!\\1|\\s*$)",
@@ -296,6 +323,9 @@
     },
     "flow-collection": {
       "patterns": [
+        {
+          "include": "#template-field"
+        },
         {
           "include": "#flow-sequence"
         },
@@ -454,6 +484,9 @@
       "name": "string.quoted.double.yaml",
       "patterns": [
         {
+          "include": "#template-field"
+        },
+        {
           "match": "\\\\([0abtnvfre \"/\\\\N_Lp]|x\\d\\d|u\\d{4}|U\\d{8})",
           "name": "constant.character.escape.yaml"
         },
@@ -507,6 +540,9 @@
     },
     "flow-scalar-plain-out": {
       "patterns": [
+        {
+          "include": "#template-field"
+        },
         {
           "include": "#flow-scalar-plain-out-implicit-type"
         },
@@ -653,6 +689,9 @@
     },
     "prototype": {
       "patterns": [
+        {
+          "include": "#template-field"
+        },
         {
           "include": "#comment"
         },

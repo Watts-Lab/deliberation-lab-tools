@@ -40,9 +40,14 @@ export function activate(context: vscode.ExtensionContext) {
       // console.log("Current node range:", currentRange);
       // console.log("Current node keys:", Object.keys(currentNode));
 
+      // console.log("Current node:", currentNode);
       currentNode = currentNode.get(segment);
-      if (currentNode.range) {
+      if (currentNode && currentNode.range) {
         currentRange = currentNode.range;
+      } else {
+        console.log("No range found for node:");
+        console.log(currentNode);
+        console.log(segment);
       }
     }
     console.log("Found terminal node", currentNode);
@@ -148,7 +153,9 @@ export function activate(context: vscode.ExtensionContext) {
               diagnostics.push(
                 new vscode.Diagnostic(
                   diagnosticRange,
-                  `Validation error: ${issue.message}`,
+                  `Error in item "${issue.path[issue.path.length - 1]}": ${
+                    issue.message
+                  }`,
                   vscode.DiagnosticSeverity.Warning
                 )
               );
