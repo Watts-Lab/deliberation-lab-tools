@@ -64,7 +64,7 @@
     "reserved-keys": {
       "patterns": [
         {
-          "match": "\\b(introSequences|name|desc|tags|introSteps|elements|type|template|broadcast|surveyName|file|conditions|reference|comparator|url|value|displayTime|hideTime|endTime|warnTimeRemaining|buttonText|treatments|playerCount|gameStages|duration|exitSequence|discussion|chatType|showNickname|showTitle|shared|style|showToPositions|hideFromPositions|groupComposition|position|title|params|key)\\b",
+          "match": "\\b(introSequences|name|desc|tags|introSteps|elements|type|template|broadcast|surveyName|file|conditions|reference|comparator|url|value|displayTime|hideTime|endTime|warnTimeRemaining|buttonText|treatments|playerCount|gameStages|duration|exitSequence|discussion|chatType|showNickname|showTitle|shared|style|showToPositions|hideFromPositions|groupComposition|position|title|params|key|templateName|templateDesc|templateContent)\\b",
           "name": "support.class"
         }
       ]
