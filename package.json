@@ -3,6 +3,10 @@
   "displayName": "Deliberation Lab Experiment Development Tools",
   "description": "Tools for experiment designers to use in creating experiments for deliberation lab",
   "version": "0.0.1",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Watts-Lab/deliberation-lab-tools"
+  },
   "engines": {
     "vscode": "^1.95.0"
   },
@@ -62,6 +66,7 @@
     "@typescript-eslint/eslint-plugin": "^8.10.0",
     "@typescript-eslint/parser": "^8.7.0",
     "@vscode/test-web": "^0.0.63",
+    "@vscode/vsce": "^3.2.1",
     "assert": "^2.1.0",
     "esbuild": "^0.24.0",
     "eslint": "^9.13.0",

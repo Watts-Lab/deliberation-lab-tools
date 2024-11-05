@@ -5,7 +5,6 @@ import {
   TreatmentFileType,
 } from "../zod-validators/validateTreatmentFile";
 import { ZodError, ZodIssue } from "zod";
-import { isMap, isSeq, isScalar } from "yaml"; // Import type-checking functions
 
 export function activate(context: vscode.ExtensionContext) {
   vscode.window.showInformationMessage("Extension activated");
@@ -122,6 +121,17 @@ export function activate(context: vscode.ExtensionContext) {
             );
             diagnosticCollection.set(event.document.uri, diagnostics);
           }
+          return;
+        }
+
+        // Check if the YAML document is empty
+        if (
+          !parsedData.contents ||
+          (Array.isArray(parsedData.contents) &&
+            parsedData.contents.length === 0)
+        ) {
+          console.log("YAML document is empty. Skipping validation.");
+          diagnosticCollection.set(event.document.uri, diagnostics); // Clear any existing diagnostics
           return;
         }
 
