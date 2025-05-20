@@ -206,6 +206,8 @@ export function activate(context: vscode.ExtensionContext) {
         console.log("Processing .md file...");
         const diagnostics: vscode.Diagnostic[] = [];
         
+        // Update diagnostics in VS Code
+        diagnosticCollection.set(event.document.uri, diagnostics);
       }
     })
   );
