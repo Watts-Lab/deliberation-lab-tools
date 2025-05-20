@@ -13,12 +13,17 @@ import { ZodError, ZodIssue } from "zod";
 // type:
 function detectPromptMarkdown(document: vscode.TextDocument) {
   if (document.languageId === "markdown") {
-    const dashLine = document.lineAt(0).text;
-    const nameLine = document.lineAt(1).text;
-    const typeLine = document.lineAt(2).text;
+    console.log("markdown file");
+    if (document.lineCount < 3) {
+      return false;
+    } else {
+      const dashLine = document.lineAt(0).text;
+      const nameLine = document.lineAt(1).text;
+      const typeLine = document.lineAt(2).text;
 
-    if (dashLine === "---" && nameLine.startsWith("name: ") && typeLine.startsWith("type: ")) {
-      return true;
+      if (dashLine === "---" && nameLine.startsWith("name: ") && typeLine.startsWith("type: ")) {
+        return true;
+      }
     }
   }
   return false;
