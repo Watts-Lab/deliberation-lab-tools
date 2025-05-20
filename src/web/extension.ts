@@ -11,7 +11,7 @@ import { ZodError, ZodIssue } from "zod";
 // ---
 // name:
 // type:
-function detectPromptMarkdown(document: vscode.TextDocument) {
+export function detectPromptMarkdown(document: vscode.TextDocument) {
   if (document.languageId === "markdown") {
     console.log("markdown file");
     if (document.lineCount < 3) {
