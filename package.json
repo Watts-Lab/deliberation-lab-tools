@@ -45,7 +45,7 @@
   },
   "scripts": {
     "prepare-submodule": "git submodule update --init --recursive",
-    "copy-validators": "cp ./deliberation-empirica/server/src/preFlight/validateTreatmentFile.ts ./src/zod-validators",
+    "copy-validators": "cp ./deliberation-empirica/server/src/preFlight/validateTreatmentFile.ts ./src/zod-validators && cp ./deliberation-empirica/server/src/getTreatments.js ./src/zod-validators",
     "test": "vscode-test-web --browserType=chromium --extensionDevelopmentPath=. --extensionTestsPath=dist/web/test/suite/extensionTests.js",
     "pretest": "npm run compile-web",
     "vscode:prepublish": "npm run package-web",
@@ -66,7 +66,7 @@
     "@typescript-eslint/eslint-plugin": "^8.10.0",
     "@typescript-eslint/parser": "^8.7.0",
     "@vscode/test-web": "^0.0.63",
-    "@vscode/vsce": "^3.2.1",
+    "@vscode/vsce": "^3.4.1",
     "assert": "^2.1.0",
     "esbuild": "^0.24.0",
     "eslint": "^9.13.0",
@@ -76,6 +76,8 @@
     "typescript": "^5.6.3"
   },
   "dependencies": {
+    "cp": "^0.2.0",
+    "vsce": "^2.15.0",
     "yaml": "^2.6.0",
     "zod": "^3.23.8"
   }

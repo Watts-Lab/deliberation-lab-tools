@@ -179,6 +179,10 @@ export function activate(context: vscode.ExtensionContext) {
 
         // Update diagnostics in VS Code
         diagnosticCollection.set(event.document.uri, diagnostics);
+      } else if (event.document.languageId === "markdown") {
+        console.log("Processing .md file...");
+        const diagnostics: vscode.Diagnostic[] = [];
+        
       }
     })
   );
