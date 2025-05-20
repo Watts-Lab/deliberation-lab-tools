@@ -6,6 +6,24 @@ import {
 } from "../zod-validators/validateTreatmentFile";
 import { ZodError, ZodIssue } from "zod";
 
+// Detects if file is prompt Markdown format
+// Follows format of
+// ---
+// name:
+// type:
+function detectPromptMarkdown(document: vscode.TextDocument) {
+  if (document.languageId === "markdown") {
+    const dashLine = document.lineAt(0).text;
+    const nameLine = document.lineAt(1).text;
+    const typeLine = document.lineAt(2).text;
+
+    if (dashLine === "---" && nameLine.startsWith("name: ") && typeLine.startsWith("type: ")) {
+      return true;
+    }
+  }
+  return false;
+}
+
 export function activate(context: vscode.ExtensionContext) {
   vscode.window.showInformationMessage("Extension activated");
   const diagnosticCollection =
@@ -179,7 +197,7 @@ export function activate(context: vscode.ExtensionContext) {
 
         // Update diagnostics in VS Code
         diagnosticCollection.set(event.document.uri, diagnostics);
-      } else if (event.document.languageId === "markdown") {
+      } else if (detectPromptMarkdown(event.document)) {
         console.log("Processing .md file...");
         const diagnostics: vscode.Diagnostic[] = [];
         
