@@ -20,6 +20,7 @@ export function detectPromptMarkdown(document: vscode.TextDocument) {
   if (document.languageId === "markdown") {
     // console.log("markdown file");
     if (document.lineCount < 3) {
+      console.log("File has less than 3 lines");
       return false;
     } else {
       // name and type do not have to be in that order
@@ -43,7 +44,11 @@ export function detectPromptMarkdown(document: vscode.TextDocument) {
       const [, metaDataString, ,] =
         document.getText().split(sectionRegex);
       try {
+        console.log("MetaDataString:", metaDataString);
         const metaData = loadYaml(metaDataString) as Metadata;
+        console.log("MetaData:", metaData);
+        console.log("MetaData type:", metaData?.type);
+        console.log("MetaData name:", metaData?.name);
         if (metaData == null || metaData?.type == null || metaData?.name == null) {
           return false;
         }
@@ -244,7 +249,7 @@ export function activate(context: vscode.ExtensionContext) {
 
         let sections = document.getText().split(/^-{3,}$/gm);
         console.log("Sections found:", sections);
-        
+
         if (!seperators || seperators.length !== 3) {
           console.log("Invalid number of seperators");
           diagnostics.push(
