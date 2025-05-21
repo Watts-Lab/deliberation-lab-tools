@@ -3,7 +3,6 @@ name: mock-prompt-files/prompt.md
 type: noResponse
 ---
 
-h
-
 ---
-l
+---
+n

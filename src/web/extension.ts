@@ -11,27 +11,14 @@ import {
 import { ZodError, ZodIssue } from "zod";
 import { load as loadYaml } from "js-yaml";
 
-// Detects if file is prompt Markdown format
-// Follows format of
-// ---
-// name:
-// type:
+// Detects if file is prompt Markdown format by parsing metadata with YAML
 export function detectPromptMarkdown(document: vscode.TextDocument) {
   if (document.languageId === "markdown") {
-    // console.log("markdown file");
+    console.log("markdown file");
     if (document.lineCount < 3) {
       console.log("File has less than 3 lines");
       return false;
     } else {
-      // name and type do not have to be in that order
-
-      /* const dashLine = document.lineAt(0).text;
-      const nameLine = document.lineAt(1).text;
-      const typeLine = document.lineAt(2).text;
-
-      if (dashLine === "---" && nameLine.startsWith("name: ") && typeLine.startsWith("type: ")) {
-        return true;
-      } */
 
       // define interface for metadata
       interface Metadata {
@@ -53,7 +40,7 @@ export function detectPromptMarkdown(document: vscode.TextDocument) {
           return false;
         }
         return true;
-      } catch (YAMLException) {
+      } catch (YAMLException) { // YAMLException means that fields do not exist
         return false;
       }
     }
@@ -61,9 +48,12 @@ export function detectPromptMarkdown(document: vscode.TextDocument) {
   return false;
 }
 
+// Function to detect if document is treatmentsYaml format - mostly for unit tests
 export function detectTreatmentsYaml(document: vscode.TextDocument) {
   return document.languageId === "treatmentsYaml";
 }
+
+// export function 
 
 export function activate(context: vscode.ExtensionContext) {
   vscode.window.showInformationMessage("Extension activated");
@@ -222,8 +212,7 @@ export function activate(context: vscode.ExtensionContext) {
               diagnostics.push(
                 new vscode.Diagnostic(
                   diagnosticRange,
-                  `Error in item "${issue.path[issue.path.length - 1]}": ${
-                    issue.message
+                  `Error in item "${issue.path[issue.path.length - 1]}": ${issue.message
                   }`,
                   vscode.DiagnosticSeverity.Warning
                 )
@@ -287,14 +276,14 @@ export function activate(context: vscode.ExtensionContext) {
         } catch (error) {
           console.log("Error retrieving YAML frontmatter:", error);
         }
-        
 
-        let parsedData; 
+
+        let parsedData;
         try {
           parsedData = YAML.parseDocument(yamlText, {
-              keepCstNodes: true,
-              keepNodeTypes: true,
-            } as any);
+            keepCstNodes: true,
+            keepNodeTypes: true,
+          } as any);
           console.log("YAML parsed successfully.", parsedData);
         } catch (error) {
           console.log("Error parsing YAML:", error);
@@ -314,6 +303,7 @@ export function activate(context: vscode.ExtensionContext) {
           }
           return;
         }
+
 
         const result = metadataSchema(relativePath).safeParse(
           parsedData.toJS() as MetadataType
@@ -341,8 +331,7 @@ export function activate(context: vscode.ExtensionContext) {
             diagnostics.push(
               new vscode.Diagnostic(
                 diagnosticRange,
-                `Error in item "${issue.path[issue.path.length - 1]}": ${
-                  issue.message
+                `Error in item "${issue.path[issue.path.length - 1]}": ${issue.message
                 }`,
                 vscode.DiagnosticSeverity.Warning
               )
@@ -402,8 +391,46 @@ export function activate(context: vscode.ExtensionContext) {
         
 
         // add more logic to check prompt and response schema below
+        console.log("Before if statement")
+        if (seperators && seperators.length === 3) {
+          console.log("Entering if statement");
+          const type = parsedData.get("type");
+          const response = sections[3];
+          switch (type) {
+            case "noResponse":
+              console.log("Entering no response case")
+              if (response && response.length > 0) {
+                const text = document.getText();
+                let t = text;
+                const regex = /^-{3,}$/gm;
+                let idx = 0;
+                let index = 0;
+                for (let i = 0; i < 3; i++) {
+                  console.log(`Finding seperator at ${i}  with index position: ${index}`);
+                  idx = t.search(regex);
+                  t = t.slice(idx + 3);
+                  index += idx + 3;
+                }
+                console.log("Finding position of last position");
+                const lastPos = document.positionAt(text.length - 1);
+                console.log(`Last position: ${lastPos}`);
+                const diagnosticRange = new vscode.Range(
+                  document.positionAt(index),  // starting position
+                  lastPos   // ending position 
+                );
+                const issue = "Response should be blank for type no response";
+                console.log("Displaying error");
+                diagnostics.push(
+                  new vscode.Diagnostic(
+                    diagnosticRange,
+                    issue,
+                    vscode.DiagnosticSeverity.Warning
+                  )
+                )
+              }
+          }
+        }
 
-        
         diagnosticCollection.set(event.document.uri, diagnostics);
       }
     })
