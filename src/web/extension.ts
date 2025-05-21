@@ -235,6 +235,9 @@ export function activate(context: vscode.ExtensionContext) {
         const seperators = document.getText().match(/^-{3,}$/gm);
         console.log("Seperators found:", seperators);
 
+        let sections = document.getText().split(/^-{3,}$/gm);
+        console.log("Sections found:", sections);
+        
         if (!seperators || seperators.length !== 3) {
           console.log("Invalid number of seperators");
           diagnostics.push(
@@ -248,6 +251,7 @@ export function activate(context: vscode.ExtensionContext) {
             )
           );
         }
+
         let relativePath = "";
         try {
           const workspaceFolder = vscode.workspace.getWorkspaceFolder(document.uri);
@@ -262,18 +266,16 @@ export function activate(context: vscode.ExtensionContext) {
 
         let yamlText = "";
         try {
-          const file = event.document.getText();
-          console.log("File content:", file);
-          const metadata = file.match(/---\s*\n([\s\S]*?)\n---/);
-          console.log("Metadata matched", metadata);
-          if (!metadata) {
+          yamlText = sections[1];
+          if (!yamlText) {
             throw new Error("No YAML frontmatter found");
           }
-          yamlText = metadata[1].trimEnd();
-          console.log("YAML retrieved", yamlText);
+          yamlText = yamlText.trimEnd();
+          console.log("YAML frontmatter:", yamlText);
         } catch (error) {
-          console.log("Error retrieving YAML:", error);
+          console.log("Error retrieving YAML frontmatter:", error);
         }
+        
 
         let parsedData; 
         try {
