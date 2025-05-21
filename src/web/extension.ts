@@ -242,7 +242,9 @@ export function activate(context: vscode.ExtensionContext) {
         const seperators = document.getText().match(/^-{3,}$/gm);
         console.log("Seperators found:", seperators);
 
-        let sections: string[] = [];
+        let sections = document.getText().split(/^-{3,}$/gm);
+        console.log("Sections found:", sections);
+        
         if (!seperators || seperators.length !== 3) {
           console.log("Invalid number of seperators");
           diagnostics.push(
@@ -255,10 +257,6 @@ export function activate(context: vscode.ExtensionContext) {
               vscode.DiagnosticSeverity.Error
             )
           );
-        } else {
-          console.log("Valid number of seperators");
-          sections = document.getText().split(/^-{3,}$/gm);
-          console.log("Sections found:", sections);
         }
 
         let relativePath = "";
