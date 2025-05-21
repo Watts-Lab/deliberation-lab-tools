@@ -1,5 +1,5 @@
 import * as assert from 'assert';
-import { detectPromptMarkdown } from '../../extension';
+import { detectPromptMarkdown, detectTreatmentYaml } from '../../extension';
 import * as path from 'path';
 
 
@@ -8,7 +8,7 @@ import * as path from 'path';
 import * as vscode from 'vscode';
 // import * as myExtension from '../../extension';
 
-suite('Testing different file type', () => {
+suite('Testing different file type for markdown', () => {
 	vscode.window.showInformationMessage('Start all tests.');
 
 	test('Checking correct filetype', async () => {
@@ -109,3 +109,7 @@ Everybody talk at once. Sometimes take pauses.
 		assert.strictEqual(detectPromptMarkdown(doc), false);
 	});
 });
+
+suite('Testing different file type for markdown', () => {
+	
+})
