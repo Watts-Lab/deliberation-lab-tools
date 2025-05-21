@@ -1,6 +1,7 @@
 import * as assert from 'assert';
 import { detectPromptMarkdown, detectTreatmentYaml } from '../../extension';
 import * as path from 'path';
+import { detectPromptMarkdown } from '../../extension';
 
 
 // You can import and use all API from the 'vscode' module
