@@ -231,25 +231,59 @@ export function activate(context: vscode.ExtensionContext) {
         const diagnostics: vscode.Diagnostic[] = [];
         const document = event.document;
 
-        const workspaceFolder = vscode.workspace.getWorkspaceFolder(document.uri);
+        console.log("Document URI:", document.uri.toString());
+        const seperators = document.getText().match(/^-{3,}$/gm);
+        console.log("Seperators found:", seperators);
+
+        if (!seperators || seperators.length !== 3) {
+          console.log("Invalid number of seperators");
+          diagnostics.push(
+            new vscode.Diagnostic(
+              new vscode.Range(
+                new vscode.Position(0, 0),
+                new vscode.Position(0, 3)
+              ),
+              "Invalid number of seperators, should be 3",
+              vscode.DiagnosticSeverity.Error
+            )
+          );
+        }
         let relativePath = "";
-        if (workspaceFolder) {
-          relativePath = vscode.workspace.asRelativePath(document.uri);
+        try {
+          const workspaceFolder = vscode.workspace.getWorkspaceFolder(document.uri);
+          console.log("Workspace folder:", workspaceFolder);
+          if (workspaceFolder) {
+            relativePath = vscode.workspace.asRelativePath(document.uri);
+            console.log("Relative path:", relativePath);
+          }
+        } catch (error) {
+          console.error("Error getting workspace folder:", error);
         }
 
-        const file = document.getText();
-        const metadata = file.match(/^---\n([\s\S]*?)\n---/);
-        if (!metadata) {
-          throw new Error("No YAML frontmatter found");
+        let yamlText = "";
+        try {
+          const file = event.document.getText();
+          console.log("File content:", file);
+          const metadata = file.match(/---\s*\n([\s\S]*?)\n---/);
+          console.log("Metadata matched", metadata);
+          if (!metadata) {
+            throw new Error("No YAML frontmatter found");
+          }
+          yamlText = metadata[1].trimEnd();
+          console.log("YAML retrieved", yamlText);
+        } catch (error) {
+          console.log("Error retrieving YAML:", error);
         }
-        const yamlText = metadata[1];
+
         let parsedData; 
         try {
           parsedData = YAML.parseDocument(yamlText, {
               keepCstNodes: true,
               keepNodeTypes: true,
             } as any);
+          console.log("YAML parsed successfully.", parsedData);
         } catch (error) {
+          console.log("Error parsing YAML:", error);
           if (error instanceof Error) {
             const range = new vscode.Range(
               new vscode.Position(0, 0),
@@ -270,6 +304,7 @@ export function activate(context: vscode.ExtensionContext) {
         const result = metadataSchema(relativePath).safeParse(
           parsedData.toJS() as MetadataType
         );
+        console.log("result obtained from metadataSchema:", result);
 
         if (!result.success) {
           console.log("Zod validation failed:", result.error.issues);
