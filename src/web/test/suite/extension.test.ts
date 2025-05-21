@@ -10,6 +10,27 @@ import * as vscode from 'vscode';
 suite('Markdown and .treatments.yaml file detection', () => {
 	vscode.window.showInformationMessage('Start all tests.');
 
+	// Tests are currently done by creating text documents - will need to debug file path
+
+	test('Detects correct markdown format for prompt', async () => {
+		// const uri = vscode.Uri.file(
+		// 	path.resolve(__dirname, 'src/web/test/suite/allTalk.md'));
+		// const document = await vscode.workspace.openTextDocument(uri);
+
+		const content = `---
+name: mock-prompt-files/prompt.md
+type: 
+---
+		`;
+
+		const doc = await vscode.workspace.openTextDocument({
+			language: 'markdown',
+			content               
+		});
+
+		assert.strictEqual(detectPromptMarkdown(doc), true);
+	});
+
 	test('Detects correct markdown format', async () => {
 		// const uri = vscode.Uri.file(
 		// 	path.resolve(__dirname, 'src/web/test/suite/allTalk.md'));
@@ -87,6 +108,7 @@ Everybody talk at once. Sometimes take pauses.
 	});
 
 	// Should this file be processed as wrong or just not processed at all?
+	// Currently not processed by Zod at all
 	test('Wrong markdown file header: dashes do not exist at beginning', async () => {
 		const content = `
 name: projects/example/allTalk.md
@@ -172,6 +194,8 @@ name: projects/example/allTalk.md
 
 		assert.strictEqual(detectPromptMarkdown(doc), true);
 	});
+
+
 
 	test('detecting .treatments.yaml file', async () => {
 		const content = `
