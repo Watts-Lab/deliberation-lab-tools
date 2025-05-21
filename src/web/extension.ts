@@ -18,7 +18,7 @@ import { load as loadYaml } from "js-yaml";
 // type:
 export function detectPromptMarkdown(document: vscode.TextDocument) {
   if (document.languageId === "markdown") {
-    // console.log("markdown file");
+    console.log("markdown file");
     if (document.lineCount < 3) {
       console.log("File has less than 3 lines");
       return false;
@@ -352,25 +352,31 @@ export function activate(context: vscode.ExtensionContext) {
         }
 
         // add more logic to check prompt and response schema below
-
+        console.log("Before if statement")
         if (seperators && seperators.length === 3) {
+          console.log("Entering if statement");
           const type = parsedData.get("type");
           const response = sections[3];
           switch (type) {
             case "noResponse":
+              console.log("Entering no response case")
               if (response && response.length > 0) {
                 let text = document.getText();
                 const regex = /^-{3,}$/gm;
-                let index = 0
+                let index = 0;
                 for (let i = 0; i < 3; i++) {
-                  index = text.indexOf(regex.toString());
+                  console.log(`Finding seperator at ${i}  with index position: ${index}`);
+                  index = text.indexOf(regex.toString(), index);
                 }
+                console.log("Finding position of last position");
                 const lastPos = document.positionAt(text.length - 1);
+                console.log(`Last position: ${lastPos}`);
                 const diagnosticRange = new vscode.Range(
                   new vscode.Position(index, 0),  // starting position
                   lastPos   // ending position 
                 );
-                const issue = "Response should be blank for tyoe no response"
+                const issue = "Response should be blank for tyoe no response";
+                console.log("Displaying error");
                 diagnostics.push(
                   new vscode.Diagnostic(
                     diagnosticRange,
