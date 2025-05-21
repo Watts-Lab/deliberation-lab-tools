@@ -20,6 +20,7 @@ export function detectPromptMarkdown(document: vscode.TextDocument) {
   if (document.languageId === "markdown") {
     // console.log("markdown file");
     if (document.lineCount < 3) {
+      console.log("File has less than 3 lines");
       return false;
     } else {
       // name and type do not have to be in that order
@@ -38,12 +39,16 @@ export function detectPromptMarkdown(document: vscode.TextDocument) {
         name?: string;
         [key: string]: any;
       }
-
-      const sectionRegex = /---\n/g;
+      console.log("Document text:", document.getText());
+      const sectionRegex = /^---\s*\r?\n/gm;
       const [, metaDataString, ,] =
         document.getText().split(sectionRegex);
       try {
+        console.log("MetaDataString:", metaDataString);
         const metaData = loadYaml(metaDataString) as Metadata;
+        console.log("MetaData:", metaData);
+        console.log("MetaData type:", metaData?.type);
+        console.log("MetaData name:", metaData?.name);
         if (metaData == null || metaData?.type == null || metaData?.name == null) {
           return false;
         }
