@@ -225,13 +225,20 @@ export function activate(context: vscode.ExtensionContext) {
           console.error("Error getting workspace folder:", error);
         }
 
-        const file = document.getText();
-        const metadata = file.match(/^---\n([\s\S]*?)\n---/);
-        if (!metadata) {
-          throw new Error("No YAML frontmatter found");
+        let yamlText = "";
+        try {
+          const file = event.document.getText();
+          console.log("File content:", file);
+          const metadata = file.match(/^---\n([\s\S]*?)\n---/);
+          console.log("Metadata matched");
+          if (!metadata) {
+            throw new Error("No YAML frontmatter found");
+          }
+          yamlText = metadata[1];
+          console.log("YAML retrieved");
+        } catch (error) {
+          console.log("Error retrieving YAML:", error);
         }
-        const yamlText = metadata[1];
-        console.log("YAML retrieved");
 
         let parsedData; 
         try {
