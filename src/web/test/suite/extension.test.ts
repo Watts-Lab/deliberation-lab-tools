@@ -7,10 +7,10 @@ import { detectPromptMarkdown, detectTreatmentsYaml } from '../../extension';
 import * as vscode from 'vscode';
 // import * as myExtension from '../../extension';
 
-suite('Testing different file type for markdown', () => {
+suite('Markdown and .treatments.yaml file detection', () => {
 	vscode.window.showInformationMessage('Start all tests.');
 
-	test('Checking correct filetype', async () => {
+	test('Detects correct markdown format', async () => {
 		// const uri = vscode.Uri.file(
 		// 	path.resolve(__dirname, 'src/web/test/suite/allTalk.md'));
 		// const document = await vscode.workspace.openTextDocument(uri);
@@ -36,7 +36,7 @@ Everybody talk at once. Sometimes take pauses.
 	});
 
 
-	test('wrong file type', async () => {
+	test('Wrong text file type for markdown detection', async () => {
 		const content = "Dont work";
 		const doc = await vscode.workspace.openTextDocument({
 			language: 'text',
@@ -46,7 +46,7 @@ Everybody talk at once. Sometimes take pauses.
 		assert.strictEqual(detectPromptMarkdown(doc), false);
 	});
 
-	test('wrong file header: name does not exist', async () => {
+	test('Wrong markdown file header: name does not exist', async () => {
 		const content = `---
 noName: projects/example/allTalk.md
 type: noResponse
@@ -66,7 +66,7 @@ Everybody talk at once. Sometimes take pauses.
 		assert.strictEqual(detectPromptMarkdown(doc), false);
 	});
 
-	test('wrong file header: type does not exist', async () => {
+	test('Wrong markdown file header: type does not exist', async () => {
 		const content = `---
 name: projects/example/allTalk.md
 : noResponse
@@ -86,10 +86,11 @@ Everybody talk at once. Sometimes take pauses.
 		assert.strictEqual(detectPromptMarkdown(doc), false);
 	});
 
-	test('wrong file header: dashes do not exist', async () => {
+	// Should this file be processed as wrong or just not processed at all?
+	test('Wrong markdown file header: dashes do not exist at beginning', async () => {
 		const content = `
 name: projects/example/allTalk.md
-: noResponse
+type: noResponse
 ---
 
 Please describe the chair you are sitting in.
@@ -104,6 +105,72 @@ Everybody talk at once. Sometimes take pauses.
 		});
 
 		assert.strictEqual(detectPromptMarkdown(doc), false);
+	});
+
+	// Name and type in different order
+	test('Correct markdown format for name and type in different order', async () => {
+		// const uri = vscode.Uri.file(
+		// 	path.resolve(__dirname, 'src/web/test/suite/allTalk.md'));
+		// const document = await vscode.workspace.openTextDocument(uri);
+
+		const content = `---
+type: noResponse
+name: projects/example/allTalk.md
+---
+
+Please describe the chair you are sitting in.
+
+Everybody talk at once. Sometimes take pauses.
+
+---
+		`;
+
+		const doc = await vscode.workspace.openTextDocument({
+			language: 'markdown',
+			content               
+		});
+
+		assert.strictEqual(detectPromptMarkdown(doc), true);
+	});
+
+	// Add test for markdown file with no dashes in the file at all
+	test('Incorrect markdown file formatting with no dashes', async () => {
+		// const uri = vscode.Uri.file(
+		// 	path.resolve(__dirname, 'src/web/test/suite/allTalk.md'));
+		// const document = await vscode.workspace.openTextDocument(uri);
+
+		const content = `type: noResponse
+name: projects/example/allTalk.md
+
+Please describe the chair you are sitting in.
+
+Everybody talk at once. Sometimes take pauses.
+		`;
+
+		const doc = await vscode.workspace.openTextDocument({
+			language: 'markdown',
+			content               
+		});
+
+		assert.strictEqual(detectPromptMarkdown(doc), false);
+	});
+
+	test('Correct markdown format but missing other sections (dashes)', async () => {
+		// const uri = vscode.Uri.file(
+		// 	path.resolve(__dirname, 'src/web/test/suite/allTalk.md'));
+		// const document = await vscode.workspace.openTextDocument(uri);
+
+		const content = `---
+type: noResponse
+name: projects/example/allTalk.md
+		`;
+
+		const doc = await vscode.workspace.openTextDocument({
+			language: 'markdown',
+			content               
+		});
+
+		assert.strictEqual(detectPromptMarkdown(doc), true);
 	});
 
 	test('detecting .treatments.yaml file', async () => {

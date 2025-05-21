@@ -9,6 +9,7 @@ import {
   MetadataType,
 } from "../zod-validators/validatePromptFile";
 import { ZodError, ZodIssue } from "zod";
+import { load as loadYaml } from "js-yaml";
 
 // Detects if file is prompt Markdown format
 // Follows format of
@@ -17,16 +18,38 @@ import { ZodError, ZodIssue } from "zod";
 // type:
 export function detectPromptMarkdown(document: vscode.TextDocument) {
   if (document.languageId === "markdown") {
-    console.log("markdown file");
+    // console.log("markdown file");
     if (document.lineCount < 3) {
       return false;
     } else {
-      const dashLine = document.lineAt(0).text;
+      // name and type do not have to be in that order
+
+      /* const dashLine = document.lineAt(0).text;
       const nameLine = document.lineAt(1).text;
       const typeLine = document.lineAt(2).text;
 
       if (dashLine === "---" && nameLine.startsWith("name: ") && typeLine.startsWith("type: ")) {
         return true;
+      } */
+
+      // define interface for metadata
+      interface Metadata {
+        type?: string;
+        name?: string;
+        [key: string]: any;
+      }
+
+      const sectionRegex = /---\n/g;
+      const [, metaDataString, ,] =
+        document.getText().split(sectionRegex);
+      try {
+        const metaData = loadYaml(metaDataString) as Metadata;
+        if (metaData == null || metaData?.type == null || metaData?.name == null) {
+          return false;
+        }
+        return true;
+      } catch (YAMLException) {
+        return false;
       }
     }
   }
