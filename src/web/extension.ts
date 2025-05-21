@@ -211,10 +211,18 @@ export function activate(context: vscode.ExtensionContext) {
         const diagnostics: vscode.Diagnostic[] = [];
         const document = event.document;
 
-        const workspaceFolder = vscode.workspace.getWorkspaceFolder(document.uri);
+        console.log("Document URI:", document.uri.toString());
+
         let relativePath = "";
-        if (workspaceFolder) {
-          relativePath = vscode.workspace.asRelativePath(document.uri);
+        try {
+          const workspaceFolder = vscode.workspace.getWorkspaceFolder(document.uri);
+          console.log("Workspace folder:", workspaceFolder);
+          if (workspaceFolder) {
+            relativePath = vscode.workspace.asRelativePath(document.uri);
+            console.log("Relative path:", relativePath);
+          }
+        } catch (error) {
+          console.error("Error getting workspace folder:", error);
         }
 
         const file = document.getText();
@@ -223,13 +231,17 @@ export function activate(context: vscode.ExtensionContext) {
           throw new Error("No YAML frontmatter found");
         }
         const yamlText = metadata[1];
+        console.log("YAML retrieved");
+
         let parsedData; 
         try {
           parsedData = YAML.parseDocument(yamlText, {
               keepCstNodes: true,
               keepNodeTypes: true,
             } as any);
+          console.log("YAML parsed successfully.");
         } catch (error) {
+          console.log("Error parsing YAML:", error);
           if (error instanceof Error) {
             const range = new vscode.Range(
               new vscode.Position(0, 0),
@@ -250,6 +262,7 @@ export function activate(context: vscode.ExtensionContext) {
         const result = metadataSchema(relativePath).safeParse(
           parsedData.toJS() as MetadataType
         );
+        console.log("result obtained from metadataSchema:", result);
 
         if (!result.success) {
           console.log("Zod validation failed:", result.error.issues);
