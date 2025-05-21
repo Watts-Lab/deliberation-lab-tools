@@ -39,7 +39,7 @@ export function detectPromptMarkdown(document: vscode.TextDocument) {
         name?: string;
         [key: string]: any;
       }
-
+      console.log("Document text:", document.getText());
       const sectionRegex = /---\n/g;
       const [, metaDataString, ,] =
         document.getText().split(sectionRegex);
