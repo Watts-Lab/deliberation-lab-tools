@@ -16,6 +16,7 @@ export function detectPromptMarkdown(document: vscode.TextDocument) {
   if (document.languageId === "markdown") {
     console.log("markdown file");
     if (document.lineCount < 3) {
+      console.log("File has less than 3 lines");
       return false;
     } else {
 
@@ -25,18 +26,17 @@ export function detectPromptMarkdown(document: vscode.TextDocument) {
         name?: string;
         [key: string]: any;
       }
-
-      const sectionRegex = /---\n/g;
-      // extracts metaDataString as the middle text between two ---
-      const [, metaDataString, ,] = document.getText().split(sectionRegex);
-      console.log(metaDataString);
+      console.log("Document text:", document.getText());
+      const sectionRegex = /^---\s*\r?\n/gm;
+      const [, metaDataString, ,] =
+        document.getText().split(sectionRegex);
       try {
+        console.log("MetaDataString:", metaDataString);
         const metaData = loadYaml(metaDataString) as Metadata;
-        console.log(metaData);
-        console.log(metaData.type);
-        console.log(metaData.name);
-        // if metaData or any of these attributes are null, then not a valid markdown document
-        if (!metaData || metaData?.type == null || metaData?.name == null) {
+        console.log("MetaData:", metaData);
+        console.log("MetaData type:", metaData?.type);
+        console.log("MetaData name:", metaData?.name);
+        if (metaData == null || metaData?.type == null || metaData?.name == null) {
           return false;
         }
         return true;
@@ -237,7 +237,7 @@ export function activate(context: vscode.ExtensionContext) {
 
         let sections = document.getText().split(/^-{3,}$/gm);
         console.log("Sections found:", sections);
-        
+
         if (!seperators || seperators.length !== 3) {
           console.log("Invalid number of seperators");
           diagnostics.push(
