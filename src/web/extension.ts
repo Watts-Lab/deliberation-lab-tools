@@ -351,17 +351,7 @@ export function activate(context: vscode.ExtensionContext) {
             case "noResponse":
               console.log("Entering no response case")
               if (response && response.length > 0) {
-                const text = document.getText();
-                let t = text;
-                const regex = /^-{3,}$/gm;
-                let idx = 0;
-                let index = 0;
-                for (let i = 0; i < 3; i++) {
-                  console.log(`Finding seperator at ${i}  with index position: ${index}`);
-                  idx = t.search(regex);
-                  t = t.slice(idx + 3);
-                  index += idx + 3;
-                }
+                let { text, index } = getIndex(document);
                 console.log("Finding position of last position");
                 const lastPos = document.positionAt(text.length - 1);
                 console.log(`Last position: ${lastPos}`);
@@ -379,11 +369,57 @@ export function activate(context: vscode.ExtensionContext) {
                   )
                 )
               }
+             case "multipleChoice" :
+              console.log(response);
+              console.log("Entering multiple choice case");
+              const {text, index} = getIndex(document);
+              const lineNum = (document.positionAt(index).line) + 1;
+              const arr = response.split('\n');
+              for (let i = 0; i < arr.length; i ++) {
+                const str = arr[i];
+                if (str.substring(0,2) !== "- ") {
+                  const diagnosticRange = new vscode.Range(
+                    new vscode.Position(lineNum + i, 0),
+                    new vscode.Position(lineNum + i, str.length)
+                  );
+                  const issue = `Response at line ${lineNum + i + 1} should start with "- " (for multiple choice)`;
+                console.log("Displaying error");
+                diagnostics.push(
+                  new vscode.Diagnostic(
+                    diagnosticRange,
+                    issue,
+                    vscode.DiagnosticSeverity.Warning
+                  )
+                )
+                }
+              }
+              case "openResponse" :
+                
           }
+          
+
         }
+
+
 
         diagnosticCollection.set(event.document.uri, diagnostics);
       }
     })
   );
+}
+
+function getIndex(document: vscode.TextDocument) {
+  const text = document.getText();
+  let t = text;
+  const regex = /^-{3,}$/gm;
+  let idx = 0;
+  let index = 0;
+  for (let i = 0; i < 4; i++) {
+    console.log(`Finding seperator at ${i}  with index position: ${index}`);
+    idx = t.search(regex);
+    t = t.slice(idx + 3);
+    index += idx + 3;
+  }
+
+  return { text, index };
 }
