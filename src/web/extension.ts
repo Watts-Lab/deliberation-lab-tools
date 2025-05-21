@@ -224,7 +224,7 @@ export function activate(context: vscode.ExtensionContext) {
                 new vscode.Position(0, 3)
               ),
               "Invalid number of seperators, should be 3",
-              vscode.DiagnosticSeverity.Warning
+              vscode.DiagnosticSeverity.Error
             )
           );
         }
