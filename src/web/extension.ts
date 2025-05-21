@@ -40,7 +40,7 @@ export function detectPromptMarkdown(document: vscode.TextDocument) {
         [key: string]: any;
       }
       console.log("Document text:", document.getText());
-      const sectionRegex = /---\n/g;
+      const sectionRegex = /^---\s*\r?\n/gm;
       const [, metaDataString, ,] =
         document.getText().split(sectionRegex);
       try {
