@@ -1,6 +1,5 @@
 import * as assert from 'assert';
 import { detectPromptMarkdown } from '../../extension';
-import * as path from 'path';
 
 
 // You can import and use all API from the 'vscode' module
