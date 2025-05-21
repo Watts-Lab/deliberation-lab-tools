@@ -1,7 +1,5 @@
 import * as assert from 'assert';
-import { detectPromptMarkdown, detectTreatmentYaml } from '../../extension';
-import * as path from 'path';
-import { detectPromptMarkdown } from '../../extension';
+import { detectPromptMarkdown, detectTreatmentsYaml } from '../../extension';
 
 
 // You can import and use all API from the 'vscode' module
@@ -29,13 +27,11 @@ Everybody talk at once. Sometimes take pauses.
 ---
 		`;
 
-		// 1️⃣ create an untitled markdown document pre-filled with `content`
 		const doc = await vscode.workspace.openTextDocument({
 			language: 'markdown',
-			content                          // 👈 put the text here
+			content               
 		});
 
-		// 2️⃣ run the assertion
 		assert.strictEqual(detectPromptMarkdown(doc), true);
 	});
 
@@ -44,7 +40,7 @@ Everybody talk at once. Sometimes take pauses.
 		const content = "Dont work";
 		const doc = await vscode.workspace.openTextDocument({
 			language: 'text',
-			content                          // 👈 put the text here
+			content                          
 		});
 
 		assert.strictEqual(detectPromptMarkdown(doc), false);
@@ -64,7 +60,7 @@ Everybody talk at once. Sometimes take pauses.
 		`;
 		const doc = await vscode.workspace.openTextDocument({
 			language: 'markdown',
-			content                          // 👈 put the text here
+			content                          
 		});
 
 		assert.strictEqual(detectPromptMarkdown(doc), false);
@@ -84,7 +80,7 @@ Everybody talk at once. Sometimes take pauses.
 		`;
 		const doc = await vscode.workspace.openTextDocument({
 			language: 'markdown',
-			content                          // 👈 put the text here
+			content                          
 		});
 
 		assert.strictEqual(detectPromptMarkdown(doc), false);
@@ -104,13 +100,88 @@ Everybody talk at once. Sometimes take pauses.
 		`;
 		const doc = await vscode.workspace.openTextDocument({
 			language: 'markdown',
-			content                          // 👈 put the text here
+			content                          
 		});
 
 		assert.strictEqual(detectPromptMarkdown(doc), false);
 	});
-});
 
-suite('Testing different file type for markdown', () => {
-	
-})
+	test('detecting .treatments.yaml file', async () => {
+		const content = `
+treatments:
+  - name: treatment_one
+    playerCount: 1
+    gameStages:
+      - name: Role Assignment and General Instructions
+        duration: 300
+        elements: []
+      - name: Main Discussion
+        duration: 200
+        elements: []
+  - name: treatment_two
+    playerCount: 1
+    gameStages:
+      - name: test
+        duration: 200
+        elements: []
+      - name: test2
+        duration: 200
+        elements: []
+		`;
+		const doc = await vscode.workspace.openTextDocument({
+			language: 'treatmentsYaml',
+			content                          
+		});
+
+		assert.strictEqual(detectTreatmentsYaml(doc), true);
+	})
+
+	test('not detecting .yaml file', async () => {
+		const content = `
+treatments:
+  - name: treatment_one
+    playerCount: 1
+    gameStages:
+      - name: Role Assignment and General Instructions
+        duration: 300
+        elements: []
+      - name: Main Discussion
+        duration: 200
+        elements: []
+  - name: treatment_two
+    playerCount: 1
+    gameStages:
+      - name: test
+        duration: 200
+        elements: []
+      - name: test2
+        duration: 200
+        elements: []
+		`;
+		const doc = await vscode.workspace.openTextDocument({
+			language: 'yaml',
+			content                          
+		});
+		assert.strictEqual(detectTreatmentsYaml(doc), false);
+	})
+
+	test('detecting empty .treatments.yaml file', async () => {
+		const content = ``;
+		const doc = await vscode.workspace.openTextDocument({
+			language: 'treatmentsYaml',
+			content
+		});
+
+		assert.strictEqual(detectTreatmentsYaml(doc), true);
+	})
+
+	test('not detecting markdown (or other different) file type', async () => {
+		const content = ``;
+		const doc = await vscode.workspace.openTextDocument({
+			language: 'markdown',
+			content                          
+		});
+
+		assert.strictEqual(detectTreatmentsYaml(doc), false);
+	})
+});
