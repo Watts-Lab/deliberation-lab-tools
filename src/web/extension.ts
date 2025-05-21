@@ -229,13 +229,13 @@ export function activate(context: vscode.ExtensionContext) {
         try {
           const file = event.document.getText();
           console.log("File content:", file);
-          const metadata = file.match(/^---\n([\s\S]*?)\n---/);
-          console.log("Metadata matched");
+          const metadata = file.match(/---\s*\n([\s\S]*?)\n---/);
+          console.log("Metadata matched", metadata);
           if (!metadata) {
             throw new Error("No YAML frontmatter found");
           }
           yamlText = metadata[1];
-          console.log("YAML retrieved");
+          console.log("YAML retrieved", yamlText);
         } catch (error) {
           console.log("Error retrieving YAML:", error);
         }
@@ -246,7 +246,7 @@ export function activate(context: vscode.ExtensionContext) {
               keepCstNodes: true,
               keepNodeTypes: true,
             } as any);
-          console.log("YAML parsed successfully.");
+          console.log("YAML parsed successfully.", parsedData);
         } catch (error) {
           console.log("Error parsing YAML:", error);
           if (error instanceof Error) {
