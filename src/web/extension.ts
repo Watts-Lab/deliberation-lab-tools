@@ -9,7 +9,6 @@ import {
   MetadataType,
 } from "../zod-validators/validatePromptFile";
 import { ZodError, ZodIssue } from "zod";
-import * as path from "path";
 
 // Detects if file is prompt Markdown format
 // Follows format of
@@ -211,12 +210,11 @@ export function activate(context: vscode.ExtensionContext) {
         console.log("Processing .md file...");
         const diagnostics: vscode.Diagnostic[] = [];
         const document = event.document;
+
         const workspaceFolder = vscode.workspace.getWorkspaceFolder(document.uri);
-        
         let relativePath = "";
         if (workspaceFolder) {
-          relativePath = path.relative(workspaceFolder.uri.fsPath, document.fileName);
-          console.log("Relative path from workspace root:", relativePath);
+          relativePath = vscode.workspace.asRelativePath(document.uri);
         }
 
         const file = document.getText();
@@ -248,6 +246,7 @@ export function activate(context: vscode.ExtensionContext) {
           }
           return;
         }
+
         const result = metadataSchema(relativePath).safeParse(
           parsedData.toJS() as MetadataType
         );
