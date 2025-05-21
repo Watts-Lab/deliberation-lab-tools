@@ -352,6 +352,55 @@ export function activate(context: vscode.ExtensionContext) {
           console.log("Zod validation passed. Types are consistent with MetadataType.");
         }
 
+        function offsetToPosition(offset: number): vscode.Position {
+          const text = document.getText();
+          let line = 0;
+          let lastLineBreakIndex = -1;
+
+          // Count lines and adjust the column based on the last newline before the offset
+          for (let i = 0; i < offset; i++) {
+            if (text[i] === "\n") {
+              line++;
+              lastLineBreakIndex = i;
+            }
+          }
+
+          const column = offset - lastLineBreakIndex - 1;
+          return new vscode.Position(line, column);
+        }
+
+        if (sections && sections.length > 2) {
+          const promptText = sections[2].trim();
+          console.log("Prompt text:", promptText);
+          if (!promptText || typeof promptText !== "string" || promptText.length < 1) {
+            let text = document.getText();
+            const regex = /^-{3,}\s*$/gm;
+            let match;
+            let count = 0;
+            let secondMatchIndex = 0;
+
+            while ((match = regex.exec(text)) !== null) {
+              count++;
+              if (count === 2) {
+                secondMatchIndex = match.index;
+                break;
+              }
+            }
+            const startPos = offsetToPosition(secondMatchIndex);
+            diagnostics.push(
+              new vscode.Diagnostic(
+                new vscode.Range(
+                  startPos,
+                  new vscode.Position(startPos.line, startPos.character + 3)
+                ),
+                "Prompt text must exist",
+                vscode.DiagnosticSeverity.Warning
+              )
+            );
+          }
+        }
+        
+
         // add more logic to check prompt and response schema below
 
         
