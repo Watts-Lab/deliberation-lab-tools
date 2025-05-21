@@ -234,7 +234,7 @@ export function activate(context: vscode.ExtensionContext) {
           if (!metadata) {
             throw new Error("No YAML frontmatter found");
           }
-          yamlText = metadata[1];
+          yamlText = metadata[1].trimEnd();
           console.log("YAML retrieved", yamlText);
         } catch (error) {
           console.log("Error retrieving YAML:", error);
