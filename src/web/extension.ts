@@ -4,6 +4,10 @@ import {
   treatmentFileSchema,
   TreatmentFileType,
 } from "../zod-validators/validateTreatmentFile";
+import {
+  metadataSchema,
+  MetadataType,
+} from "../zod-validators/validatePromptFile";
 import { ZodError, ZodIssue } from "zod";
 
 // Detects if file is prompt Markdown format
@@ -205,8 +209,83 @@ export function activate(context: vscode.ExtensionContext) {
       } else if (detectPromptMarkdown(event.document)) {
         console.log("Processing .md file...");
         const diagnostics: vscode.Diagnostic[] = [];
+        const document = event.document;
+
+        const workspaceFolder = vscode.workspace.getWorkspaceFolder(document.uri);
+        let relativePath = "";
+        if (workspaceFolder) {
+          relativePath = vscode.workspace.asRelativePath(document.uri);
+        }
+
+        const file = document.getText();
+        const metadata = file.match(/^---\n([\s\S]*?)\n---/);
+        if (!metadata) {
+          throw new Error("No YAML frontmatter found");
+        }
+        const yamlText = metadata[1];
+        let parsedData; 
+        try {
+          parsedData = YAML.parseDocument(yamlText, {
+              keepCstNodes: true,
+              keepNodeTypes: true,
+            } as any);
+        } catch (error) {
+          if (error instanceof Error) {
+            const range = new vscode.Range(
+              new vscode.Position(0, 0),
+              new vscode.Position(0, 1)
+            );
+            diagnostics.push(
+              new vscode.Diagnostic(
+                range,
+                `YAML syntax error: ${error.message}`,
+                vscode.DiagnosticSeverity.Error
+              )
+            );
+            diagnosticCollection.set(event.document.uri, diagnostics);
+          }
+          return;
+        }
+
+        const result = metadataSchema(relativePath).safeParse(
+          parsedData.toJS() as MetadataType
+        );
+
+        if (!result.success) {
+          console.log("Zod validation failed:", result.error.issues);
+
+          (result.error as ZodError).issues.forEach((issue: ZodIssue) => {
+            console.log(
+              `Processing Zod issue with path: ${JSON.stringify(issue.path)}`
+            );
+            const range = findPositionFromPath(
+              issue.path,
+              parsedData,
+              event.document
+            );
+            const diagnosticRange =
+              range ||
+              new vscode.Range(
+                new vscode.Position(0, 0),
+                new vscode.Position(0, 1)
+              );
+            diagnostics.push(
+              new vscode.Diagnostic(
+                diagnosticRange,
+                `Error in item "${issue.path[issue.path.length - 1]}": ${
+                  issue.message
+                }`,
+                vscode.DiagnosticSeverity.Warning
+              )
+            );
+          });
+        } else {
+          console.log("Zod validation passed. Types are consistent with MetadataType.");
+        }
+
+        // add more logic to check prompt and response schema below
+
         
-        // Update diagnostics in VS Code
         diagnosticCollection.set(event.document.uri, diagnostics);
       }
     })
