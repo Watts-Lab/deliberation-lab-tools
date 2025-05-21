@@ -53,6 +53,8 @@ export function detectTreatmentsYaml(document: vscode.TextDocument) {
   return document.languageId === "treatmentsYaml";
 }
 
+// export function 
+
 export function activate(context: vscode.ExtensionContext) {
   vscode.window.showInformationMessage("Extension activated");
   const diagnosticCollection =
@@ -349,21 +351,25 @@ export function activate(context: vscode.ExtensionContext) {
             case "noResponse":
               console.log("Entering no response case")
               if (response && response.length > 0) {
-                let text = document.getText();
+                const text = document.getText();
+                let t = text;
                 const regex = /^-{3,}$/gm;
+                let idx = 0;
                 let index = 0;
                 for (let i = 0; i < 3; i++) {
                   console.log(`Finding seperator at ${i}  with index position: ${index}`);
-                  index = text.indexOf(regex.toString(), index);
+                  idx = t.search(regex);
+                  t = t.slice(idx + 3);
+                  index += idx + 3;
                 }
                 console.log("Finding position of last position");
                 const lastPos = document.positionAt(text.length - 1);
                 console.log(`Last position: ${lastPos}`);
                 const diagnosticRange = new vscode.Range(
-                  new vscode.Position(index, 0),  // starting position
+                  document.positionAt(index),  // starting position
                   lastPos   // ending position 
                 );
-                const issue = "Response should be blank for tyoe no response";
+                const issue = "Response should be blank for type no response";
                 console.log("Displaying error");
                 diagnostics.push(
                   new vscode.Diagnostic(
