@@ -388,7 +388,7 @@ export function activate(context: vscode.ExtensionContext) {
             );
           }
         }
-        
+
 
         // add more logic to check prompt and response schema below
         console.log("Before if statement")
@@ -397,7 +397,7 @@ export function activate(context: vscode.ExtensionContext) {
           const type = parsedData.get("type");
           const response = sections[3];
           switch (type) {
-            case "noResponse":
+            case "noResponse": {
               console.log("Entering no response case")
               if (response && response.length > 0) {
                 let { text, index } = getIndex(document);
@@ -418,34 +418,65 @@ export function activate(context: vscode.ExtensionContext) {
                   )
                 )
               }
-             case "multipleChoice" :
+            }
+
+            case "multipleChoice": {
               console.log(response);
               console.log("Entering multiple choice case");
-              const {text, index} = getIndex(document);
+              let { text, index } = getIndex(document);
               const lineNum = (document.positionAt(index).line) + 1;
               const arr = response.split('\n');
-              for (let i = 0; i < arr.length; i ++) {
+              for (let i = 0; i < arr.length; i++) {
                 const str = arr[i];
-                if (str.substring(0,2) !== "- ") {
+                if (str.substring(0, 2) !== "- ") {
                   const diagnosticRange = new vscode.Range(
                     new vscode.Position(lineNum + i, 0),
                     new vscode.Position(lineNum + i, str.length)
                   );
                   const issue = `Response at line ${lineNum + i + 1} should start with "- " (for multiple choice)`;
-                console.log("Displaying error");
-                diagnostics.push(
-                  new vscode.Diagnostic(
-                    diagnosticRange,
-                    issue,
-                    vscode.DiagnosticSeverity.Warning
+                  console.log("Displaying error");
+                  diagnostics.push(
+                    new vscode.Diagnostic(
+                      diagnosticRange,
+                      issue,
+                      vscode.DiagnosticSeverity.Warning
+                    )
                   )
-                )
                 }
               }
-              case "openResponse" :
-                
+            }
+
+            case "openResponse": {
+              console.log(response);
+              console.log("Entering multiple choice case");
+              let { text, index } = getIndex(document);
+              const lineNum = (document.positionAt(index).line) + 1;
+              const arr = response.split('\n');
+              for (let i = 0; i < arr.length; i++) {
+                const str = arr[i];
+                if (str.substring(0, 2) !== "> ") {
+                  const diagnosticRange = new vscode.Range(
+                    new vscode.Position(lineNum + i, 0),
+                    new vscode.Position(lineNum + i, str.length)
+                  );
+                  const issue = `Response at line ${lineNum + i + 1} should start with "> " (for open response)`;
+                  console.log("Displaying error");
+                  diagnostics.push(
+                    new vscode.Diagnostic(
+                      diagnosticRange,
+                      issue,
+                      vscode.DiagnosticSeverity.Warning
+                    )
+                  )
+                }
+              }
+            }
+            default: console.log("Illegal type");
+
+
+
           }
-          
+
 
         }
 
