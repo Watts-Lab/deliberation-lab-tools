@@ -212,7 +212,23 @@ export function activate(context: vscode.ExtensionContext) {
         const document = event.document;
 
         console.log("Document URI:", document.uri.toString());
-
+        const seperators = document.getText().match(/^-{3,}$/gm);
+        console.log("Seperators found:", seperators);
+        
+        if (!seperators || seperators.length !== 3) {
+          console.log("Invalid number of seperators");
+          diagnostics.push(
+            new vscode.Diagnostic(
+              new vscode.Range(
+                new vscode.Position(0, 0),
+                new vscode.Position(0, 3)
+              ),
+              "Invalid number of seperators, should be 3",
+              vscode.DiagnosticSeverity.Warning
+            )
+          );
+          return;
+        }
         let relativePath = "";
         try {
           const workspaceFolder = vscode.workspace.getWorkspaceFolder(document.uri);

@@ -20,3 +20,5 @@ export const metadataSchema = (fileName: string) =>
     });
 
 export type MetadataType = z.infer<typeof metadataBaseSchema>;
+
+export const promptSchema = z.string().min(1, { message: "Prompt must not be empty" });
