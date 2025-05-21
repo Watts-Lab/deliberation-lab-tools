@@ -217,8 +217,7 @@ export function activate(context: vscode.ExtensionContext) {
               diagnostics.push(
                 new vscode.Diagnostic(
                   diagnosticRange,
-                  `Error in item "${issue.path[issue.path.length - 1]}": ${
-                    issue.message
+                  `Error in item "${issue.path[issue.path.length - 1]}": ${issue.message
                   }`,
                   vscode.DiagnosticSeverity.Warning
                 )
@@ -244,7 +243,7 @@ export function activate(context: vscode.ExtensionContext) {
 
         let sections = document.getText().split(/^-{3,}$/gm);
         console.log("Sections found:", sections);
-        
+
         if (!seperators || seperators.length !== 3) {
           console.log("Invalid number of seperators");
           diagnostics.push(
@@ -282,14 +281,14 @@ export function activate(context: vscode.ExtensionContext) {
         } catch (error) {
           console.log("Error retrieving YAML frontmatter:", error);
         }
-        
 
-        let parsedData; 
+
+        let parsedData;
         try {
           parsedData = YAML.parseDocument(yamlText, {
-              keepCstNodes: true,
-              keepNodeTypes: true,
-            } as any);
+            keepCstNodes: true,
+            keepNodeTypes: true,
+          } as any);
           console.log("YAML parsed successfully.", parsedData);
         } catch (error) {
           console.log("Error parsing YAML:", error);
@@ -309,6 +308,7 @@ export function activate(context: vscode.ExtensionContext) {
           }
           return;
         }
+
 
         const result = metadataSchema(relativePath).safeParse(
           parsedData.toJS() as MetadataType
@@ -336,8 +336,7 @@ export function activate(context: vscode.ExtensionContext) {
             diagnostics.push(
               new vscode.Diagnostic(
                 diagnosticRange,
-                `Error in item "${issue.path[issue.path.length - 1]}": ${
-                  issue.message
+                `Error in item "${issue.path[issue.path.length - 1]}": ${issue.message
                 }`,
                 vscode.DiagnosticSeverity.Warning
               )
@@ -349,7 +348,35 @@ export function activate(context: vscode.ExtensionContext) {
 
         // add more logic to check prompt and response schema below
 
-        
+        if (seperators && seperators.length === 3) {
+          const type = parsedData.get("type");
+          const response = sections[3];
+          switch (type) {
+            case "noResponse":
+              if (response && response.length > 0) {
+                let text = document.getText();
+                const regex = /^-{3,}$/gm;
+                let index = 0
+                for (let i = 0; i < 3; i++) {
+                  index = text.indexOf(regex.toString());
+                }
+                const lastPos = document.positionAt(text.length - 1);
+                const diagnosticRange = new vscode.Range(
+                  new vscode.Position(index, 0),  // starting position
+                  lastPos   // ending position 
+                );
+                const issue = "Response should be blank for tyoe no response"
+                diagnostics.push(
+                  new vscode.Diagnostic(
+                    diagnosticRange,
+                    issue,
+                    vscode.DiagnosticSeverity.Warning
+                  )
+                )
+              }
+          }
+        }
+
         diagnosticCollection.set(event.document.uri, diagnostics);
       }
     })

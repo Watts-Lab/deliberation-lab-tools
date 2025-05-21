@@ -1,4 +1,6 @@
 ---
 name: mock-prompt-files/prompt.md
-type: noRespons
+type: noResponse
+---
+jkb 
 ---
