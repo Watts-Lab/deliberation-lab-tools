@@ -492,6 +492,8 @@ export function activate(context: vscode.ExtensionContext) {
         }
 
         diagnosticCollection.set(event.document.uri, diagnostics);
+      } else {
+        diagnosticCollection.set(event.document.uri, []);
       }
     })
   );
