@@ -1,10 +1,8 @@
 ---
 name: mock-prompt-files/prompt.md
-type: multipleChoice
+type: noResponse
 ---
 
+dhhdhdh
 
 ---
-- One
-- Two
-- I am tired
