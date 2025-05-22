@@ -1,7 +1,3 @@
----
+
 name: mock-prompt-files/prompt.md
-type: noResponse
----
-
-
----
+type: multipleChoice

@@ -15,34 +15,31 @@ import { load as loadYaml } from "js-yaml";
 export function detectPromptMarkdown(document: vscode.TextDocument) {
   if (document.languageId === "markdown") {
     console.log("markdown file");
-    if (document.lineCount < 3) {
-      console.log("File has less than 3 lines");
-      return false;
-    } else {
 
-      // define interface for metadata
-      interface Metadata {
-        type?: string;
-        name?: string;
-        [key: string]: any;
-      }
-      console.log("Document text:", document.getText());
-      const sectionRegex = /^---\s*\r?\n/gm;
-      const [, metaDataString, ,] =
-        document.getText().split(sectionRegex);
-      try {
-        console.log("MetaDataString:", metaDataString);
-        const metaData = loadYaml(metaDataString) as Metadata;
-        console.log("MetaData:", metaData);
-        console.log("MetaData type:", metaData?.type);
-        console.log("MetaData name:", metaData?.name);
-        if (metaData == null || metaData?.type == null || metaData?.name == null) {
-          return false;
-        }
-        return true;
-      } catch (YAMLException) { // YAMLException means that fields do not exist
+    // define interface for metadata
+    interface Metadata {
+      type?: string;
+      name?: string;
+      [key: string]: any;
+    }
+    console.log("Document text:", document.getText());
+    const sections = document.getText().split(/^-{3,}$/gm);
+    if (sections.length < 2) {
+      return false;
+    }
+    const metaDataString = sections[1];
+    try {
+      console.log("MetaDataString:", metaDataString);
+      const metaData = loadYaml(metaDataString) as Metadata;
+      console.log("MetaData:", metaData);
+      console.log("MetaData type:", metaData?.type);
+      console.log("MetaData name:", metaData?.name);
+      if (metaData == null || metaData?.type == null || metaData?.name == null) {
         return false;
       }
+      return true;
+    } catch (YAMLException) { // YAMLException means that fields do not exist
+      return false;
     }
   }
   return false;
@@ -53,14 +50,13 @@ export function detectTreatmentsYaml(document: vscode.TextDocument) {
   return document.languageId === "treatmentsYaml";
 }
 
-export const diagnosticCollection = vscode.languages.createDiagnosticCollection("yamlDiagnostics");
+// export const diagnosticCollection = vscode.languages.createDiagnosticCollection("yamlDiagnostics");
 
 // export function 
-
 export function activate(context: vscode.ExtensionContext) {
   vscode.window.showInformationMessage("Extension activated");
-  // const diagnosticCollection =
-  //   vscode.languages.createDiagnosticCollection("yamlDiagnostics");
+  const diagnosticCollection =
+    vscode.languages.createDiagnosticCollection("yamlDiagnostics");
   context.subscriptions.push(diagnosticCollection);
 
   function findPositionFromPath(

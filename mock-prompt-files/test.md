@@ -1,6 +1,4 @@
 ---
-name: mock-prompt-files/prompt.md
+name: mock-prompt-files/test.md
 type: multipleChoice
-fjsdgkjdkfj
----
 ---
