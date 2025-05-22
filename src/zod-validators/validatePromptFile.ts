@@ -1,5 +1,7 @@
 import { z, ZodIssue } from "zod";
 
+const seperatorSchema = z.string().regex(/^-{3,}$/);
+
 export const metadataBaseSchema = z.object({
         name: z.string(),
         type: z.enum(["openResponse", "multipleChoice", "noResponse", "listSorter"]),

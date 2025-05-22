@@ -53,12 +53,14 @@ export function detectTreatmentsYaml(document: vscode.TextDocument) {
   return document.languageId === "treatmentsYaml";
 }
 
+export const diagnosticCollection = vscode.languages.createDiagnosticCollection("yamlDiagnostics");
+
 // export function 
 
 export function activate(context: vscode.ExtensionContext) {
   vscode.window.showInformationMessage("Extension activated");
-  const diagnosticCollection =
-    vscode.languages.createDiagnosticCollection("yamlDiagnostics");
+  // const diagnosticCollection =
+  //   vscode.languages.createDiagnosticCollection("yamlDiagnostics");
   context.subscriptions.push(diagnosticCollection);
 
   function findPositionFromPath(
@@ -233,21 +235,21 @@ export function activate(context: vscode.ExtensionContext) {
         const document = event.document;
 
         console.log("Document URI:", document.uri.toString());
-        const seperators = document.getText().match(/^-{3,}$/gm);
-        console.log("Seperators found:", seperators);
+        const separators = document.getText().match(/^-{3,}$/gm);
+        console.log("Separators found:", separators);
 
         let sections = document.getText().split(/^-{3,}$/gm);
         console.log("Sections found:", sections);
 
-        if (!seperators || seperators.length !== 3) {
-          console.log("Invalid number of seperators");
+        if (!separators || separators.length !== 3) {
+          console.log("Invalid number of separators");
           diagnostics.push(
             new vscode.Diagnostic(
               new vscode.Range(
                 new vscode.Position(0, 0),
                 new vscode.Position(0, 3)
               ),
-              "Invalid number of seperators, should be 3",
+              "Invalid number of separators, should be 3",
               vscode.DiagnosticSeverity.Error
             )
           );
@@ -358,6 +360,7 @@ export function activate(context: vscode.ExtensionContext) {
           return new vscode.Position(line, column);
         }
 
+        // Prompt validation
         if (sections && sections.length > 2) {
           const promptText = sections[2].trim();
           console.log("Prompt text:", promptText);
@@ -390,9 +393,9 @@ export function activate(context: vscode.ExtensionContext) {
         }
 
 
-        // add more logic to check prompt and response schema below
+        // Response validation
         console.log("Before if statement")
-        if (seperators && seperators.length === 3) {
+        if (separators && separators.length === 3) {
           console.log("Entering if statement");
           const type = parsedData.get("type");
           const response = sections[3];
@@ -418,6 +421,7 @@ export function activate(context: vscode.ExtensionContext) {
                   )
                 )
               }
+              break;
             }
 
             case "multipleChoice": {
@@ -425,16 +429,19 @@ export function activate(context: vscode.ExtensionContext) {
               console.log("Entering multiple choice case");
               let { text, index } = getIndex(document);
               const lineNum = (document.positionAt(index).line) + 1;
+              console.log(lineNum);
               const arr = response.split('\n');
-              for (let i = 0; i < arr.length; i++) {
-                const str = arr[i];
+              console.log(arr);
+              console.log("Line count: " + document.lineCount);
+              for (let i = lineNum; i < document.lineCount; i++) {
+                const str = document.lineAt(i).text;
+                console.log(str);
                 if (str.substring(0, 2) !== "- ") {
                   const diagnosticRange = new vscode.Range(
-                    new vscode.Position(lineNum + i, 0),
-                    new vscode.Position(lineNum + i, str.length)
+                    new vscode.Position(i, 0),
+                    new vscode.Position(i, str.length)
                   );
-                  const issue = `Response at line ${lineNum + i + 1} should start with "- " (for multiple choice)`;
-                  console.log("Displaying error");
+                  const issue = `Response at line ${i + 1} should start with "- " (for multiple choice)`;
                   diagnostics.push(
                     new vscode.Diagnostic(
                       diagnosticRange,
@@ -444,22 +451,25 @@ export function activate(context: vscode.ExtensionContext) {
                   )
                 }
               }
+              break;
             }
 
             case "openResponse": {
               console.log(response);
-              console.log("Entering multiple choice case");
+              console.log("Entering open response case");
               let { text, index } = getIndex(document);
               const lineNum = (document.positionAt(index).line) + 1;
+              console.log(lineNum);
               const arr = response.split('\n');
-              for (let i = 0; i < arr.length; i++) {
-                const str = arr[i];
+              console.log(arr);
+              for (let i = lineNum; i < document.lineCount; i++) {
+                const str = document.lineAt(i).text;
                 if (str.substring(0, 2) !== "> ") {
                   const diagnosticRange = new vscode.Range(
-                    new vscode.Position(lineNum + i, 0),
-                    new vscode.Position(lineNum + i, str.length)
+                    new vscode.Position(i, 0),
+                    new vscode.Position(i, str.length)
                   );
-                  const issue = `Response at line ${lineNum + i + 1} should start with "> " (for open response)`;
+                  const issue = `Response at line ${i + 1} should start with "> " (for open response)`;
                   console.log("Displaying error");
                   diagnostics.push(
                     new vscode.Diagnostic(
@@ -470,17 +480,16 @@ export function activate(context: vscode.ExtensionContext) {
                   )
                 }
               }
+              break;
             }
-            default: console.log("Illegal type");
-
-
+            default: {
+              console.log("Type: " + type);
+              break;
+            }
 
           }
 
-
         }
-
-
 
         diagnosticCollection.set(event.document.uri, diagnostics);
       }
@@ -488,17 +497,22 @@ export function activate(context: vscode.ExtensionContext) {
   );
 }
 
+// Returns index of the third separator (---). Index is at beginning of the line of the third separator
 function getIndex(document: vscode.TextDocument) {
   const text = document.getText();
   let t = text;
   const regex = /^-{3,}$/gm;
-  let idx = 0;
+
+  let match;
+  let count = 0;
   let index = 0;
-  for (let i = 0; i < 4; i++) {
-    console.log(`Finding seperator at ${i}  with index position: ${index}`);
-    idx = t.search(regex);
-    t = t.slice(idx + 3);
-    index += idx + 3;
+
+  while ((match = regex.exec(text)) !== null) {
+    count++;
+    if (count === 3) {
+      index = match.index;
+      break;
+    }
   }
 
   return { text, index };
