@@ -34,7 +34,7 @@ export function detectPromptMarkdown(document: vscode.TextDocument) {
       console.log("MetaData:", metaData);
       console.log("MetaData type:", metaData?.type);
       console.log("MetaData name:", metaData?.name);
-      if (metaData == null || metaData?.type == null || metaData?.name == null) {
+      if (metaData === null || metaData?.type === null || metaData?.name === null) {
         return false;
       }
       return true;
@@ -50,13 +50,14 @@ export function detectTreatmentsYaml(document: vscode.TextDocument) {
   return document.languageId === "treatmentsYaml";
 }
 
-// export const diagnosticCollection = vscode.languages.createDiagnosticCollection("yamlDiagnostics");
+// should this be named yamlDiagnostics if also using markdown?
+export const diagnosticCollection = vscode.languages.createDiagnosticCollection("yamlDiagnostics");
 
 // export function 
 export function activate(context: vscode.ExtensionContext) {
   vscode.window.showInformationMessage("Extension activated");
-  const diagnosticCollection =
-    vscode.languages.createDiagnosticCollection("yamlDiagnostics");
+  // const diagnosticCollection =
+  //   vscode.languages.createDiagnosticCollection("yamlDiagnostics");
   context.subscriptions.push(diagnosticCollection);
 
   function findPositionFromPath(
@@ -361,20 +362,21 @@ export function activate(context: vscode.ExtensionContext) {
           const promptText = sections[2].trim();
           console.log("Prompt text:", promptText);
           if (!promptText || typeof promptText !== "string" || promptText.length < 1) {
-            let text = document.getText();
-            const regex = /^-{3,}\s*$/gm;
-            let match;
-            let count = 0;
-            let secondMatchIndex = 0;
+            // let text = document.getText();
+            // const regex = /^-{3,}\s*$/gm;
+            // let match;
+            // let count = 0;
+            // let secondMatchIndex = 0;
 
-            while ((match = regex.exec(text)) !== null) {
-              count++;
-              if (count === 2) {
-                secondMatchIndex = match.index;
-                break;
-              }
-            }
-            const startPos = offsetToPosition(secondMatchIndex);
+            // while ((match = regex.exec(text)) !== null) {
+            //   count++;
+            //   if (count === 2) {
+            //     secondMatchIndex = match.index;
+            //     break;
+            //   }
+            // }
+            let { text, index } = getIndex(document, 2);
+            const startPos = offsetToPosition(index);
             diagnostics.push(
               new vscode.Diagnostic(
                 new vscode.Range(
@@ -390,16 +392,15 @@ export function activate(context: vscode.ExtensionContext) {
 
 
         // Response validation
-        console.log("Before if statement")
         if (separators && separators.length === 3) {
           console.log("Entering if statement");
           const type = parsedData.get("type");
           const response = sections[3];
           switch (type) {
             case "noResponse": {
-              console.log("Entering no response case")
+              console.log("Entering no response case");
               if (response && response.length > 0) {
-                let { text, index } = getIndex(document);
+                let { text, index } = getIndex(document, 3);
                 console.log("Finding position of last position");
                 const lastPos = document.positionAt(text.length - 1);
                 console.log(`Last position: ${lastPos}`);
@@ -408,26 +409,22 @@ export function activate(context: vscode.ExtensionContext) {
                   lastPos   // ending position 
                 );
                 const issue = "Response should be blank for type no response";
-                console.log("Displaying error");
                 diagnostics.push(
                   new vscode.Diagnostic(
                     diagnosticRange,
                     issue,
                     vscode.DiagnosticSeverity.Warning
                   )
-                )
+                );
               }
               break;
             }
 
             case "multipleChoice": {
-              console.log(response);
               console.log("Entering multiple choice case");
-              let { text, index } = getIndex(document);
+              let { text, index } = getIndex(document, 3);
               const lineNum = (document.positionAt(index).line) + 1;
               console.log(lineNum);
-              const arr = response.split('\n');
-              console.log(arr);
               console.log("Line count: " + document.lineCount);
               for (let i = lineNum; i < document.lineCount; i++) {
                 const str = document.lineAt(i).text;
@@ -444,7 +441,7 @@ export function activate(context: vscode.ExtensionContext) {
                       issue,
                       vscode.DiagnosticSeverity.Warning
                     )
-                  )
+                  );
                 }
               }
               break;
@@ -453,7 +450,7 @@ export function activate(context: vscode.ExtensionContext) {
             case "openResponse": {
               console.log(response);
               console.log("Entering open response case");
-              let { text, index } = getIndex(document);
+              let { text, index } = getIndex(document, 3);
               const lineNum = (document.positionAt(index).line) + 1;
               console.log(lineNum);
               const arr = response.split('\n');
@@ -473,7 +470,7 @@ export function activate(context: vscode.ExtensionContext) {
                       issue,
                       vscode.DiagnosticSeverity.Warning
                     )
-                  )
+                  );
                 }
               }
               break;
@@ -496,7 +493,7 @@ export function activate(context: vscode.ExtensionContext) {
 }
 
 // Returns index of the third separator (---). Index is at beginning of the line of the third separator
-function getIndex(document: vscode.TextDocument) {
+function getIndex(document: vscode.TextDocument, i: number) {
   const text = document.getText();
   let t = text;
   const regex = /^-{3,}$/gm;
@@ -507,7 +504,7 @@ function getIndex(document: vscode.TextDocument) {
 
   while ((match = regex.exec(text)) !== null) {
     count++;
-    if (count === 3) {
+    if (count === i) {
       index = match.index;
       break;
     }
