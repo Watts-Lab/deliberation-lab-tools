@@ -1,11 +1,12 @@
 import * as assert from 'assert';
 import { detectPromptMarkdown, detectTreatmentsYaml } from '../../extension';
-
+import { diagnosticCollection } from '../../extension';
 
 // You can import and use all API from the 'vscode' module
 // as well as import your extension to test it
 import * as vscode from 'vscode';
 // import * as myExtension from '../../extension';
+import * as process from 'process';
 
 suite('Markdown and .treatments.yaml file detection', () => {
 	vscode.window.showInformationMessage('Start all tests.');
@@ -275,4 +276,21 @@ treatments:
 
 		assert.strictEqual(detectTreatmentsYaml(doc), false);
 	})
+});
+
+suite('Diagnostics detection', () => {
+    test('Diagnostics are empty on correct markdown file', async () => {
+        // allTalk.md
+		const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
+		console.log("Workspace folder URI:", workspaceFolder?.uri.toString());
+		const filePath = vscode.Uri.joinPath(workspaceFolder!!.uri, 'allTalk.md');
+        // console.log(process.cwd());
+        // const filePath = 'fixtures/allTalk.md';
+        // const filePath = path.resolve('fixtures/allTalk.md');
+        console.log(filePath);
+        const document = await vscode.workspace.openTextDocument(filePath);
+        await new Promise(resolve => setTimeout(resolve, 500));
+        const diagnostics = vscode.languages.getDiagnostics(document.uri);
+        assert.strictEqual(diagnostics.length, 0);
+    });
 });
