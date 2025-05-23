@@ -53,6 +53,7 @@ export function detectTreatmentsYaml(document: vscode.TextDocument) {
 // should this be named yamlDiagnostics if also using markdown?
 export const diagnosticCollection = vscode.languages.createDiagnosticCollection("yamlDiagnostics");
 
+
 // export function 
 export function activate(context: vscode.ExtensionContext) {
   vscode.window.showInformationMessage("Extension activated");
@@ -60,6 +61,72 @@ export function activate(context: vscode.ExtensionContext) {
   //   vscode.languages.createDiagnosticCollection("yamlDiagnostics");
   context.subscriptions.push(diagnosticCollection);
 
+  //Converts character offset to line and column in a given document
+  function offsetToPosition(offset: number, document: vscode.TextDocument): vscode.Position {
+        const text = document.getText();
+        let line = 0;
+        let lastLineBreakIndex = -1;
+
+        // Count lines and adjust the column based on the last newline before the offset
+        for (let i = 0; i < offset; i++) {
+          if (text[i] === "\n") {
+            line++;
+            lastLineBreakIndex = i;
+          }
+        }
+
+        const column = offset - lastLineBreakIndex - 1;
+        return new vscode.Position(line, column);
+      }
+
+  // Returns index an indicated separator. Index is at beginning of the line of the separator
+  function getIndex(document: vscode.TextDocument, i: number) {
+    const text = document.getText();
+    let t = text;
+    const regex = /^-{3,}$/gm;
+
+    let match;
+    let count = 0;
+    let index = 0;
+
+    while ((match = regex.exec(text)) !== null) {
+      count++;
+      if (count === i) {
+        index = match.index;
+        break;
+      }
+    }
+
+    return { text, index };
+  }
+
+  //helper function to handle errors as diagnostic warnings if yaml doesn't match a schema
+  function handleError(issue: ZodIssue, parsedData: YAML.Document.Parsed, document: vscode.TextDocument, diagnostics: vscode.Diagnostic[]) {
+            console.log(
+              `Processing Zod issue with path: ${JSON.stringify(issue.path)}`
+            );
+            const range = findPositionFromPath(
+              issue.path,
+              parsedData,
+              document
+            );
+            const diagnosticRange =
+              range ||
+              new vscode.Range(
+                new vscode.Position(0, 0),
+                new vscode.Position(0, 1)
+              );
+            diagnostics.push(
+              new vscode.Diagnostic(
+                diagnosticRange,
+                `Error in item "${issue.path[issue.path.length - 1]}": ${issue.message
+                }`,
+                vscode.DiagnosticSeverity.Warning
+              )
+            );
+    }
+
+  // Helper function to find the position of a node in the AST based on the path  
   function findPositionFromPath(
     path: (string | number)[],
     astNode: any,
@@ -110,25 +177,9 @@ export function activate(context: vscode.ExtensionContext) {
       const [startOffset, endOffset] = currentRange;
 
       // Helper function to convert offset to line and column
-      function offsetToPosition(offset: number): vscode.Position {
-        const text = document.getText();
-        let line = 0;
-        let lastLineBreakIndex = -1;
 
-        // Count lines and adjust the column based on the last newline before the offset
-        for (let i = 0; i < offset; i++) {
-          if (text[i] === "\n") {
-            line++;
-            lastLineBreakIndex = i;
-          }
-        }
-
-        const column = offset - lastLineBreakIndex - 1;
-        return new vscode.Position(line, column);
-      }
-
-      const startPos = offsetToPosition(startOffset);
-      const endPos = offsetToPosition(endOffset);
+      const startPos = offsetToPosition(startOffset, document);
+      const endPos = offsetToPosition(endOffset, document);
       console.log(
         `Located range: start ${startPos.line}:${startPos.character}, end ${endPos.line}:${endPos.character}`
       );
@@ -148,11 +199,12 @@ export function activate(context: vscode.ExtensionContext) {
 
         // Parse YAML content into AST
         let parsedData;
+
         try {
           parsedData = YAML.parseDocument(event.document.getText(), {
             keepCstNodes: true,
             keepNodeTypes: true,
-          } as any);
+          } as any) || null;
           console.log("YAML parsed successfully.");
         } catch (error) {
           if (error instanceof Error) {
@@ -169,6 +221,7 @@ export function activate(context: vscode.ExtensionContext) {
             );
             diagnosticCollection.set(event.document.uri, diagnostics);
           }
+          parsedData = null;
           return;
         }
 
@@ -194,28 +247,7 @@ export function activate(context: vscode.ExtensionContext) {
 
           (validationResult.error as ZodError).issues.forEach(
             (issue: ZodIssue) => {
-              console.log(
-                `Processing Zod issue with path: ${JSON.stringify(issue.path)}`
-              );
-              const range = findPositionFromPath(
-                issue.path,
-                parsedData,
-                event.document
-              );
-              const diagnosticRange =
-                range ||
-                new vscode.Range(
-                  new vscode.Position(0, 0),
-                  new vscode.Position(0, 1)
-                );
-              diagnostics.push(
-                new vscode.Diagnostic(
-                  diagnosticRange,
-                  `Error in item "${issue.path[issue.path.length - 1]}": ${issue.message
-                  }`,
-                  vscode.DiagnosticSeverity.Warning
-                )
-              );
+              handleError(issue, parsedData, event.document, diagnostics);
             }
           );
         } else {
@@ -231,13 +263,16 @@ export function activate(context: vscode.ExtensionContext) {
         const diagnostics: vscode.Diagnostic[] = [];
         const document = event.document;
 
+        // getting the separators from the document
         console.log("Document URI:", document.uri.toString());
         const separators = document.getText().match(/^-{3,}$/gm);
         console.log("Separators found:", separators);
 
+        //getting the three sections of the document
         let sections = document.getText().split(/^-{3,}$/gm);
         console.log("Sections found:", sections);
 
+        // Check if the number of separators is correct
         if (!separators || separators.length !== 3) {
           console.log("Invalid number of separators");
           diagnostics.push(
@@ -251,7 +286,8 @@ export function activate(context: vscode.ExtensionContext) {
             )
           );
         }
-
+        
+        //getting the relative path of the file for comparison with name field in metadata
         let relativePath = "";
         try {
           const workspaceFolder = vscode.workspace.getWorkspaceFolder(document.uri);
@@ -264,6 +300,7 @@ export function activate(context: vscode.ExtensionContext) {
           console.error("Error getting workspace folder:", error);
         }
 
+        //getting the Metadata section and processing it
         let yamlText = "";
         try {
           yamlText = sections[1];
@@ -277,6 +314,7 @@ export function activate(context: vscode.ExtensionContext) {
         }
 
 
+        // Parse YAML content into AST
         let parsedData;
         try {
           parsedData = YAML.parseDocument(yamlText, {
@@ -304,6 +342,8 @@ export function activate(context: vscode.ExtensionContext) {
         }
 
 
+
+        //Metadata validation
         const result = metadataSchema(relativePath).safeParse(
           parsedData.toJS() as MetadataType
         );
@@ -312,71 +352,24 @@ export function activate(context: vscode.ExtensionContext) {
         if (!result.success) {
           console.log("Zod validation failed:", result.error.issues);
 
-          (result.error as ZodError).issues.forEach((issue: ZodIssue) => {
-            console.log(
-              `Processing Zod issue with path: ${JSON.stringify(issue.path)}`
-            );
-            const range = findPositionFromPath(
-              issue.path,
-              parsedData,
-              event.document
-            );
-            const diagnosticRange =
-              range ||
-              new vscode.Range(
-                new vscode.Position(0, 0),
-                new vscode.Position(0, 1)
-              );
-            diagnostics.push(
-              new vscode.Diagnostic(
-                diagnosticRange,
-                `Error in item "${issue.path[issue.path.length - 1]}": ${issue.message
-                }`,
-                vscode.DiagnosticSeverity.Warning
-              )
-            );
-          });
+          (result.error as ZodError).issues.forEach(
+            (issue: ZodIssue) => {
+              handleError(issue, parsedData, document, diagnostics);
+            }
+          );
         } else {
           console.log("Zod validation passed. Types are consistent with MetadataType.");
         }
 
-        function offsetToPosition(offset: number): vscode.Position {
-          const text = document.getText();
-          let line = 0;
-          let lastLineBreakIndex = -1;
 
-          // Count lines and adjust the column based on the last newline before the offset
-          for (let i = 0; i < offset; i++) {
-            if (text[i] === "\n") {
-              line++;
-              lastLineBreakIndex = i;
-            }
-          }
-
-          const column = offset - lastLineBreakIndex - 1;
-          return new vscode.Position(line, column);
-        }
 
         // Prompt validation
         if (sections && sections.length > 2) {
           const promptText = sections[2].trim();
           console.log("Prompt text:", promptText);
           if (!promptText || typeof promptText !== "string" || promptText.length < 1) {
-            // let text = document.getText();
-            // const regex = /^-{3,}\s*$/gm;
-            // let match;
-            // let count = 0;
-            // let secondMatchIndex = 0;
-
-            // while ((match = regex.exec(text)) !== null) {
-            //   count++;
-            //   if (count === 2) {
-            //     secondMatchIndex = match.index;
-            //     break;
-            //   }
-            // }
             let { text, index } = getIndex(document, 2);
-            const startPos = offsetToPosition(index);
+            const startPos = offsetToPosition(index, document);
             diagnostics.push(
               new vscode.Diagnostic(
                 new vscode.Range(
@@ -391,12 +384,15 @@ export function activate(context: vscode.ExtensionContext) {
         }
 
 
+
         // Response validation
         if (separators && separators.length === 3) {
           console.log("Entering if statement");
           const type = parsedData.get("type");
           const response = sections[3];
           switch (type) {
+
+            // no response warning position handling
             case "noResponse": {
               console.log("Entering no response case");
               if (response && response.length > 0) {
@@ -420,6 +416,7 @@ export function activate(context: vscode.ExtensionContext) {
               break;
             }
 
+            // multiple choice warning position handling
             case "multipleChoice": {
               console.log("Entering multiple choice case");
               let { text, index } = getIndex(document, 3);
@@ -447,14 +444,13 @@ export function activate(context: vscode.ExtensionContext) {
               break;
             }
 
+            // open response warning position handling          
             case "openResponse": {
               console.log(response);
               console.log("Entering open response case");
               let { text, index } = getIndex(document, 3);
               const lineNum = (document.positionAt(index).line) + 1;
               console.log(lineNum);
-              const arr = response.split('\n');
-              console.log(arr);
               for (let i = lineNum; i < document.lineCount; i++) {
                 const str = document.lineAt(i).text;
                 if (str.substring(0, 2) !== "> ") {
@@ -484,31 +480,12 @@ export function activate(context: vscode.ExtensionContext) {
 
         }
 
+        // Update diagnostics in VS Code
         diagnosticCollection.set(event.document.uri, diagnostics);
       } else {
+        // If file is not recongized as treatmentsYaml or promptMarkdown, clear diagnostics
         diagnosticCollection.set(event.document.uri, []);
       }
     })
   );
-}
-
-// Returns index of the third separator (---). Index is at beginning of the line of the third separator
-function getIndex(document: vscode.TextDocument, i: number) {
-  const text = document.getText();
-  let t = text;
-  const regex = /^-{3,}$/gm;
-
-  let match;
-  let count = 0;
-  let index = 0;
-
-  while ((match = regex.exec(text)) !== null) {
-    count++;
-    if (count === i) {
-      index = match.index;
-      break;
-    }
-  }
-
-  return { text, index };
 }

@@ -1,5 +1,7 @@
 import { z, ZodIssue } from "zod";
 
+// This file contains the Zod schema for validating the metadata of a prompt file.
+// The metadata is expected to be in JSON format and should contain the following fields:
 export const metadataBaseSchema = z.object({
         name: z.string(),
         type: z.enum(["openResponse", "multipleChoice", "noResponse", "listSorter"]),
