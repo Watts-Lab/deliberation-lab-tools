@@ -225,7 +225,7 @@ treatments:
 		});
 
 		assert.strictEqual(detectTreatmentsYaml(doc), true);
-	})
+	});
 
 	test('not detecting .yaml file', async () => {
 		const content = `
@@ -254,7 +254,7 @@ treatments:
 			content                          
 		});
 		assert.strictEqual(detectTreatmentsYaml(doc), false);
-	})
+	});
 
 	test('detecting empty .treatments.yaml file', async () => {
 		const content = ``;
@@ -264,7 +264,7 @@ treatments:
 		});
 
 		assert.strictEqual(detectTreatmentsYaml(doc), true);
-	})
+	});
 
 	test('not detecting markdown (or other different) file type', async () => {
 		const content = ``;
@@ -274,5 +274,5 @@ treatments:
 		});
 
 		assert.strictEqual(detectTreatmentsYaml(doc), false);
-	})
+	});
 });
