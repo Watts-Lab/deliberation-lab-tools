@@ -12,7 +12,7 @@ suite('Markdown and .treatments.yaml file detection', () => {
 
 	// Tests are currently done by creating text documents - will need to debug file path
 
-	test('Detects correct markdown format for prompt', async () => {
+	test('Header exists but field is empty', async () => {
 		// const uri = vscode.Uri.file(
 		// 	path.resolve(__dirname, 'src/web/test/suite/allTalk.md'));
 		// const document = await vscode.workspace.openTextDocument(uri);

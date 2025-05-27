@@ -34,7 +34,8 @@ export function detectPromptMarkdown(document: vscode.TextDocument) {
       console.log("MetaData:", metaData);
       console.log("MetaData type:", metaData?.type);
       console.log("MetaData name:", metaData?.name);
-      if (metaData === null || metaData?.type === null || metaData?.name === null) {
+      // want to check for undefined rather than null: undefined means that header does not exist, while null means that header does exist but field is empty
+      if (metaData === null || metaData === undefined || metaData?.type === undefined || metaData?.name === undefined) {
         return false;
       }
       return true;
