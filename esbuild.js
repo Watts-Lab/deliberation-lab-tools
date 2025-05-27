@@ -96,7 +96,7 @@ async function main() {
     sourcesContent: false,
     platform: "browser",
     outdir: "dist/web",
-    external: ["vscode"],
+    external: ["vscode", "path", "assert"],
     logLevel: "silent",
     // Node.js global to browser globalThis
     define: {
@@ -108,7 +108,7 @@ async function main() {
         process: true,
         buffer: true,
       }),
-      testBundlePlugin,
+      // testBundlePlugin,
       esbuildProblemMatcherPlugin /* add to the end of plugins array */,
     ],
   });
@@ -118,6 +118,21 @@ async function main() {
     await ctx.rebuild();
     await ctx.dispose();
   }
+
+  await esbuild.build({
+    entryPoints: ["src/web/test/suite/extension.test.ts"], // your test entry point
+    bundle: true,
+    format: "cjs",
+    minify: production,
+    sourcemap: !production,
+    platform: "node",
+    outdir: "out/web/test/suite",
+    external: ["vscode", "assert", "path"],
+    logLevel: "silent",
+    plugins: [
+      esbuildProblemMatcherPlugin,
+    ],
+  });
 }
 
 main().catch((e) => {
