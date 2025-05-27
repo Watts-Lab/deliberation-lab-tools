@@ -276,3 +276,18 @@ treatments:
 		assert.strictEqual(detectTreatmentsYaml(doc), false);
 	});
 });
+
+suite('Diagnostics detection', () => {
+	test('Diagnostics are empty on correct markdown file', async () => {
+		// allTalk.md
+
+		const filePath = path.resolve('fixtures/allTalk.md');
+		console.log(filePath);
+		const document = await vscode.workspace.openTextDocument(filePath);
+
+		await new Promise(resolve => setTimeout(resolve, 500));
+		
+		const diagnostics = vscode.languages.getDiagnostics(document.uri);
+		assert.strictEqual(diagnostics.length, 0);
+	});
+});
