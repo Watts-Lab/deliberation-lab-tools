@@ -5,14 +5,16 @@ import * as path from 'path';
 // You can import and use all API from the 'vscode' module
 // as well as import your extension to test it
 import * as vscode from 'vscode';
-// import * as myExtension from '../../extension';
+import { diagnosticCollection } from '../../extension';
+
+// const path = require('path');
 
 suite('Markdown and .treatments.yaml file detection', () => {
 	vscode.window.showInformationMessage('Start all tests.');
 
 	// Tests are currently done by creating text documents - will need to debug file path
 
-	test('Header exists but field is empty', async () => {
+	test('Detects correct markdown format for prompt', async () => {
 		// const uri = vscode.Uri.file(
 		// 	path.resolve(__dirname, 'src/web/test/suite/allTalk.md'));
 		// const document = await vscode.workspace.openTextDocument(uri);
@@ -36,6 +38,7 @@ type:
 		// 	path.resolve(__dirname, 'src/web/test/suite/allTalk.md'));
 		// const document = await vscode.workspace.openTextDocument(uri);
 
+		// allTalk.md
 		const content = `---
 name: projects/example/allTalk.md
 type: noResponse
@@ -57,6 +60,7 @@ Everybody talk at once. Sometimes take pauses.
 	});
 
 
+	// incorrectFile.txt
 	test('Wrong text file type for markdown detection', async () => {
 		const content = "Dont work";
 		const doc = await vscode.workspace.openTextDocument({
@@ -67,6 +71,8 @@ Everybody talk at once. Sometimes take pauses.
 		assert.strictEqual(detectPromptMarkdown(doc), false);
 	});
 
+
+	// missingName.md
 	test('Wrong markdown file header: name does not exist', async () => {
 		const content = `---
 noName: projects/example/allTalk.md
@@ -87,6 +93,7 @@ Everybody talk at once. Sometimes take pauses.
 		assert.strictEqual(detectPromptMarkdown(doc), false);
 	});
 
+	// missingType.md
 	test('Wrong markdown file header: type does not exist', async () => {
 		const content = `---
 name: projects/example/allTalk.md
@@ -197,6 +204,7 @@ name: projects/example/allTalk.md
 
 
 
+	// filter.treatments.yaml
 	test('detecting .treatments.yaml file', async () => {
 		const content = `
 treatments:
@@ -225,7 +233,7 @@ treatments:
 		});
 
 		assert.strictEqual(detectTreatmentsYaml(doc), true);
-	});
+	})
 
 	test('not detecting .yaml file', async () => {
 		const content = `
@@ -254,7 +262,7 @@ treatments:
 			content                          
 		});
 		assert.strictEqual(detectTreatmentsYaml(doc), false);
-	});
+	})
 
 	test('detecting empty .treatments.yaml file', async () => {
 		const content = ``;
@@ -264,8 +272,9 @@ treatments:
 		});
 
 		assert.strictEqual(detectTreatmentsYaml(doc), true);
-	});
+	})
 
+	// allTalk.md
 	test('not detecting markdown (or other different) file type', async () => {
 		const content = ``;
 		const doc = await vscode.workspace.openTextDocument({
@@ -274,7 +283,7 @@ treatments:
 		});
 
 		assert.strictEqual(detectTreatmentsYaml(doc), false);
-	});
+	})
 });
 
 suite('Diagnostics detection', () => {
