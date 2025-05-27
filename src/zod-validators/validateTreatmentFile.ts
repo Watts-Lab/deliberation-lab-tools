@@ -58,7 +58,7 @@ export const positionSchema = z.number().int().nonnegative();
 export type PositionType = z.infer<typeof positionSchema>;
 
 export const positionSelectorSchema = z
-  .enum(["shared", "player", "all"])
+  .enum(["shared", "player", "all", "any"])
   .or(positionSchema)
   .default("player");
 export type PositionSelectorType = z.infer<typeof positionSelectorSchema>;
@@ -69,16 +69,17 @@ export type ShowToPositionsType = z.infer<typeof showToPositionsSchema>;
 export const hideFromPositionsSchema = z.array(positionSchema).nonempty(); // TODO: check for unique values (or coerce to unique values)
 export type HideFromPositionsType = z.infer<typeof hideFromPositionsSchema>;
 
-export const discussionSchema = z.object({
-  chatType: z.enum(["text", "audio", "video"]),
-  showNickname: z.boolean(),
-  showTitle: z.boolean(),
-}).strict();
+export const discussionSchema = z
+  .object({
+    chatType: z.enum(["text", "audio", "video"]),
+    showNickname: z.boolean(),
+    showTitle: z.boolean(),
+  })
+  .strict();
 export type DiscussionType = z.infer<typeof discussionSchema>;
 
-
 // ------------------ Template contexts ------------------ //
-const templateFieldKeysSchema = z  // todo: check that the researcher doesn't try to overwrite the dimension keys (d0, d1, etc.)
+const templateFieldKeysSchema = z // todo: check that the researcher doesn't try to overwrite the dimension keys (d0, d1, etc.)
   .string()
   // .regex(/^(?!d[0-9]+)[a-zA-Z0-9_]+$/, {
   //   message:
@@ -97,19 +98,28 @@ const templateBroadcastAxisNameSchema = z.string().regex(/^d\d+$/, {
 });
 
 const templateBroadcastAxisValuesSchema: any = z.lazy(() =>
-  z.array(templateFieldsSchema).nonempty().or(templateContextSchema).or(templateFieldKeysSchema)
+  z
+    .array(templateFieldsSchema)
+    .nonempty()
+    .or(templateContextSchema)
+    .or(templateFieldKeysSchema)
 );
 
-export const templateContextSchema = z.object({
-  template: nameSchema,
-  fields: templateFieldsSchema.optional(),
-  broadcast: z
-    .record(templateBroadcastAxisNameSchema, templateBroadcastAxisValuesSchema)
-    .optional(),
-}).strict();
+export const templateContextSchema = z
+  .object({
+    template: nameSchema,
+    fields: templateFieldsSchema.optional(),
+    broadcast: z
+      .record(
+        templateBroadcastAxisNameSchema,
+        templateBroadcastAxisValuesSchema
+      )
+      .optional(),
+  })
+  .strict();
 export type TemplateContextType = z.infer<typeof templateContextSchema>;
 
-// helper function to extend a schema with template context, and 
+// helper function to extend a schema with template context, and
 function altTemplateContext<T extends z.ZodTypeAny>(baseSchema: T) {
   return z.any().superRefine((data, ctx) => {
     if (data === undefined) {
@@ -121,11 +131,14 @@ function altTemplateContext<T extends z.ZodTypeAny>(baseSchema: T) {
       //   code: z.ZodIssueCode.custom,
       //   message: "Data is undefined",
       // });
-      return; 
+      return;
     }
     // Determine schema based on presence of `template` field
 
-    const schemaToUse = data !== null && typeof data === 'object' && 'template' in data ? templateContextSchema : baseSchema;
+    const schemaToUse =
+      data !== null && typeof data === "object" && "template" in data
+        ? templateContextSchema
+        : baseSchema;
     // console.log("data", data, "schemaToUse", 'template' in data ? "template" : "base");
     const result = schemaToUse.safeParse(data);
 
@@ -139,9 +152,6 @@ function altTemplateContext<T extends z.ZodTypeAny>(baseSchema: T) {
     }
   });
 }
-
-
-
 
 // ------------------ References ------------------ //
 
@@ -207,121 +217,161 @@ export const referenceSchema = z
 
 export type ReferenceType = z.infer<typeof referenceSchema>;
 
-
 // --------------- Conditions --------------- //
 
-const baseConditionSchema = z.object({
-  reference: referenceSchema,
-  position: z // todo: superrefine this somewhere so that it only exists in game stages, not in intro or exit steps
-      .enum(["shared", "player", "all", "percentAgreement"])
+const baseConditionSchema = z
+  .object({
+    reference: referenceSchema,
+    position: z // todo: superrefine this somewhere so that it only exists in game stages, not in intro or exit steps
+      .enum(["shared", "player", "all", "any", "percentAgreement"])
       .or(z.number().nonnegative().int())
       .optional(),
-}).strict();
+  })
+  .strict();
 
-const conditionExistsSchema = baseConditionSchema.extend({
-  comparator: z.literal("exists"),
-  value: z.undefined(),
-}).strict();
+const conditionExistsSchema = baseConditionSchema
+  .extend({
+    comparator: z.literal("exists"),
+    value: z.undefined(),
+  })
+  .strict();
 
-const conditionDoesNotExistSchema = baseConditionSchema.extend({
-  comparator: z.literal("doesNotExist"),
-  value: z.undefined(),
-}).strict();
+const conditionDoesNotExistSchema = baseConditionSchema
+  .extend({
+    comparator: z.literal("doesNotExist"),
+    value: z.undefined(),
+  })
+  .strict();
 
-const conditionEqualsSchema = baseConditionSchema.extend({
-  comparator: z.literal("equals"),
-  value: z.string().or(z.number()).or(z.boolean()).or(fieldPlaceholderSchema),
-}).strict();
+const conditionEqualsSchema = baseConditionSchema
+  .extend({
+    comparator: z.literal("equals"),
+    value: z.string().or(z.number()).or(z.boolean()).or(fieldPlaceholderSchema),
+  })
+  .strict();
 
-const conditionDoesNotEqualSchema = baseConditionSchema.extend({
-  comparator: z.literal("doesNotEqual"),
-  value: z.string().or(z.number()).or(z.boolean()).or(fieldPlaceholderSchema),
-}).strict();
+const conditionDoesNotEqualSchema = baseConditionSchema
+  .extend({
+    comparator: z.literal("doesNotEqual"),
+    value: z.string().or(z.number()).or(z.boolean()).or(fieldPlaceholderSchema),
+  })
+  .strict();
 
-const conditionIsAboveSchema = baseConditionSchema.extend({
-  comparator: z.literal("isAbove"),
-  value: z.number().or(fieldPlaceholderSchema),
-}).strict();
+const conditionIsAboveSchema = baseConditionSchema
+  .extend({
+    comparator: z.literal("isAbove"),
+    value: z.number().or(fieldPlaceholderSchema),
+  })
+  .strict();
 
-const conditionIsBelowSchema = baseConditionSchema.extend({
-  comparator: z.literal("isBelow"),
-  value: z.number().or(fieldPlaceholderSchema),
-}).strict();
+const conditionIsBelowSchema = baseConditionSchema
+  .extend({
+    comparator: z.literal("isBelow"),
+    value: z.number().or(fieldPlaceholderSchema),
+  })
+  .strict();
 
-const conditionIsAtLeastSchema = baseConditionSchema.extend({
-  comparator: z.literal("isAtLeast"),
-  value: z.number().or(fieldPlaceholderSchema),
-}).strict();
+const conditionIsAtLeastSchema = baseConditionSchema
+  .extend({
+    comparator: z.literal("isAtLeast"),
+    value: z.number().or(fieldPlaceholderSchema),
+  })
+  .strict();
 
-const conditionIsAtMostSchema = baseConditionSchema.extend({
-  comparator: z.literal("isAtMost"),
-  value: z.number().or(fieldPlaceholderSchema),
-}).strict();
+const conditionIsAtMostSchema = baseConditionSchema
+  .extend({
+    comparator: z.literal("isAtMost"),
+    value: z.number().or(fieldPlaceholderSchema),
+  })
+  .strict();
 
-const conditionHasLengthAtLeastSchema = baseConditionSchema.extend({
-  comparator: z.literal("hasLengthAtLeast"),
-  value: z.number().nonnegative().int().or(fieldPlaceholderSchema),
-}).strict();
+const conditionHasLengthAtLeastSchema = baseConditionSchema
+  .extend({
+    comparator: z.literal("hasLengthAtLeast"),
+    value: z.number().nonnegative().int().or(fieldPlaceholderSchema),
+  })
+  .strict();
 
-const conditionHasLengthAtMostSchema = baseConditionSchema.extend({
-  comparator: z.literal("hasLengthAtMost"),
-  value: z.number().nonnegative().int().or(fieldPlaceholderSchema),
-}).strict();
+const conditionHasLengthAtMostSchema = baseConditionSchema
+  .extend({
+    comparator: z.literal("hasLengthAtMost"),
+    value: z.number().nonnegative().int().or(fieldPlaceholderSchema),
+  })
+  .strict();
 
-const conditionIncludesSchema = baseConditionSchema.extend({
-  comparator: z.literal("includes"),
-  value: z.string().or(fieldPlaceholderSchema),
-}).strict();
+const conditionIncludesSchema = baseConditionSchema
+  .extend({
+    comparator: z.literal("includes"),
+    value: z.string().or(fieldPlaceholderSchema),
+  })
+  .strict();
 
-const conditionDoesNotIncludeSchema = baseConditionSchema.extend({
-  comparator: z.literal("doesNotInclude"),
-  value: z.string().or(fieldPlaceholderSchema),
-}).strict();
+const conditionDoesNotIncludeSchema = baseConditionSchema
+  .extend({
+    comparator: z.literal("doesNotInclude"),
+    value: z.string().or(fieldPlaceholderSchema),
+  })
+  .strict();
 
 // todo: extend this to include regex validation
-const conditionMatchesSchema = baseConditionSchema.extend({
-  comparator: z.literal("matches"),
-  value: z.string().or(fieldPlaceholderSchema),
-}).strict();
+const conditionMatchesSchema = baseConditionSchema
+  .extend({
+    comparator: z.literal("matches"),
+    value: z.string().or(fieldPlaceholderSchema),
+  })
+  .strict();
 
-const conditionDoesNotMatchSchema = baseConditionSchema.extend({
-  comparator: z.literal("doesNotMatch"),
-  value: z.string().or(fieldPlaceholderSchema),
-}).strict();
+const conditionDoesNotMatchSchema = baseConditionSchema
+  .extend({
+    comparator: z.literal("doesNotMatch"),
+    value: z.string().or(fieldPlaceholderSchema),
+  })
+  .strict();
 
-const conditionIsOneOfSchema = baseConditionSchema.extend({
-  comparator: z.literal("isOneOf"),
-  value: z.array(z.string().or(z.number())).nonempty().or(fieldPlaceholderSchema),
-}).strict();
+const conditionIsOneOfSchema = baseConditionSchema
+  .extend({
+    comparator: z.literal("isOneOf"),
+    value: z
+      .array(z.string().or(z.number()))
+      .nonempty()
+      .or(fieldPlaceholderSchema),
+  })
+  .strict();
 
-const conditionIsNotOneOfSchema = baseConditionSchema.extend({
-  comparator: z.literal("isNotOneOf"),
-  value: z.array(z.string().or(z.number())).nonempty().or(fieldPlaceholderSchema),
-}).strict();
-
+const conditionIsNotOneOfSchema = baseConditionSchema
+  .extend({
+    comparator: z.literal("isNotOneOf"),
+    value: z
+      .array(z.string().or(z.number()))
+      .nonempty()
+      .or(fieldPlaceholderSchema),
+  })
+  .strict();
 
 export const conditionSchema = altTemplateContext(
   z.discriminatedUnion("comparator", [
-  conditionExistsSchema,
-  conditionDoesNotExistSchema,
-  conditionEqualsSchema,
-  conditionDoesNotEqualSchema,
-  conditionIsAboveSchema,
-  conditionIsBelowSchema,
-  conditionIsAtLeastSchema,
-  conditionIsAtMostSchema,
-  conditionHasLengthAtLeastSchema,
-  conditionHasLengthAtMostSchema,
-  conditionIncludesSchema,
-  conditionDoesNotIncludeSchema,
-  conditionMatchesSchema,
-  conditionDoesNotMatchSchema,
-  conditionIsOneOfSchema,
-  conditionIsNotOneOfSchema,
-])
+    conditionExistsSchema,
+    conditionDoesNotExistSchema,
+    conditionEqualsSchema,
+    conditionDoesNotEqualSchema,
+    conditionIsAboveSchema,
+    conditionIsBelowSchema,
+    conditionIsAtLeastSchema,
+    conditionIsAtMostSchema,
+    conditionHasLengthAtLeastSchema,
+    conditionHasLengthAtMostSchema,
+    conditionIncludesSchema,
+    conditionDoesNotIncludeSchema,
+    conditionMatchesSchema,
+    conditionDoesNotMatchSchema,
+    conditionIsOneOfSchema,
+    conditionIsNotOneOfSchema,
+  ])
 );
 
-export const conditionsSchema = altTemplateContext(z.array(conditionSchema).nonempty());
+export const conditionsSchema = altTemplateContext(
+  z.array(conditionSchema).nonempty()
+);
 export type ConditionType = z.infer<typeof conditionSchema>;
 
 // ------------------ Players ------------------ //

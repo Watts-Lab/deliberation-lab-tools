@@ -1,5 +1,5 @@
 import * as vscode from "vscode";
-import YAML from "yaml";
+import * as YAML from "yaml";
 import {
   treatmentFileSchema,
   TreatmentFileType,
