@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 import * as path from 'path';
 import * as assert from 'assert';
 import { detectPromptMarkdown, detectTreatmentsYaml } from '../../extension';
+import { suite, test } from 'mocha';
 
 // You can import and use all API from the 'vscode' module
 // as well as import your extension to test it
@@ -290,7 +291,7 @@ suite('Diagnostics detection', () => {
 	test('Diagnostics are empty on correct markdown file', async () => {
 		// allTalk.md
 
-		const filePath = path.resolve('fixtures/allTalk.md');
+		const filePath = path.resolve('src/web/test/suite/fixtures/allTalk.md');
 		console.log(filePath);
 		const document = await vscode.workspace.openTextDocument(filePath);
 

@@ -48,6 +48,7 @@ export function detectPromptMarkdown(document: vscode.TextDocument) {
 
 // Function to detect if document is treatmentsYaml format - mostly for unit tests
 export function detectTreatmentsYaml(document: vscode.TextDocument) {
+  console.log("Document languageId:", document.languageId);
   return document.languageId === "treatmentsYaml";
 }
 
