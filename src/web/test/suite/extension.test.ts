@@ -8,283 +8,130 @@ import { suite, test } from 'mocha';
 // as well as import your extension to test it
 import { diagnosticCollection } from '../../extension';
 
-// const path = require('path');
-
 suite('Markdown and .treatments.yaml file detection', () => {
 	vscode.window.showInformationMessage('Start all tests.');
 
-	// Tests are currently done by creating text documents - will need to debug file path
+	// emptyField.md
+	test('Header exists but field is empty', async () => {
 
-	test('Detects correct markdown format for prompt', async () => {
-		// const uri = vscode.Uri.file(
-		// 	path.resolve(__dirname, 'src/web/test/suite/allTalk.md'));
-		// const document = await vscode.workspace.openTextDocument(uri);
+		const filePath = path.resolve('src/web/test/suite/fixtures/emptyField.md');
+		console.log(filePath);
+		const document = await vscode.workspace.openTextDocument(filePath);
 
-		const content = `---
-name: mock-prompt-files/prompt.md
-type: 
----
-		`;
-
-		const doc = await vscode.workspace.openTextDocument({
-			language: 'markdown',
-			content               
-		});
-
-		assert.strictEqual(detectPromptMarkdown(doc), true);
+		assert.strictEqual(detectPromptMarkdown(document), true);
 	});
 
 	test('Detects correct markdown format', async () => {
-		// const uri = vscode.Uri.file(
-		// 	path.resolve(__dirname, 'src/web/test/suite/allTalk.md'));
-		// const document = await vscode.workspace.openTextDocument(uri);
 
 		// allTalk.md
-		const content = `---
-name: projects/example/allTalk.md
-type: noResponse
----
+		const filePath = path.resolve('src/web/test/suite/fixtures/allTalk.md');
+		console.log(filePath);
+		const document = await vscode.workspace.openTextDocument(filePath);
 
-Please describe the chair you are sitting in.
-
-Everybody talk at once. Sometimes take pauses.
-
----
-		`;
-
-		const doc = await vscode.workspace.openTextDocument({
-			language: 'markdown',
-			content               
-		});
-
-		assert.strictEqual(detectPromptMarkdown(doc), true);
+		assert.strictEqual(detectPromptMarkdown(document), true);
 	});
 
 
 	// incorrectFile.txt
 	test('Wrong text file type for markdown detection', async () => {
-		const content = "Dont work";
-		const doc = await vscode.workspace.openTextDocument({
-			language: 'text',
-			content                          
-		});
+		const filePath = path.resolve('src/web/test/suite/fixtures/incorrectFile.txt');
+		console.log(filePath);
+		const document = await vscode.workspace.openTextDocument(filePath);
 
-		assert.strictEqual(detectPromptMarkdown(doc), false);
+		assert.strictEqual(detectPromptMarkdown(document), false);
 	});
 
 
 	// missingName.md
 	test('Wrong markdown file header: name does not exist', async () => {
-		const content = `---
-noName: projects/example/allTalk.md
-type: noResponse
----
+		const filePath = path.resolve('src/web/test/suite/fixtures/missingName.md');
+		console.log(filePath);
+		const document = await vscode.workspace.openTextDocument(filePath);
 
-Please describe the chair you are sitting in.
-
-Everybody talk at once. Sometimes take pauses.
-
----
-		`;
-		const doc = await vscode.workspace.openTextDocument({
-			language: 'markdown',
-			content                          
-		});
-
-		assert.strictEqual(detectPromptMarkdown(doc), false);
+		assert.strictEqual(detectPromptMarkdown(document), false);
 	});
 
 	// missingType.md
 	test('Wrong markdown file header: type does not exist', async () => {
-		const content = `---
-name: projects/example/allTalk.md
-: noResponse
----
+		const filePath = path.resolve('src/web/test/suite/fixtures/missingType.md');
+		console.log(filePath);
+		const document = await vscode.workspace.openTextDocument(filePath);
 
-Please describe the chair you are sitting in.
-
-Everybody talk at once. Sometimes take pauses.
-
----
-		`;
-		const doc = await vscode.workspace.openTextDocument({
-			language: 'markdown',
-			content                          
-		});
-
-		assert.strictEqual(detectPromptMarkdown(doc), false);
+		assert.strictEqual(detectPromptMarkdown(document), false);
 	});
 
-	// Should this file be processed as wrong or just not processed at all?
-	// Currently not processed by Zod at all
+	// Currently not processed by Zod as a markdown file because dashes do not exist at beginning
+	// missingStartDashes.md
 	test('Wrong markdown file header: dashes do not exist at beginning', async () => {
-		const content = `
-name: projects/example/allTalk.md
-type: noResponse
----
+		const filePath = path.resolve('src/web/test/suite/fixtures/missingStartDashes.md');
+		console.log(filePath);
+		const document = await vscode.workspace.openTextDocument(filePath);
 
-Please describe the chair you are sitting in.
-
-Everybody talk at once. Sometimes take pauses.
-
----
-		`;
-		const doc = await vscode.workspace.openTextDocument({
-			language: 'markdown',
-			content                          
-		});
-
-		assert.strictEqual(detectPromptMarkdown(doc), false);
+		assert.strictEqual(detectPromptMarkdown(document), false);
 	});
 
-	// Name and type in different order
+	// Name and type in different order 
+	// differentOrder.md
 	test('Correct markdown format for name and type in different order', async () => {
-		// const uri = vscode.Uri.file(
-		// 	path.resolve(__dirname, 'src/web/test/suite/allTalk.md'));
-		// const document = await vscode.workspace.openTextDocument(uri);
+		const filePath = path.resolve('src/web/test/suite/fixtures/differentOrder.md');
+		console.log(filePath);
+		const document = await vscode.workspace.openTextDocument(filePath);
 
-		const content = `---
-type: noResponse
-name: projects/example/allTalk.md
----
-
-Please describe the chair you are sitting in.
-
-Everybody talk at once. Sometimes take pauses.
-
----
-		`;
-
-		const doc = await vscode.workspace.openTextDocument({
-			language: 'markdown',
-			content               
-		});
-
-		assert.strictEqual(detectPromptMarkdown(doc), true);
+		assert.strictEqual(detectPromptMarkdown(document), true);
 	});
 
-	// Add test for markdown file with no dashes in the file at all
+	// noDashes.md
 	test('Incorrect markdown file formatting with no dashes', async () => {
-		// const uri = vscode.Uri.file(
-		// 	path.resolve(__dirname, 'src/web/test/suite/allTalk.md'));
-		// const document = await vscode.workspace.openTextDocument(uri);
+		const filePath = path.resolve('src/web/test/suite/fixtures/noDashes.md');
+		console.log(filePath);
+		const document = await vscode.workspace.openTextDocument(filePath);
 
-		const content = `type: noResponse
-name: projects/example/allTalk.md
-
-Please describe the chair you are sitting in.
-
-Everybody talk at once. Sometimes take pauses.
-		`;
-
-		const doc = await vscode.workspace.openTextDocument({
-			language: 'markdown',
-			content               
-		});
-
-		assert.strictEqual(detectPromptMarkdown(doc), false);
+		assert.strictEqual(detectPromptMarkdown(document), false);
 	});
 
-	test('Correct markdown format but missing other sections (dashes)', async () => {
-		// const uri = vscode.Uri.file(
-		// 	path.resolve(__dirname, 'src/web/test/suite/allTalk.md'));
-		// const document = await vscode.workspace.openTextDocument(uri);
+	// firstSection.md
+	test('Only first section exists, correct markdown format', async () => {
 
-		const content = `---
-type: noResponse
-name: projects/example/allTalk.md
-		`;
+		const filePath = path.resolve('src/web/test/suite/fixtures/firstSection.md');
+		console.log(filePath);
+		const document = await vscode.workspace.openTextDocument(filePath);
 
-		const doc = await vscode.workspace.openTextDocument({
-			language: 'markdown',
-			content               
-		});
-
-		assert.strictEqual(detectPromptMarkdown(doc), true);
+		assert.strictEqual(detectPromptMarkdown(document), true);
 	});
-
-
 
 	// filter.treatments.yaml
 	test('detecting .treatments.yaml file', async () => {
-		const content = `
-treatments:
-  - name: treatment_one
-    playerCount: 1
-    gameStages:
-      - name: Role Assignment and General Instructions
-        duration: 300
-        elements: []
-      - name: Main Discussion
-        duration: 200
-        elements: []
-  - name: treatment_two
-    playerCount: 1
-    gameStages:
-      - name: test
-        duration: 200
-        elements: []
-      - name: test2
-        duration: 200
-        elements: []
-		`;
-		const doc = await vscode.workspace.openTextDocument({
-			language: 'treatmentsYaml',
-			content                          
-		});
+		const filePath = path.resolve('src/web/test/suite/fixtures/filter.treatments.yaml');
+		console.log(filePath);
+		const document = await vscode.workspace.openTextDocument(filePath);
 
-		assert.strictEqual(detectTreatmentsYaml(doc), true);
-	})
+		assert.strictEqual(detectTreatmentsYaml(document), true);
+	});
 
 	test('not detecting .yaml file', async () => {
-		const content = `
-treatments:
-  - name: treatment_one
-    playerCount: 1
-    gameStages:
-      - name: Role Assignment and General Instructions
-        duration: 300
-        elements: []
-      - name: Main Discussion
-        duration: 200
-        elements: []
-  - name: treatment_two
-    playerCount: 1
-    gameStages:
-      - name: test
-        duration: 200
-        elements: []
-      - name: test2
-        duration: 200
-        elements: []
-		`;
-		const doc = await vscode.workspace.openTextDocument({
-			language: 'yaml',
-			content                          
-		});
-		assert.strictEqual(detectTreatmentsYaml(doc), false);
-	})
+		const filePath = path.resolve('src/web/test/suite/fixtures/filter.yaml');
+		console.log(filePath);
+		const document = await vscode.workspace.openTextDocument(filePath);
+
+		assert.strictEqual(detectTreatmentsYaml(document), false);
+	});
 
 	test('detecting empty .treatments.yaml file', async () => {
-		const content = ``;
-		const doc = await vscode.workspace.openTextDocument({
-			language: 'treatmentsYaml',
-			content
-		});
+		const filePath = path.resolve('src/web/test/suite/fixtures/empty.treatments.yaml');
+		console.log(filePath);
+		const document = await vscode.workspace.openTextDocument(filePath);
 
-		assert.strictEqual(detectTreatmentsYaml(doc), true);
-	})
+		assert.strictEqual(detectTreatmentsYaml(document), true);
+	});
 
 	// allTalk.md
 	test('not detecting markdown (or other different) file type', async () => {
-		const content = ``;
-		const doc = await vscode.workspace.openTextDocument({
-			language: 'markdown',
-			content                          
-		});
+		const filePath = path.resolve('src/web/test/suite/fixtures/allTalk.md');
+		console.log(filePath);
+		const document = await vscode.workspace.openTextDocument(filePath);
 
-		assert.strictEqual(detectTreatmentsYaml(doc), false);
-	})
+		assert.strictEqual(detectTreatmentsYaml(document), false);
+	});
 });
 
 suite('Diagnostics detection', () => {
