@@ -4,13 +4,66 @@ export const metadataBaseSchema = z.object({
         name: z.string(),
         type: z.enum(["openResponse", "multipleChoice", "noResponse", "listSorter"]),
         notes: z.string().optional(),
-        rows: z.number().optional(),
+        rows: z.number().int().min(1).optional(),
         shuffleOptions: z.boolean().optional(),
-        select: z.string().optional(),
+        select: z.enum(["single" , "multiple", "undefined"]).optional(),
+    }).superRefine((data, ctx) => {
+        if (data.type !== "openResponse" && data.rows !== undefined) {
+            ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                message: `rows can only be specified for openResponse type`,
+                path : ["rows"],
+            });
+        }
+        if (data.type !== "multipleChoice" && data.select !== undefined) {
+            ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                message: `select can only be specified for multipleChoice type`,
+                path : ["select"],
+            });
+        }
+        if (data.type === "noResponse" && data.shuffleOptions !== undefined) {
+            ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                message: `shuffleOptions cannot be specified for noResponse type`,
+                path : ["shuffleOptions"],
+            });
+        }
+    });
+
+export const metadataSecondSchema = z.object({
+        name: z.any(),
+        type: z.any(),
+        notes: z.any().optional(),
+        rows: z.any().optional(),
+        shuffleOptions: z.any().optional(),
+        select: z.any().optional(),
+    }).superRefine((data, ctx) => {
+        if (data.type !== "openResponse" && data.rows !== undefined) {
+            ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                message: `rows can only be specified for openResponse type`,
+                path : ["rows"],
+            });
+        }
+        if (data.type !== "multipleChoice" && data.select !== undefined) {
+            ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                message: `select can only be specified for multipleChoice type`,
+                path : ["select"],
+            });
+        }
+        if (data.type === "noResponse" && data.shuffleOptions !== undefined) {
+            ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                message: `shuffleOptions cannot be specified for noResponse type`,
+                path : ["shuffleOptions"],
+            });
+        }
     });
 
 export const metadataSchema = (fileName: string) =>
-    metadataBaseSchema.superRefine((data, ctx) => {
+    metadataSecondSchema.superRefine((data, ctx) => {
         if (data.name !== fileName) {
             ctx.addIssue({
                 code: z.ZodIssueCode.custom,
@@ -21,3 +74,4 @@ export const metadataSchema = (fileName: string) =>
     });
 
 export type MetadataType = z.infer<typeof metadataBaseSchema>;
+export type MetadataSecondType = z.infer<typeof metadataSecondSchema>;
