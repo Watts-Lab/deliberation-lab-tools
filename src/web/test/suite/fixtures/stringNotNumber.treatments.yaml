@@ -1,0 +1,254 @@
+introSequences:
+  - name: baseline
+    desc: Basic psychometrics
+    introSteps:
+      - name: Ten Item Personality Inventory
+        elements:
+          - type: survey
+            surveyName: TIPI
+
+      - name: Self-awareness, Self-monitoring, and Growth Mindset
+        elements:
+          - type: survey
+            surveyName: AwarenessMonitoringGrowth
+
+treatments:
+  - name: baseline
+    desc: So Good exercise baseline
+    playerCount: two
+    assignPositionsBy: random
+    groupComposition:
+      - desc: First Speaker
+        position: 0
+        title: "First Speaker"
+      - desc: Red team
+        position: 1
+        title: "Second Speaker"
+
+    gameStages:
+      - name: Intro
+        duration: 60
+        elements:
+          - projects/constructive_disagreement/so_good/instructions.md
+          - type: submitButton
+            buttonText: Start Exercise
+            displayTime: 10
+
+      - name: Topic Attitudes
+        duration: 180
+        elements:
+          - type: survey
+            surveyName: TopicAttitudes
+
+      - name: Discussion
+        duration: 300
+        discussion:
+          chatType: video
+          showNickname: true
+          showTitle: true
+        elements:
+          - type: prompt
+            file: projects/constructive_disagreement/so_good/introduce.md
+            hideTime: 120
+          - type: timer
+            hideTime: 120
+            warnTimeRemaining: 15
+          - type: audio
+            file: shared/airplane_chime.mp3
+            displayTime: 120
+
+          - type: prompt
+            file: projects/constructive_disagreement/so_good/speak.md
+            displayTime: 120
+            hideTime: 180
+            showToPositions:
+              - 0
+          - type: prompt
+            file: projects/constructive_disagreement/so_good/listen.md
+            displayTime: 120
+            hideTime: 180
+            showToPositions:
+              - 1
+
+          - type: prompt
+            file: projects/constructive_disagreement/so_good/speak.md
+            displayTime: 180
+            hideTime: 240
+            showToPositions:
+              - 1
+          - type: prompt
+            file: projects/constructive_disagreement/so_good/listen.md
+            displayTime: 180
+            hideTime: 240
+            showToPositions:
+              - 0
+
+          - type: prompt
+            file: projects/constructive_disagreement/so_good/question.md
+            displayTime: 120
+            hideTime: 240
+
+          - type: timer
+            displayTime: 120
+            hideTime: 180
+            warnTimeRemaining: 15
+          - type: audio
+            file: shared/airplane_chime.mp3
+            displayTime: 180
+
+          - type: timer
+            displayTime: 180
+            hideTime: 240
+            warnTimeRemaining: 15
+          - type: audio
+            file: shared/airplane_chime.mp3
+            displayTime: 240
+
+          - type: prompt
+            file: projects/constructive_disagreement/so_good/discussion_end.md
+            displayTime: 240
+          - type: submitButton
+            buttonText: End discussion and proceed to survey
+            displayTime: 240
+
+      - name: Hand gesture partner
+        duration: 120
+        elements:
+          - type: prompt
+            file: projects/constructive_disagreement/so_good/hand_gesture_partner.md
+            name: handGesturePartner
+          - type: submitButton
+            buttonText: Submit Response
+            conditions:
+              - promptName: handGesturePartner
+                comparator: lengthAtLeast
+                value: 50
+
+      - name: Hand gesture self
+        duration: 120
+        elements:
+          - type: prompt
+            file: projects/constructive_disagreement/so_good/hand_gesture_self.md
+            name: handGestureSelf
+          - type: submitButton
+            buttonText: Submit Response
+            conditions:
+              - promptName: handGestureSelf
+                comparator: lengthAtLeast
+                value: 50
+
+    exitSequence:
+      - name: Perception of others
+        elements:
+          - type: survey
+            surveyName: PerceptionOfOthers
+
+      - name: Conflict and Team Viability
+        elements:
+          - type: survey
+            surveyName: ConflictAndViability
+
+      - name: Compare Self
+        elements:
+          - type: prompt
+            file: projects/constructive_disagreement/so_good/gesture_you_header.md
+
+          - type: separator
+          - type: prompt
+            file: projects/constructive_disagreement/so_good/what_you_said.md
+
+          - type: display
+            promptName: handGestureSelf
+            position: 0
+            showToPositions:
+              - 0
+
+          - type: display
+            promptName: handGestureSelf
+            position: 1
+            showToPositions:
+              - 1
+
+          - type: separator
+            style: thin
+          - type: prompt
+            file: projects/constructive_disagreement/so_good/what_your_partner_said.md
+
+          - type: display
+            promptName: handGesturePartner
+            position: 1
+            showToPositions:
+              - 0
+
+          - type: display
+            promptName: handGesturePartner
+            position: 0
+            showToPositions:
+              - 1
+
+          - type: separator
+
+          - type: prompt
+            file: projects/constructive_disagreement/so_good/gesture_match.md
+            name: gestureMatchSelf
+
+          - type: submitButton
+            buttonText: Continue
+            conditions:
+              - promptName: gestureMatchSelf
+                comparator: exists
+
+      - name: Compare Partner
+        elements:
+          - type: prompt
+            file: projects/constructive_disagreement/so_good/gesture_your_partner.md
+
+          - type: separator
+          - type: prompt
+            file: projects/constructive_disagreement/so_good/what_you_said.md
+
+          - type: display
+            promptName: handGesturePartner
+            position: 1
+            showToPositions:
+              - 1
+          - type: display
+            promptName: handGesturePartner
+            position: 0
+            showToPositions:
+              - 0
+
+          - type: separator
+            style: thin
+          - type: prompt
+            file: projects/constructive_disagreement/so_good/what_your_partner_said.md
+
+          - type: display
+            promptName: handGestureSelf
+            position: 0
+            showToPositions:
+              - 1
+          - type: display
+            promptName: handGestureSelf
+            position: 1
+            showToPositions:
+              - 0
+
+          - type: separator
+
+          - type: prompt
+            file: projects/constructive_disagreement/so_good/gesture_match.md
+            name: gestureMatchPartner
+
+          - type: submitButton
+            buttonText: Continue
+            conditions:
+              - promptName: gestureMatchPartner
+                comparator: exists
+
+      - name: Demographics
+        elements:
+          - type: survey
+            surveyName: Demographics
+
+# playerCount is string rather than number

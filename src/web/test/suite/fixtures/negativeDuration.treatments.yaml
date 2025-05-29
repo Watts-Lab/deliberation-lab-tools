@@ -1,0 +1,30 @@
+introSequences:
+  - name: default
+    introSteps:
+      - name: presurvey
+        elements:
+          - type: qualtrics
+            url: https://oii.qualtrics.com/jfe/form/SV_6D1FDLFEQRqJByu
+
+treatments:
+  - name: default
+    playerCount: 2
+
+    gameStages:
+      - name: chat
+        duration: 300
+        discussion:
+          chatType: text
+          showNickname: true
+          showTitle: false
+        elements:
+          - type: invalidType 
+            file: projects/weinstein_listening/text_5_min/discussionInstructions.md
+
+    exitSequence:
+      - name: postsurvey
+        elements:
+          - type: qualtrics
+            url: https://oii.qualtrics.com/jfe/form/SV_bCKP9iurcrlpjLM
+
+# An element uses an invalid type "invalidType" which is not defined in the system.
