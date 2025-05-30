@@ -7,6 +7,9 @@
     "type": "git",
     "url": "https://github.com/Watts-Lab/deliberation-lab-tools"
   },
+  "browser": "./dist/extension.js",
+  "main": "./dist/extension.js",
+  "extensionKind": ["workspace"],
   "engines": {
     "vscode": "^1.95.0"
   },
@@ -14,9 +17,9 @@
     "Other"
   ],
   "activationEvents": [
-    "onLanguage:treatmentsYaml"
+    "onLanguage:treatmentsYaml",
+    "onLanguage:markdown"
   ],
-  "browser": "./dist/web/extension.js",
   "contributes": {
     "languages": [
       {
@@ -45,11 +48,13 @@
   },
   "scripts": {
     "prepare-submodule": "git submodule update --init --recursive",
-    "copy-validators": "cp ./deliberation-empirica/server/src/preFlight/validateTreatmentFile.ts ./src/zod-validators",
-    "test": "vscode-test-web --browserType=chromium --extensionDevelopmentPath=. --extensionTestsPath=dist/web/test/suite/extensionTests.js",
+    "copy-validators": "cp ./deliberation-empirica/server/src/preFlight/validateTreatmentFile.ts ./src/zod-validators && cp ./deliberation-empirica/server/src/preFlight/validatePromptFile.ts ./src/zod-validators",
+    "test": "npm run compile-test && ELECTRON_DISABLE_GPU=1 xvfb-run -a node runExtensionTests.js",
+    "test:electron": "vscode-test --extensionDevelopmentPath=. --extensionTestsPath=out/test/suite/extensionTests.js",
     "pretest": "npm run compile-web",
     "vscode:prepublish": "npm run package-web",
-    "compile-web": "npm run prepare-submodule && npm run copy-validators && tsc && npm run lint && node esbuild.js",
+    "compile-web": "npm run prepare-submodule && npm run copy-validators && tsc -p tsconfig.json && npm run lint && node esbuild.js",
+    "compile-test": "tsc -p tsconfig.test.json",
     "watch-web": "npm-run-all -p watch-web:*",
     "watch-web:esbuild": "npm run prepare-submodule && node esbuild.js --watch",
     "watch-web:tsc": "tsc --noEmit --watch --project tsconfig.json",
@@ -61,13 +66,16 @@
   "devDependencies": {
     "@esbuild-plugins/node-globals-polyfill": "^0.2.3",
     "@types/assert": "^1.5.10",
-    "@types/mocha": "^10.0.9",
+    "@types/js-yaml": "^4.0.9",
+    "@types/mocha": "^10.0.10",
+    "@types/node": "^22.15.20",
     "@types/vscode": "^1.95.0",
     "@typescript-eslint/eslint-plugin": "^8.10.0",
     "@typescript-eslint/parser": "^8.7.0",
+    "@vscode/test-cli": "^0.0.10",
+    "@vscode/test-electron": "^2.5.2",
     "@vscode/test-web": "^0.0.63",
-    "@vscode/vsce": "^3.2.1",
-    "assert": "^2.1.0",
+    "@vscode/vsce": "^3.4.1",
     "esbuild": "^0.24.0",
     "eslint": "^9.13.0",
     "glob": "^11.0.0",
@@ -76,6 +84,8 @@
     "typescript": "^5.6.3"
   },
   "dependencies": {
+    "cp": "^0.2.0",
+    "vsce": "^2.15.0",
     "yaml": "^2.6.0",
     "zod": "^3.23.8"
   }
