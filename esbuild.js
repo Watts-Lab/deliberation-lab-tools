@@ -67,7 +67,7 @@ const testBundlePlugin = {
       }
     });
     build.onLoad({ filter: /[\/\\]extensionTests\.ts$/ }, async (args) => {
-      const testsRoot = path.join(__dirname, "src/web/test/suite");
+      const testsRoot = path.join(__dirname, "src/test/suite");
       const files = await glob.glob("*.test.{ts,tsx}", {
         cwd: testsRoot,
         posix: true,
@@ -86,8 +86,7 @@ const testBundlePlugin = {
 async function main() {
   const ctx = await esbuild.context({
     entryPoints: [
-      "src/web/extension.ts",
-      // "src/web/test/suite/extensionTests.ts",
+      "src/extension.ts",
     ],
     bundle: true,
     format: "cjs",
@@ -95,7 +94,7 @@ async function main() {
     sourcemap: !production,
     sourcesContent: false,
     platform: "browser",
-    outdir: "dist/web",
+    outdir: "dist/",
     external: ["vscode", "path", "assert"],
     logLevel: "silent",
     // Node.js global to browser globalThis
@@ -108,7 +107,6 @@ async function main() {
         process: true,
         buffer: true,
       }),
-      // testBundlePlugin,
       esbuildProblemMatcherPlugin /* add to the end of plugins array */,
     ],
   });
@@ -120,13 +118,13 @@ async function main() {
   }
 
   await esbuild.build({
-    entryPoints: ["src/web/test/suite/extension.test.ts"], // your test entry point
+    entryPoints: ["src/test/suite/extension.test.ts"], // your test entry point
     bundle: true,
     format: "cjs",
     minify: production,
     sourcemap: !production,
     platform: "node",
-    outdir: "out/web/test/suite",
+    outdir: "out/test/suite",
     external: ["vscode", "assert", "path"],
     logLevel: "silent",
     plugins: [

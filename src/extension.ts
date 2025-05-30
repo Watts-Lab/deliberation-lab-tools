@@ -3,11 +3,11 @@ import * as YAML from "yaml";
 import {
   treatmentFileSchema,
   TreatmentFileType,
-} from "../zod-validators/validateTreatmentFile";
+} from "./zod-validators/validateTreatmentFile";
 import {
   metadataSchema,
   MetadataType,
-} from "../zod-validators/validatePromptFile";
+} from "./zod-validators/validatePromptFile";
 import { ZodError, ZodIssue } from "zod";
 import { load as loadYaml } from "js-yaml";
 

@@ -3,5 +3,6 @@ dist
 node_modules
 .vscode-test/
 .vscode-test-web/
-.vscode-test/
+.DS_Store
 *.vsix
+mock-prompt-files
