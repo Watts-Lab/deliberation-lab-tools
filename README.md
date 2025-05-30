@@ -29,3 +29,12 @@ wget https://github.com/Watts-Lab/deliberation-lab-tools/raw/main/deliberation-l
 # install in vscode
 code --install-extension deliberation-lab-tools-0.0.1.vsix
 ```
+
+# Tests
+
+Tests are located in the file ```src/extension.test.ts``` with the test runner file ```runExtensionTests.js```. They can be ran with the following commands:
+
+```
+npm install
+npm test
+```

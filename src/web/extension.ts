@@ -62,24 +62,25 @@ export function activate(context: vscode.ExtensionContext) {
   // const diagnosticCollection =
   //   vscode.languages.createDiagnosticCollection("yamlDiagnostics");
   context.subscriptions.push(diagnosticCollection);
+  console.log("Extension activated");
 
   //Converts character offset to line and column in a given document
   function offsetToPosition(offset: number, document: vscode.TextDocument): vscode.Position {
-        const text = document.getText();
-        let line = 0;
-        let lastLineBreakIndex = -1;
+    const text = document.getText();
+    let line = 0;
+    let lastLineBreakIndex = -1;
 
-        // Count lines and adjust the column based on the last newline before the offset
-        for (let i = 0; i < offset; i++) {
-          if (text[i] === "\n") {
-            line++;
-            lastLineBreakIndex = i;
-          }
-        }
-
-        const column = offset - lastLineBreakIndex - 1;
-        return new vscode.Position(line, column);
+    // Count lines and adjust the column based on the last newline before the offset
+    for (let i = 0; i < offset; i++) {
+      if (text[i] === "\n") {
+        line++;
+        lastLineBreakIndex = i;
       }
+    }
+
+    const column = offset - lastLineBreakIndex - 1;
+    return new vscode.Position(line, column);
+  }
 
   // Returns index an indicated separator. Index is at beginning of the line of the separator
   function getIndex(document: vscode.TextDocument, i: number) {
@@ -104,29 +105,29 @@ export function activate(context: vscode.ExtensionContext) {
 
   //helper function to handle errors as diagnostic warnings if yaml doesn't match a schema
   function handleError(issue: ZodIssue, parsedData: YAML.Document.Parsed, document: vscode.TextDocument, diagnostics: vscode.Diagnostic[]) {
-            console.log(
-              `Processing Zod issue with path: ${JSON.stringify(issue.path)}`
-            );
-            const range = findPositionFromPath(
-              issue.path,
-              parsedData,
-              document
-            );
-            const diagnosticRange =
-              range ||
-              new vscode.Range(
-                new vscode.Position(0, 0),
-                new vscode.Position(0, 1)
-              );
-            diagnostics.push(
-              new vscode.Diagnostic(
-                diagnosticRange,
-                `Error in item "${issue.path[issue.path.length - 1]}": ${issue.message
-                }`,
-                vscode.DiagnosticSeverity.Warning
-              )
-            );
-    }
+    console.log(
+      `Processing Zod issue with path: ${JSON.stringify(issue.path)}`
+    );
+    const range = findPositionFromPath(
+      issue.path,
+      parsedData,
+      document
+    );
+    const diagnosticRange =
+      range ||
+      new vscode.Range(
+        new vscode.Position(0, 0),
+        new vscode.Position(0, 1)
+      );
+    diagnostics.push(
+      new vscode.Diagnostic(
+        diagnosticRange,
+        `Error in item "${issue.path[issue.path.length - 1]}": ${issue.message
+        }`,
+        vscode.DiagnosticSeverity.Warning
+      )
+    );
+  }
 
   // Helper function to find the position of a node in the AST based on the path  
   function findPositionFromPath(
@@ -192,221 +193,247 @@ export function activate(context: vscode.ExtensionContext) {
     return null;
   }
 
-  // Listen for changes in YAML files
-  context.subscriptions.push(
-    vscode.workspace.onDidChangeTextDocument((event) => {
-      if (detectTreatmentsYaml(event.document)) {
-        console.log("Processing .treatments.yaml file...");
-        const diagnostics: vscode.Diagnostic[] = [];
+  function parseDocument(document: vscode.TextDocument) {
+    if (detectTreatmentsYaml(document)) {
+      console.log("Processing .treatments.yaml file...");
+      const diagnostics: vscode.Diagnostic[] = [];
 
-        // Parse YAML content into AST
-        let parsedData;
+      // Parse YAML content into AST
+      let parsedData;
 
-        try {
-          parsedData = YAML.parseDocument(event.document.getText(), {
-            keepCstNodes: true,
-            keepNodeTypes: true,
-          } as any) || null;
-          console.log("YAML parsed successfully.");
-        } catch (error) {
-          if (error instanceof Error) {
-            const range = new vscode.Range(
-              new vscode.Position(0, 0),
-              new vscode.Position(0, 1)
-            );
-            diagnostics.push(
-              new vscode.Diagnostic(
-                range,
-                `YAML syntax error: ${error.message}`,
-                vscode.DiagnosticSeverity.Error
-              )
-            );
-            diagnosticCollection.set(event.document.uri, diagnostics);
-          }
-          parsedData = null;
-          return;
-        }
-
-        // Check if the YAML document is empty
-        if (
-          !parsedData.contents ||
-          (Array.isArray(parsedData.contents) &&
-            parsedData.contents.length === 0)
-        ) {
-          console.log("YAML document is empty. Skipping validation.");
-          diagnosticCollection.set(event.document.uri, diagnostics); // Clear any existing diagnostics
-          return;
-        }
-
-        // Validate YAML content using Zod and TreatmentFileType
-        console.log("Running Zod validation...");
-        const validationResult = treatmentFileSchema.safeParse(
-          parsedData.toJS() as TreatmentFileType
-        );
-
-        if (!validationResult.success) {
-          console.log("Zod validation failed:", validationResult.error.issues);
-
-          (validationResult.error as ZodError).issues.forEach(
-            (issue: ZodIssue) => {
-              handleError(issue, parsedData, event.document, diagnostics);
-            }
+      try {
+        parsedData = YAML.parseDocument(document.getText(), {
+          keepCstNodes: true,
+          keepNodeTypes: true,
+        } as any) || null;
+        console.log("YAML parsed successfully.");
+      } catch (error) {
+        if (error instanceof Error) {
+          const range = new vscode.Range(
+            new vscode.Position(0, 0),
+            new vscode.Position(0, 1)
           );
-        } else {
-          console.log(
-            "Zod validation passed. Types are consistent with TreatmentFileType."
-          );
-        }
-
-        // Update diagnostics in VS Code
-        diagnosticCollection.set(event.document.uri, diagnostics);
-      } else if (detectPromptMarkdown(event.document)) {
-        console.log("Processing .md file...");
-        const diagnostics: vscode.Diagnostic[] = [];
-        const document = event.document;
-
-        // getting the separators from the document
-        console.log("Document URI:", document.uri.toString());
-        const separators = document.getText().match(/^-{3,}$/gm);
-        console.log("Separators found:", separators);
-
-        //getting the three sections of the document
-        let sections = document.getText().split(/^-{3,}$/gm);
-        console.log("Sections found:", sections);
-
-        // Check if the number of separators is correct
-        if (!separators || separators.length !== 3) {
-          console.log("Invalid number of separators");
           diagnostics.push(
             new vscode.Diagnostic(
-              new vscode.Range(
-                new vscode.Position(0, 0),
-                new vscode.Position(0, 3)
-              ),
-              "Invalid number of separators, should be 3",
+              range,
+              `YAML syntax error: ${error.message}`,
               vscode.DiagnosticSeverity.Error
             )
           );
+          diagnosticCollection.set(document.uri, diagnostics);
         }
-        
-        //getting the relative path of the file for comparison with name field in metadata
-        let relativePath = "";
-        try {
-          const workspaceFolder = vscode.workspace.getWorkspaceFolder(document.uri);
-          console.log("Workspace folder:", workspaceFolder);
-          if (workspaceFolder) {
-            relativePath = vscode.workspace.asRelativePath(document.uri);
-            console.log("Relative path:", relativePath);
+        parsedData = null;
+        return;
+      }
+
+      // Check if the YAML document is empty
+      if (
+        !parsedData.contents ||
+        (Array.isArray(parsedData.contents) &&
+          parsedData.contents.length === 0)
+      ) {
+        console.log("YAML document is empty. Skipping validation.");
+        diagnosticCollection.set(document.uri, diagnostics); // Clear any existing diagnostics
+        return;
+      }
+
+      // Validate YAML content using Zod and TreatmentFileType
+      console.log("Running Zod validation...");
+      const validationResult = treatmentFileSchema.safeParse(
+        parsedData.toJS() as TreatmentFileType
+      );
+
+      if (!validationResult.success) {
+        console.log("Zod validation failed:", validationResult.error.issues);
+
+        (validationResult.error as ZodError).issues.forEach(
+          (issue: ZodIssue) => {
+            handleError(issue, parsedData, document, diagnostics);
           }
-        } catch (error) {
-          console.error("Error getting workspace folder:", error);
-        }
-
-        //getting the Metadata section and processing it
-        let yamlText = "";
-        try {
-          yamlText = sections[1];
-          if (!yamlText) {
-            throw new Error("No YAML frontmatter found");
-          }
-          yamlText = yamlText.trimEnd();
-          console.log("YAML frontmatter:", yamlText);
-        } catch (error) {
-          console.log("Error retrieving YAML frontmatter:", error);
-        }
-
-
-        // Parse YAML content into AST
-        let parsedData;
-        try {
-          parsedData = YAML.parseDocument(yamlText, {
-            keepCstNodes: true,
-            keepNodeTypes: true,
-          } as any);
-          console.log("YAML parsed successfully.", parsedData);
-        } catch (error) {
-          console.log("Error parsing YAML:", error);
-          if (error instanceof Error) {
-            const range = new vscode.Range(
-              new vscode.Position(0, 0),
-              new vscode.Position(0, 1)
-            );
-            diagnostics.push(
-              new vscode.Diagnostic(
-                range,
-                `YAML syntax error: ${error.message}`,
-                vscode.DiagnosticSeverity.Error
-              )
-            );
-            diagnosticCollection.set(event.document.uri, diagnostics);
-          }
-          return;
-        }
-
-
-
-        //Metadata validation
-        const result = metadataSchema(relativePath).safeParse(
-          parsedData.toJS() as MetadataType
         );
-        console.log("result obtained from metadataSchema:", result);
+      } else {
+        console.log(
+          "Zod validation passed. Types are consistent with TreatmentFileType."
+        );
+      }
 
-        if (!result.success) {
-          console.log("Zod validation failed:", result.error.issues);
+      // Update diagnostics in VS Code
+      diagnosticCollection.set(document.uri, diagnostics);
+    } else if (detectPromptMarkdown(document)) {
+      console.log("Processing .md file...");
+      const diagnostics: vscode.Diagnostic[] = [];
 
-          (result.error as ZodError).issues.forEach(
-            (issue: ZodIssue) => {
-              handleError(issue, parsedData, document, diagnostics);
-            }
+      // getting the separators from the document
+      console.log("Document URI:", document.uri.toString());
+      const separators = document.getText().match(/^-{3,}$/gm);
+      console.log("Separators found:", separators);
+
+      //getting the three sections of the document
+      let sections = document.getText().split(/^-{3,}$/gm);
+      console.log("Sections found:", sections);
+
+      // Check if the number of separators is correct
+      if (!separators || separators.length !== 3) {
+        console.log("Invalid number of separators");
+        diagnostics.push(
+          new vscode.Diagnostic(
+            new vscode.Range(
+              new vscode.Position(0, 0),
+              new vscode.Position(0, 3)
+            ),
+            "Invalid number of separators, should be 3",
+            vscode.DiagnosticSeverity.Error
+          )
+        );
+      }
+
+      //getting the relative path of the file for comparison with name field in metadata
+      let relativePath = "";
+      try {
+        const workspaceFolder = vscode.workspace.getWorkspaceFolder(document.uri);
+        console.log("Workspace folder:", workspaceFolder);
+        if (workspaceFolder) {
+          relativePath = vscode.workspace.asRelativePath(document.uri);
+          console.log("Relative path:", relativePath);
+        }
+      } catch (error) {
+        console.error("Error getting workspace folder:", error);
+      }
+
+      //getting the Metadata section and processing it
+      let yamlText = "";
+      try {
+        yamlText = sections[1];
+        if (!yamlText) {
+          throw new Error("No YAML frontmatter found");
+        }
+        yamlText = yamlText.trimEnd();
+        console.log("YAML frontmatter:", yamlText);
+      } catch (error) {
+        console.log("Error retrieving YAML frontmatter:", error);
+      }
+
+
+      // Parse YAML content into AST
+      let parsedData;
+      try {
+        parsedData = YAML.parseDocument(yamlText, {
+          keepCstNodes: true,
+          keepNodeTypes: true,
+        } as any);
+        console.log("YAML parsed successfully.", parsedData);
+      } catch (error) {
+        console.log("Error parsing YAML:", error);
+        if (error instanceof Error) {
+          const range = new vscode.Range(
+            new vscode.Position(0, 0),
+            new vscode.Position(0, 1)
           );
-        } else {
-          console.log("Zod validation passed. Types are consistent with MetadataType.");
+          diagnostics.push(
+            new vscode.Diagnostic(
+              range,
+              `YAML syntax error: ${error.message}`,
+              vscode.DiagnosticSeverity.Error
+            )
+          );
+          diagnosticCollection.set(document.uri, diagnostics);
+          console.log("Length of diagnostics: " + diagnostics.length);
+          console.log("Length of diagnostic collection: " + diagnosticCollection.get(document.uri)!!.length);
         }
+        return;
+      }
 
 
 
-        // Prompt validation
-        if (sections && sections.length > 2) {
-          const promptText = sections[2].trim();
-          console.log("Prompt text:", promptText);
-          if (!promptText || typeof promptText !== "string" || promptText.length < 1) {
-            let { text, index } = getIndex(document, 2);
-            const startPos = offsetToPosition(index, document);
-            diagnostics.push(
-              new vscode.Diagnostic(
-                new vscode.Range(
-                  startPos,
-                  new vscode.Position(startPos.line, startPos.character + 3)
-                ),
-                "Prompt text must exist",
-                vscode.DiagnosticSeverity.Warning
-              )
-            );
+      //Metadata validation
+      const result = metadataSchema(relativePath).safeParse(
+        parsedData.toJS() as MetadataType
+      );
+      console.log("result obtained from metadataSchema:", result);
+
+      if (!result.success) {
+        console.log("Zod validation failed:", result.error.issues);
+
+        (result.error as ZodError).issues.forEach(
+          (issue: ZodIssue) => {
+            handleError(issue, parsedData, document, diagnostics);
           }
+        );
+      } else {
+        console.log("Zod validation passed. Types are consistent with MetadataType.");
+      }
+
+
+
+      // Prompt validation
+      if (sections && sections.length > 2) {
+        const promptText = sections[2].trim();
+        console.log("Prompt text:", promptText);
+        if (!promptText || typeof promptText !== "string" || promptText.length < 1) {
+          let { text, index } = getIndex(document, 2);
+          const startPos = offsetToPosition(index, document);
+          diagnostics.push(
+            new vscode.Diagnostic(
+              new vscode.Range(
+                startPos,
+                new vscode.Position(startPos.line, startPos.character + 3)
+              ),
+              "Prompt text must exist",
+              vscode.DiagnosticSeverity.Warning
+            )
+          );
         }
+      }
 
 
 
-        // Response validation
-        if (separators && separators.length === 3) {
-          console.log("Entering if statement");
-          const type = parsedData.get("type");
-          const response = sections[3];
-          switch (type) {
+      // Response validation
+      if (separators && separators.length === 3) {
+        console.log("Entering if statement");
+        const type = parsedData.get("type");
+        const response = sections[3];
+        switch (type) {
 
-            // no response warning position handling
-            case "noResponse": {
-              console.log("Entering no response case");
-              if (response && response.length > 0) {
-                let { text, index } = getIndex(document, 3);
-                console.log("Finding position of last position");
-                const lastPos = document.positionAt(text.length - 1);
-                console.log(`Last position: ${lastPos}`);
+          // no response warning position handling
+          case "noResponse": {
+            console.log("Entering no response case");
+            if (response && response.length > 0) {
+              let { text, index } = getIndex(document, 3);
+              console.log("Finding position of last position");
+              const lastPos = document.positionAt(text.length - 1);
+              console.log(`Last position: ${lastPos}`);
+              const diagnosticRange = new vscode.Range(
+                document.positionAt(index),  // starting position
+                lastPos   // ending position 
+              );
+              const issue = "Response should be blank for type no response";
+              diagnostics.push(
+                new vscode.Diagnostic(
+                  diagnosticRange,
+                  issue,
+                  vscode.DiagnosticSeverity.Warning
+                )
+              );
+            }
+            break;
+          }
+
+          // multiple choice warning position handling
+          case "multipleChoice": {
+            console.log("Entering multiple choice case");
+            let { text, index } = getIndex(document, 3);
+            const lineNum = (document.positionAt(index).line) + 1;
+            console.log(lineNum);
+            console.log("Line count: " + document.lineCount);
+            for (let i = lineNum; i < document.lineCount; i++) {
+              const str = document.lineAt(i).text;
+              console.log(str);
+              if (str.substring(0, 2) !== "- ") {
                 const diagnosticRange = new vscode.Range(
-                  document.positionAt(index),  // starting position
-                  lastPos   // ending position 
+                  new vscode.Position(i, 0),
+                  new vscode.Position(i, str.length)
                 );
-                const issue = "Response should be blank for type no response";
+                const issue = `Response at line ${i + 1} should start with "- " (for multiple choice)`;
                 diagnostics.push(
                   new vscode.Diagnostic(
                     diagnosticRange,
@@ -415,78 +442,75 @@ export function activate(context: vscode.ExtensionContext) {
                   )
                 );
               }
-              break;
             }
+            break;
+          }
 
-            // multiple choice warning position handling
-            case "multipleChoice": {
-              console.log("Entering multiple choice case");
-              let { text, index } = getIndex(document, 3);
-              const lineNum = (document.positionAt(index).line) + 1;
-              console.log(lineNum);
-              console.log("Line count: " + document.lineCount);
-              for (let i = lineNum; i < document.lineCount; i++) {
-                const str = document.lineAt(i).text;
-                console.log(str);
-                if (str.substring(0, 2) !== "- ") {
-                  const diagnosticRange = new vscode.Range(
-                    new vscode.Position(i, 0),
-                    new vscode.Position(i, str.length)
-                  );
-                  const issue = `Response at line ${i + 1} should start with "- " (for multiple choice)`;
-                  diagnostics.push(
-                    new vscode.Diagnostic(
-                      diagnosticRange,
-                      issue,
-                      vscode.DiagnosticSeverity.Warning
-                    )
-                  );
-                }
+          // open response warning position handling          
+          case "openResponse": {
+            console.log(response);
+            console.log("Entering open response case");
+            let { text, index } = getIndex(document, 3);
+            const lineNum = (document.positionAt(index).line) + 1;
+            console.log(lineNum);
+            for (let i = lineNum; i < document.lineCount; i++) {
+              const str = document.lineAt(i).text;
+              if (str.substring(0, 2) !== "> ") {
+                const diagnosticRange = new vscode.Range(
+                  new vscode.Position(i, 0),
+                  new vscode.Position(i, str.length)
+                );
+                const issue = `Response at line ${i + 1} should start with "> " (for open response)`;
+                diagnostics.push(
+                  new vscode.Diagnostic(
+                    diagnosticRange,
+                    issue,
+                    vscode.DiagnosticSeverity.Warning
+                  )
+                );
               }
-              break;
             }
-
-            // open response warning position handling          
-            case "openResponse": {
-              console.log(response);
-              console.log("Entering open response case");
-              let { text, index } = getIndex(document, 3);
-              const lineNum = (document.positionAt(index).line) + 1;
-              console.log(lineNum);
-              for (let i = lineNum; i < document.lineCount; i++) {
-                const str = document.lineAt(i).text;
-                if (str.substring(0, 2) !== "> ") {
-                  const diagnosticRange = new vscode.Range(
-                    new vscode.Position(i, 0),
-                    new vscode.Position(i, str.length)
-                  );
-                  const issue = `Response at line ${i + 1} should start with "> " (for open response)`;
-                  console.log("Displaying error");
-                  diagnostics.push(
-                    new vscode.Diagnostic(
-                      diagnosticRange,
-                      issue,
-                      vscode.DiagnosticSeverity.Warning
-                    )
-                  );
-                }
-              }
-              break;
-            }
-            default: {
-              console.log("Type: " + type);
-              break;
-            }
-
+            break;
+          }
+          default: {
+            console.log("Type: " + type);
+            break;
           }
 
         }
 
-        // Update diagnostics in VS Code
-        diagnosticCollection.set(event.document.uri, diagnostics);
-      } else {
-        // If file is not recongized as treatmentsYaml or promptMarkdown, clear diagnostics
-        diagnosticCollection.set(event.document.uri, []);
+      }
+
+      // Update diagnostics in VS Code
+      diagnosticCollection.set(document.uri, diagnostics);
+      console.log("Length of diagnostics for markdown: " + diagnostics.length);
+      console.log("Length of diagnostic collection: " + diagnosticCollection.get(document.uri)!!.length);
+    } else {
+      // If file is not recognized as treatmentsYaml or promptMarkdown, clear diagnostics
+      diagnosticCollection.set(document.uri, []);
+      console.log("Length of diagnostic collection (should be 0): " + diagnosticCollection.get(document.uri)!!.length);
+    }
+  }
+
+  // Should be done once upon activation
+  if (vscode.window.activeTextEditor && vscode.window.activeTextEditor?.document) {
+    parseDocument(vscode.window.activeTextEditor?.document!!);
+  }
+
+  // Listen for when a document is opened
+  context.subscriptions.push(
+
+    // for opening document
+    vscode.workspace.onDidOpenTextDocument((event) => {
+      if (event !== undefined) {
+        parseDocument(event);
+      }
+    }),
+
+    // for changing document
+    vscode.workspace.onDidChangeTextDocument((event) => {
+      if (event?.document !== undefined) {
+        parseDocument(event?.document);
       }
     })
   );

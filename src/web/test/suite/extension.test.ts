@@ -141,10 +141,66 @@ suite('Diagnostics detection', () => {
 		const filePath = path.resolve('src/web/test/suite/fixtures/allTalk.md');
 		console.log(filePath);
 		const document = await vscode.workspace.openTextDocument(filePath);
+		console.log(document.uri.path);
 
 		await new Promise(resolve => setTimeout(resolve, 500));
 		
-		const diagnostics = vscode.languages.getDiagnostics(document.uri);
-		assert.strictEqual(diagnostics.length, 0);
+		// const diagnostics = vscode.languages.getDiagnostics(document.uri);
+		
+		const diagnostics = diagnosticCollection.get(document.uri);
+		console.log("Diagnostics undefined", diagnostics === undefined);
+		console.log("Length of diagnostics: " + diagnostics?.length);
+		assert.strictEqual(diagnostics?.length, 0);
 	});
+
+	test('Diagnostics are empty on treatments yaml file with no errors', async () => {
+
+		const filePath = path.resolve('src/web/test/suite/fixtures/empty.treatments.yaml');
+		console.log(filePath);
+		const document = await vscode.workspace.openTextDocument(filePath);
+		console.log(document.uri.path);
+
+		await new Promise(resolve => setTimeout(resolve, 500));
+		
+		const diagnostics = diagnosticCollection.get(document.uri);
+		console.log("Length of diagnostics: " + diagnostics?.length);
+		assert.strictEqual(diagnostics?.length, 0);
+	});
+
+	// test('Diagnostics register on opened treatments yaml file with errors', async () => {
+
+	// 	const filePath = path.resolve('src/web/test/suite/fixtures/filter.treatments.yaml');
+	// 	console.log(filePath);
+	// 	const document = await vscode.workspace.openTextDocument(filePath);
+	// 	console.log(document.uri.path);
+
+	// 	await new Promise(resolve => setTimeout(resolve, 500));
+		
+	// 	const diagnostics = diagnosticCollection.get(document.uri);
+	// 	const length = diagnostics?.length!!;
+	// 	console.log("Length of diagnostics: " + length);
+	// 	assert.strictEqual(length > 0, true);
+	// });
+
+	// // emptyField.md: type is empty, should be enum (will throw error)
+	// test('Diagnostics register on opened markdown file with errors', async () => {
+	// 	// const extension = vscode.extensions.getExtension('undefined_publisher.deliberation-lab-tools');
+	// 	// console.log("Loading extension");
+	// 	// assert.ok(extension);
+	// 	// console.log("Activating extension");
+	// 	// await extension?.activate();
+	// 	// assert.ok(extension!.isActive);
+
+	// 	const filePath = path.resolve('src/web/test/suite/fixtures/emptyField.md');
+	// 	console.log(filePath);
+	// 	const document = await vscode.workspace.openTextDocument(filePath);
+	// 	console.log(document.uri.path);
+
+	// 	await new Promise(resolve => setTimeout(resolve, 500));
+		
+	// 	const diagnostics = diagnosticCollection.get(document.uri);
+	// 	const length = diagnostics?.length!!;
+	// 	console.log("Length of diagnostics: " + length);
+	// 	assert.strictEqual(length > 0, true);
+	// });
 });
