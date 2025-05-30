@@ -1,5 +1,5 @@
 ---
-name: src/web/test/suite/fixtures/allTalk.md
+name: src/test/suite/fixtures/allTalk.md
 type: noResponse
 ---
 

@@ -155,7 +155,7 @@ suite('Diagnostics detection', () => {
 
 	test('Diagnostics are empty on treatments yaml file with no errors', async () => {
 
-		const filePath = path.resolve('src/web/test/suite/fixtures/empty.treatments.yaml');
+		const filePath = path.resolve('src/test/suite/fixtures/empty.treatments.yaml');
 		console.log(filePath);
 		const document = await vscode.workspace.openTextDocument(filePath);
 		console.log(document.uri.path);
