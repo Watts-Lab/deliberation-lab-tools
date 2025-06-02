@@ -21,7 +21,7 @@ jobs:
       - name: Build + Compile Extension
         run: npm run compile-web
 
-      - name: Run Web Extension Tests
+      - name: Run VS Code Extension Tests
         run: npm test
         env:
           CI: true
