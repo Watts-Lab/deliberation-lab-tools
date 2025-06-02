@@ -6,7 +6,19 @@ import {
 } from "./zod-validators/validateTreatmentFile";
 import {
   metadataSchema,
-  MetadataType,
+  MetadataBaseType,
+  metadataNotesSchema,
+  MetadataNotesType,
+  metadataRowSchema,
+  MetadataRowType,
+  metadataRowSecondSchema,
+  MetadataRowSecondType,
+  metadataShuffleSchema,
+  MetadataShuffleType,
+  metadataShuffleSecondSchema,
+  MetadataShuffleSecondType,
+  metadataSelectSchema,
+  MetadataSelectType,
 } from "./zod-validators/validatePromptFile";
 import { ZodError, ZodIssue } from "zod";
 import { load as loadYaml } from "js-yaml";
