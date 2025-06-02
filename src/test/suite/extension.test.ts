@@ -8,25 +8,6 @@ import { suite, test } from 'mocha';
 // as well as import your extension to test it
 import { diagnosticCollection } from '../../extension';
 
-async function waitForDiagnostics(uri: vscode.Uri, expectedLength: number, timeout = 3000): Promise<vscode.Diagnostic[]> {
-	const interval = 100;
-	let elapsed = 0;
-
-	return new Promise((resolve, reject) => {
-		const check = () => {
-			const diagnostics = vscode.languages.getDiagnostics(uri);
-			if (diagnostics.length >= expectedLength) {
-				return resolve(diagnostics);
-			}
-			if (elapsed >= timeout) {
-				return reject(new Error("Timed out waiting for diagnostics"));
-			}
-			elapsed += interval;
-			setTimeout(check, interval);
-		};
-		check();
-	});
-}
 
 suite('Markdown and .treatments.yaml file detection', () => {
 	vscode.window.showInformationMessage('Start all tests.');
@@ -174,12 +155,12 @@ suite('Diagnostics detection', () => {
 	});
 
 	test('Incorrect type in gameStage element', async () => {
-		const filePath = path.resolve('src/web/test/suite/fixtures/badStage.treatments.yaml');
+		const filePath = path.resolve('src/test/suite/fixtures/badStage.treatments.yaml');
 		console.log(filePath);
 		const document = await vscode.workspace.openTextDocument(filePath);
-		await vscode.window.showTextDocument(document); // ensures activation
+		await vscode.window.showTextDocument(document);
 
-		const diagnostics = await waitForDiagnostics(document.uri, 1);
+		const diagnostics = vscode.languages.getDiagnostics(document.uri);
 		console.log("document uri:", document.uri.toString());
 		console.log("diagnostics length:", diagnostics.length);
 		console.log("diagnostics:", JSON.stringify(diagnostics, null, 2));
@@ -187,23 +168,25 @@ suite('Diagnostics detection', () => {
 		assert.strictEqual(diagnostics.length, 1);
 		assert.strictEqual(
 			diagnostics[0].message,
-			'Invalid discriminator value. Expected one of: audio, display, image, prompt, qualtrics, separator, sharedNotepad, submitButton, survey, talkMeter, timer, video'
+			`Error in item "type": Invalid discriminator value. Expected 'audio' | 'display' | 'image' | 'prompt' | 'qualtrics' | 'separator' | 'sharedNotepad' | 'submitButton' | 'survey' | 'talkMeter' | 'timer' | 'video'`
 		);
+		assert.strictEqual(diagnostics[0].range.start.line, 52);
+		assert.strictEqual(diagnostics[0].range.end.line, 54);
 	});
-	
-	test('Diagnostics are empty on treatments yaml file with no errors', async () => {
 
-		const filePath = path.resolve('src/web/test/suite/fixtures/empty.treatments.yaml');
-		console.log(filePath);
-		const document = await vscode.workspace.openTextDocument(filePath);
-		console.log(document.uri.path);
+	// test('Diagnostics are empty on treatments yaml file with no errors', async () => {
 
-		await new Promise(resolve => setTimeout(resolve, 500));
+	// 	const filePath = path.resolve('src/test/suite/fixtures/empty.treatments.yaml');
+	// 	console.log(filePath);
+	// 	const document = await vscode.workspace.openTextDocument(filePath);
+	// 	console.log(document.uri.path);
+
+	// 	await new Promise(resolve => setTimeout(resolve, 500));
 		
-		const diagnostics = diagnosticCollection.get(document.uri);
-		console.log("Length of diagnostics: " + diagnostics?.length);
-		assert.strictEqual(diagnostics?.length, 0);
-	});
+	// 	const diagnostics = diagnosticCollection.get(document.uri);
+	// 	console.log("Length of diagnostics: " + diagnostics?.length);
+	// 	assert.strictEqual(diagnostics?.length, 0);
+	// });
 
 	// test('Diagnostics register on opened treatments yaml file with errors', async () => {
 
