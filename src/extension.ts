@@ -19,6 +19,8 @@ import {
   MetadataShuffleSecondType,
   metadataSelectSchema,
   MetadataSelectType,
+  metadataSelectSecondSchema,
+  MetadataSelectSecondType,
 } from "./zod-validators/validatePromptFile";
 import { ZodError, ZodIssue } from "zod";
 import { load as loadYaml } from "js-yaml";
@@ -358,23 +360,111 @@ export function activate(context: vscode.ExtensionContext) {
 
 
       //Metadata validation
-      const result = metadataSchema(relativePath).safeParse(
-        parsedData.toJS() as MetadataType
+      const requirements = metadataSchema(relativePath).safeParse(
+        parsedData.toJS() as MetadataBaseType
       );
-      console.log("result obtained from metadataSchema:", result);
+      console.log("Requirements obtained from metadataSchema:", requirements);
+      if (requirements.success) {
+        const notesResult = metadataNotesSchema.safeParse(
+          parsedData.toJS() as MetadataNotesType
+        );
+        if (!notesResult.success) {
+          console.log("Notes validation failed:", notesResult.error.issues);
+          (notesResult.error as ZodError).issues.forEach(
+            (issue: ZodIssue) => {
+              handleError(issue, parsedData, document, diagnostics);
+            }
+          );
+        } else {
+          console.log("Notes validation passed.");
+        }
 
-      if (!result.success) {
-        console.log("Zod validation failed:", result.error.issues);
+        const rowResult = metadataRowSchema.safeParse(
+          parsedData.toJS() as MetadataRowType
+        );
+        if (rowResult.success) {
+          const rowSecondResult = metadataRowSecondSchema.safeParse(
+            parsedData.toJS() as MetadataRowSecondType
+          );
+          if (!rowSecondResult.success) {
+            console.log("Row second validation failed:", rowSecondResult.error.issues);
+            (rowSecondResult.error as ZodError).issues.forEach(
+              (issue: ZodIssue) => {
+                handleError(issue, parsedData, document, diagnostics);
+              }
+            );
+          } else {
+            console.log("Row second validation passed.");
+          }
+        } else {
+          console.log("Row validation failed:", rowResult.error.issues);
+          (rowResult.error as ZodError).issues.forEach(
+            (issue: ZodIssue) => {
+              handleError(issue, parsedData, document, diagnostics);
+            }
+          );
+        }
 
-        (result.error as ZodError).issues.forEach(
+        const shuffleResult = metadataShuffleSchema.safeParse(
+          parsedData.toJS() as MetadataShuffleType
+        );
+        if (shuffleResult.success) {
+          const shuffleSecondResult = metadataShuffleSecondSchema.safeParse(
+            parsedData.toJS() as MetadataShuffleSecondType
+          );
+          if (!shuffleSecondResult.success) {
+            console.log("Shuffle second validation failed:", shuffleSecondResult.error.issues);
+            (shuffleSecondResult.error as ZodError).issues.forEach(
+              (issue: ZodIssue) => {
+                handleError(issue, parsedData, document, diagnostics);
+              }
+            );
+          } else {
+            console.log("Shuffle second validation passed.");
+          }
+        } else {
+          console.log("Shuffle validation failed:", shuffleResult.error.issues);
+          (shuffleResult.error as ZodError).issues.forEach(
+            (issue: ZodIssue) => {
+              handleError(issue, parsedData, document, diagnostics);
+            }
+          );
+        }
+
+        const selectResult = metadataSelectSchema.safeParse(
+          parsedData.toJS() as MetadataSelectType
+        );
+        if (selectResult.success) {
+          const selectSecondResult = metadataSelectSecondSchema.safeParse(
+            parsedData.toJS() as MetadataSelectSecondType
+          );
+          if (!selectSecondResult.success) {
+            console.log("Select second validation failed:", selectSecondResult.error.issues);
+            (selectSecondResult.error as ZodError).issues.forEach(
+              (issue: ZodIssue) => {
+                handleError(issue, parsedData, document, diagnostics);
+              }
+            );
+          } else {
+            console.log("Select second validation passed.");
+          }
+        } else {
+          console.log("Select validation failed:", selectResult.error.issues);
+          (selectResult.error as ZodError).issues.forEach(
+            (issue: ZodIssue) => {
+              handleError(issue, parsedData, document, diagnostics);
+            }
+          );
+        }
+
+      } else {
+        console.log("Requirements validation failed:", requirements.error.issues);
+        (requirements.error as ZodError).issues.forEach(
           (issue: ZodIssue) => {
             handleError(issue, parsedData, document, diagnostics);
           }
         );
-      } else {
-        console.log("Zod validation passed. Types are consistent with MetadataType.");
       }
-
 
 
       // Prompt validation
