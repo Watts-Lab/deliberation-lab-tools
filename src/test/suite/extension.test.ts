@@ -174,6 +174,100 @@ suite('Diagnostics detection', () => {
 		assert.strictEqual(diagnostics[0].range.end.line, 54);
 	});
 
+	test('Indentation error in TemplateContent', async () => {
+		const filePath = path.resolve('src/test/suite/fixtures/brokenIndentation.treatments.yaml');
+		console.log(filePath);
+		const document = await vscode.workspace.openTextDocument(filePath);
+		await vscode.window.showTextDocument(document);
+
+		const diagnostics = vscode.languages.getDiagnostics(document.uri);
+		console.log("document uri:", document.uri.toString());
+		console.log("diagnostics length:", diagnostics.length);
+		console.log("diagnostics:", JSON.stringify(diagnostics, null, 2));
+
+		assert.strictEqual(diagnostics.length, 1);
+		assert.strictEqual(
+			diagnostics[0].message,
+			'Error in item "TemplateContent": Expected indentation of 4 spaces but found 2'
+		);
+		assert.strictEqual(diagnostics[0].range.start.line, 7);
+		assert.strictEqual(diagnostics[0].range.end.line, 16);
+	});
+
+	test('Invalid Broadcast Key', async () => {
+		const filePath = path.resolve('src/test/suite/fixtures/invalidBroadcastKey.treatments.yaml')
+		console.log(filePath);
+		const document = await vscode.workspace.openTextDocument(filePath);
+
+		const diagnostics = vscode.languages.getDiagnostics(document.uri);
+		console.log("document uri:", document.uri.toString());
+		console.log("diagnostics length:", diagnostics.length);
+		console.log("diagnostics:", JSON.stringify(diagnostics, null, 2));
+
+		assert.strictEqual(diagnostics.length, 1);
+		assert.strictEqual(
+			diagnostics[0].message,
+			`Error in item "dx": String must start with 'd' followed by a nonnegative integer`
+		);
+		assert.strictEqual(diagnostics[0].range.start.line, 197);
+		assert.strictEqual(diagnostics[0].range.end.line, 199);
+	});
+
+	test('Invalid Comparator', async () => {
+		const filePath = path.resolve('src/test/suite/fixtures/invalidComparator.treatments.yaml');
+		console.log(filePath);
+		const document = await vscode.workspace.openTextDocument(filePath);
+
+		const diagnostics = vscode.languages.getDiagnostics(document.uri);
+		console.log("document uri:", document.uri.toString());
+		console.log("diagnostics length:", diagnostics.length);
+		console.log("diagnostics:", JSON.stringify(diagnostics, null, 2));
+
+		assert.strictEqual(diagnostics.length, 1);
+		assert.strictEqual(
+			diagnostics[0].message,
+			`Error in item "comparator": Invalid discriminator value. Expected 'exists' | 'doesNotExist' | 'equals' | 'doesNotEqual' | 'isAbove' | 'isBelow' | 'isAtLeast' | 'isAtMost' | 'hasLengthAtLeast' | 'hasLengthAtMost' | 'includes' | 'doesNotInclude' | 'matches' | 'doesNotMatch' | 'isOneOf' | 'isNotOneOf'`
+		);
+		assert.strictEqual(diagnostics[0].range.start.line, 104);
+		assert.strictEqual(diagnostics[0].range.end.line, 107);
+	});
+
+	test('Missing dash', async () => {
+		const filePath = path.resolve('src/test/suite/fixtures/missingDashes.treatments.yaml');
+		console.log(filePath);
+		const document = await vscode.workspace.openTextDocument(filePath);
+		const diagnostics = vscode.languages.getDiagnostics(document.uri);
+		console.log("document uri:", document.uri.toString());
+
+		console.log("diagnostics length:", diagnostics.length);
+		console.log("diagnostics:", JSON.stringify(diagnostics, null, 2));
+
+		assert.strictEqual(diagnostics.length, 1);
+		assert.strictEqual(
+			diagnostics[0].message,
+			'Error in item "introSteps": Expected array, received object'
+		);
+		assert.strictEqual(diagnostics[0].range.start.line, 261);
+		assert.strictEqual(diagnostics[0].range.end.line, 266);
+	}
+	);
+
+	test('missing element field in game stages', async () => {
+		const filePath = path.resolve('src/test/suite/fixtures/missingElementField.treatments.yaml');
+		console.log(filePath);
+		const document = await vscode.workspace.openTextDocument(filePath);
+		const diagnostics = vscode.languages.getDiagnostics(document.uri);
+		console.log("document uri:", document.uri.toString());
+
+		console.log("diagnostics length:", diagnostics.length);
+		console.log("diagnostics:", JSON.stringify(diagnostics, null, 2));
+
+		assert.strictEqual(diagnostics.length, 1);
+		assert.strictEqual(diagnostics[0].range.start.line, 12);
+		assert.strictEqual(diagnostics[0].range.end.line, 19);
+	});
+
+
 	// test('Diagnostics are empty on treatments yaml file with no errors', async () => {
 
 	// 	const filePath = path.resolve('src/test/suite/fixtures/empty.treatments.yaml');
