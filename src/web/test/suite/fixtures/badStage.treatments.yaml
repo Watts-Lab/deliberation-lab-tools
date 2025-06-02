@@ -13,7 +13,7 @@ introSequences:
         elements:
           - type: survey
             surveyName: TIPI
-      - name: Self-awareness, Self-monitoring, and Growth Mindset
+      - name: Self-awareness Self-monitoring and Growth Mindset
         elements:
           - type: survey
             surveyName: AwarenessMonitoringGrowth
@@ -21,7 +21,7 @@ introSequences:
         elements:
           - type: survey
             surveyName: CulturalConflictNorms
-      - name: General Information (Optional Reading)
+      - name: General Information Optional Reading
         elements:
           - type: prompt
             file: projects/constructive_disagreement/super_sabbatical_wbl/general_information.md
@@ -45,7 +45,7 @@ treatments:
       - desc: Provost
         position: 1
         title: "Provost"
-
+    
     gameStages:
       - name: Invalid Element Type Test
         duration: 60

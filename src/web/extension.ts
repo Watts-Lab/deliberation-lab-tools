@@ -261,6 +261,8 @@ export function activate(context: vscode.ExtensionContext) {
         }
 
         // Update diagnostics in VS Code
+        console.log("document uri:", event.document.uri);
+        console.log("diagnostics length:", diagnostics.length);
         diagnosticCollection.set(event.document.uri, diagnostics);
       } else if (detectPromptMarkdown(event.document)) {
         console.log("Processing .md file...");
