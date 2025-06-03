@@ -1,7 +1,8 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
 import * as assert from 'assert';
-import { detectPromptMarkdown, detectTreatmentsYaml } from '../../extension';
+// changed from extension to detectFile
+import { detectPromptMarkdown, detectTreatmentsYaml } from '../../detectFile';
 import { suite, test } from 'mocha';
 
 // You can import and use all API from the 'vscode' module
