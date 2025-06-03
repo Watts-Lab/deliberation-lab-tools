@@ -5,10 +5,10 @@ import {
   TreatmentFileType,
 } from "./zod-validators/validateTreatmentFile";
 import {
-  metadataBaseSchema,
-  metadataSchema,
+  metadataTypeSchema,
+  metadataLogicalSchema,
   MetadataType,
-  MetadataSecondType,
+  MetadataRefineType,
 } from "./zod-validators/validatePromptFile";
 import { ZodError, ZodIssue } from "zod";
 import { load as loadYaml } from "js-yaml";
@@ -348,8 +348,8 @@ export function activate(context: vscode.ExtensionContext) {
 
 
       //Metadata validation
-      const result = metadataSchema(relativePath).safeParse(
-        parsedData.toJS() as MetadataSecondType
+      const result = metadataLogicalSchema(relativePath).safeParse(
+        parsedData.toJS() as MetadataRefineType
       );
       console.log("result obtained from metadataSchema:", result);
 
@@ -365,7 +365,7 @@ export function activate(context: vscode.ExtensionContext) {
         console.log("Zod validation passed. Types are consistent with MetadataType.");
       }
 
-      const resultTwo = metadataBaseSchema.safeParse(
+      const resultTwo = metadataTypeSchema.safeParse(
         parsedData.toJS() as MetadataType
       );
       console.log("resultTwo obtained from metadataBaseSchema:", resultTwo);
