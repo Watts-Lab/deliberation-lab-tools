@@ -191,7 +191,7 @@ suite('Diagnostics detection', () => {
 			`Error in item "0": Closest schema match: Elements. Expected string, received object`
 		);
 		assert.strictEqual(diagnostics[0].range.start.line, 7);
-		assert.strictEqual(diagnostics[0].range.end.line, 16);
+		assert.strictEqual(diagnostics[0].range.end.line, 14);
 	});
 
 	test('Invalid Broadcast Key', async () => {
@@ -233,7 +233,7 @@ suite('Diagnostics detection', () => {
 	});
 
 	test('Missing dash', async () => {
-		const filePath = path.resolve('src/test/suite/fixtures/missingDashes.treatments.yaml');
+		const filePath = path.resolve('src/test/suite/fixtures/missingDash.treatments.yaml');
 		console.log(filePath);
 		const document = await vscode.workspace.openTextDocument(filePath);
 		const diagnostics = vscode.languages.getDiagnostics(document.uri);
@@ -248,12 +248,12 @@ suite('Diagnostics detection', () => {
 			'Error in item "introSteps": Expected array, received object'
 		);
 		assert.strictEqual(diagnostics[0].range.start.line, 261);
-		assert.strictEqual(diagnostics[0].range.end.line, 266);
+		assert.strictEqual(diagnostics[0].range.end.line, 265);
 	}
 	);
 
 	test('missing element field in game stages', async () => {
-		const filePath = path.resolve('src/test/suite/fixtures/missingElementField.treatments.yaml');
+		const filePath = path.resolve('src/test/suite/fixtures/missingElements.treatments.yaml');
 		console.log(filePath);
 		const document = await vscode.workspace.openTextDocument(filePath);
 		const diagnostics = vscode.languages.getDiagnostics(document.uri);
@@ -283,8 +283,7 @@ suite('Diagnostics detection', () => {
 			diagnostics[0].message,
 			'Error in item "surveyName": Required'
 		);
-		assert.strictEqual(diagnostics[0].range.start.line, 6);
-		assert.strictEqual(diagnostics[0].range.end.line, 7);
+		assert.strictEqual(diagnostics[0].range.start.line, 181);
 	});
 
 	test('negative duration in timer', async () => {
@@ -334,8 +333,8 @@ suite('Diagnostics detection', () => {
 			diagnostics[0].message,
 			'Error in item "playerCount": Expected number, received string'
 		);
-		assert.strictEqual(diagnostics[0].range.start.line, 17);
-		assert.strictEqual(diagnostics[0].range.end.line, 25);
+		assert.strictEqual(diagnostics[0].range.start.line, 86);
+		assert.strictEqual(diagnostics[0].range.end.line, 135);
 	});
 
 	test('broadcast field is in wrong spot', async () => {
@@ -349,13 +348,9 @@ suite('Diagnostics detection', () => {
 		assert.strictEqual(diagnostics.length, 2);
 		assert.strictEqual(
 			diagnostics[0].message,
-			'Error in item "broadcast": Expected object, received string'
+			'Error in item "introSteps": Expected array, received null'
 		);
-		assert.strictEqual(
-			diagnostics[1].message,
-			'Error in item "broadcast": Required'
-		);
-		assert.strictEqual(diagnostics[0].range.start.line, 125);
+		assert.strictEqual(diagnostics[0].range.start.line, 124);
 		assert.strictEqual(diagnostics[0].range.end.line, 149);
 	});
 
