@@ -57,16 +57,13 @@ export function detectTreatmentsYaml(document: vscode.TextDocument) {
 // should this be named yamlDiagnostics if also using markdown?
 export const diagnosticCollection = vscode.languages.createDiagnosticCollection("yamlDiagnostics");
 
-
 // export function 
 export function activate(context: vscode.ExtensionContext) {
   vscode.window.showInformationMessage("Extension activated");
-  // const diagnosticCollection =
-  //   vscode.languages.createDiagnosticCollection("yamlDiagnostics");
   context.subscriptions.push(diagnosticCollection);
   console.log("Extension activated");
 
-  //Converts character offset to line and column in a given document
+  // Converts character offset to line and column in a given document
   function offsetToPosition(offset: number, document: vscode.TextDocument): vscode.Position {
     const text = document.getText();
     let line = 0;
@@ -226,7 +223,6 @@ export function activate(context: vscode.ExtensionContext) {
             )
           );
           diagnosticCollection.set(document.uri, diagnostics);
-          console.log("document uri IN EXTENSION: " + document.uri.toString());
           console.log("Length of diagnostics for yaml: " + diagnostics.length);
           console.log("Length of diagnostic collection for yaml: " + diagnosticCollection.get(document.uri)!!.length);
         }
