@@ -1,33 +1,8 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
 import * as assert from 'assert';
-import { detectPromptMarkdown, detectTreatmentsYaml, diagnosticCollection, activate } from '../../extension';
+import { detectPromptMarkdown, detectTreatmentsYaml, diagnosticCollection } from '../../extension';
 import { suite, test } from 'mocha';
-
-// helper function to close file
-async function closeFileIfOpen(filePath: string) : Promise<void> {
-	for (const doc of vscode.workspace.textDocuments) {
-		console.log("Text document: " + doc.uri.path);
-	}
-    const tabs: vscode.Tab[] = vscode.window.tabGroups.all.map(tg => tg.tabs).flat();
-	console.log("Tabs length: " + tabs.length);
-	for (let i = 0; i < tabs.length; i++) {
-		console.log("Tab " + i + ": " + tabs[i].input);
-		if (tabs[i].input instanceof vscode.TabInputText) {
-			console.log("Tab input uri path: " + (tabs[i].input as vscode.TabInputText).uri.path);
-		}
-	}
-    const index = tabs.findIndex(tab => tab.input instanceof vscode.TabInputText && tab.input.uri.path === filePath);
-	console.log("Index for closing file: " + index);
-    if (index !== -1) {
-        await vscode.window.tabGroups.close(tabs[index]);
-    }
-}
-
-teardown(async () => {
-  // Clean up all editors so the next test starts fresh.
-  await vscode.commands.executeCommand('workbench.action.closeAllEditors');
-});
 
 suite('Markdown and .treatments.yaml file detection', () => {
 	vscode.window.showInformationMessage('Start all tests.');
@@ -49,12 +24,6 @@ suite('Markdown and .treatments.yaml file detection', () => {
 		const filePath = path.resolve('src/test/suite/fixtures/filter.treatments.yaml');
 		console.log(filePath);
 		const document = await vscode.workspace.openTextDocument(filePath);
-
-		console.log("document uri: " + document.uri.toString());
-
-		const diagnostics = vscode.languages.getDiagnostics(document.uri);
-		console.log("length of diagnostics from vscode.languages: " + diagnostics.length);
-		console.log("Length of diagnostics for filter: " + diagnosticCollection.get(document.uri)!!.length);
 
 		assert.strictEqual(detectTreatmentsYaml(document), true);
 	});
@@ -91,9 +60,6 @@ suite('Markdown and .treatments.yaml file detection', () => {
 		const filePath = path.resolve('src/test/suite/fixtures/emptyField.md');
 		console.log(filePath);
 		const document = await vscode.workspace.openTextDocument(filePath);
-
-		// closes document
-		// await vscode.commands.executeCommand('workbench.action.closeActiveEditor');
 
 		assert.strictEqual(detectPromptMarkdown(document), true);
 	});
@@ -175,17 +141,8 @@ suite('Diagnostics detection', () => {
 		console.log(filePath);
 		const document = await vscode.workspace.openTextDocument(filePath);
 		console.log(document.uri.path);
-
-		// await new Promise(resolve => setTimeout(resolve, 500));
 		
 		const diagnostics = vscode.languages.getDiagnostics(document.uri);
-		for (let i = 0; i < diagnostics.length; i++) {
-			const d = diagnostics[i];
-			console.log("index: " + i + " message: " + d.message + " range start line: " + d.range.start.line + " range end line: " + d.range.end.line);
-		}
-		console.log("Diagnostics undefined", diagnostics === undefined);
-		console.log("Length of diagnostics: " + diagnostics?.length);
-		console.log("Diagnostic error: " + diagnostics[0]);
 		assert.strictEqual(diagnostics?.length, 0);
 	});
 
@@ -195,19 +152,11 @@ suite('Diagnostics detection', () => {
 		console.log(filePath);
 		const document = await vscode.workspace.openTextDocument(filePath);
 		console.log(document.uri.path);
-
-		// await new Promise(resolve => setTimeout(resolve, 500));
 		
 		const diagnostics = vscode.languages.getDiagnostics(document.uri);
-		for (let i = 0; i < diagnostics.length; i++) {
-			const d = diagnostics[i];
-			console.log("index: " + i + " message: " + d.message + " range start line: " + d.range.start.line + " range end line: " + d.range.end.line);
-		}
-		console.log("Length of diagnostics: " + diagnostics?.length);
 		assert.strictEqual(diagnostics?.length, 0);
 	});
 
-	// Make more specific with testing specific diagnostics and errors
 	test('Diagnostics register on opened treatments yaml file with errors', async () => {
 
 		const filePath = path.resolve('src/test/suite/fixtures/filter.treatments.yaml');
@@ -215,13 +164,24 @@ suite('Diagnostics detection', () => {
 		const document = await vscode.workspace.openTextDocument(filePath);
 		console.log(document.uri.path);
 		const diagnostics = vscode.languages.getDiagnostics(document.uri);
-		for (let i = 0; i < diagnostics.length; i++) {
-			const d = diagnostics[i];
-			console.log("index: " + i + " message: " + d.message + " range start line: " + d.range.start.line + " range end line: " + d.range.end.line);
-		}
-		const length = diagnostics?.length!!;
-		console.log("Length of diagnostics: " + length);
-		assert.strictEqual(length > 0, true);
+
+		// Tests that there are 4 error messages as we expect
+		assert.strictEqual(diagnostics.length, 4);
+
+		// Each diagnostic should have a message "Error in item "elements": Array must contain at least 1 element(s) if we want to test for messages as well
+
+		// Tests that each diagnostic error is located on the line that we expect (range is its location)
+		assert.strictEqual(diagnostics[0].range.start.line, 6); 
+		assert.strictEqual(diagnostics[0].range.end.line, 6); 
+
+		assert.strictEqual(diagnostics[1].range.start.line, 9); 
+		assert.strictEqual(diagnostics[1].range.end.line, 9); 
+
+		assert.strictEqual(diagnostics[2].range.start.line, 15); 
+		assert.strictEqual(diagnostics[2].range.end.line, 15); 
+
+		assert.strictEqual(diagnostics[3].range.start.line, 18); 
+		assert.strictEqual(diagnostics[3].range.end.line, 18); 
 	});
 
 	// emptyField.md
@@ -234,11 +194,29 @@ suite('Diagnostics detection', () => {
 		const filePath = path.resolve('src/test/suite/fixtures/emptyField.md');
 		console.log(filePath);
 		const document = await vscode.workspace.openTextDocument(filePath);
-		console.log(document.uri.path);
-
-		// await new Promise(resolve => setTimeout(resolve, 1000));
 		
 		const diagnostics = vscode.languages.getDiagnostics(document.uri);
+		for (let i = 0; i < diagnostics.length; i++) {
+			const d = diagnostics[i];
+			console.log("index: " + i + " message: " + d.message + " range start line: " + d.range.start.line + " range end line: " + d.range.end.line);
+		}
+
+		// Tests that there are 3 errors/warnings
 		assert.strictEqual(diagnostics.length, 3);
+
+		// First error should be on first line for invalid number of separators
+		assert.strictEqual(diagnostics[0].range.start.line, 0);
+		assert.strictEqual(diagnostics[0].range.end.line, 0);
+		assert.strictEqual(diagnostics[0].message, "Invalid number of separators, should be 3");
+
+		// Second error should be encompassing the first metadata section (from start of separator to type line), reporting that type is null
+		assert.strictEqual(diagnostics[1].range.start.line, 0);
+		assert.strictEqual(diagnostics[1].range.end.line, 2);
+		assert.strictEqual(diagnostics[1].message, "Error in item \"type\": Expected 'openResponse' | 'multipleChoice' | 'noResponse' | 'listSorter', received null");
+
+		// Third error should be on separator for prompt text, reporting that prompt text must exist
+		assert.strictEqual(diagnostics[2].range.start.line, 3);
+		assert.strictEqual(diagnostics[2].range.end.line, 3);
+		assert.strictEqual(diagnostics[2].message, "Prompt text must exist");
 	});
 });
