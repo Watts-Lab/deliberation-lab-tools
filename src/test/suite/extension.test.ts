@@ -1,15 +1,89 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
 import * as assert from 'assert';
-import { detectPromptMarkdown, detectTreatmentsYaml } from '../../extension';
+import { detectPromptMarkdown, detectTreatmentsYaml, diagnosticCollection, activate } from '../../extension';
 import { suite, test } from 'mocha';
 
-// You can import and use all API from the 'vscode' module
-// as well as import your extension to test it
-import { diagnosticCollection } from '../../extension';
+// helper function to close file
+async function closeFileIfOpen(filePath: string) : Promise<void> {
+	for (const doc of vscode.workspace.textDocuments) {
+		console.log("Text document: " + doc.uri.path);
+	}
+    const tabs: vscode.Tab[] = vscode.window.tabGroups.all.map(tg => tg.tabs).flat();
+	console.log("Tabs length: " + tabs.length);
+	for (let i = 0; i < tabs.length; i++) {
+		console.log("Tab " + i + ": " + tabs[i].input);
+		if (tabs[i].input instanceof vscode.TabInputText) {
+			console.log("Tab input uri path: " + (tabs[i].input as vscode.TabInputText).uri.path);
+		}
+	}
+    const index = tabs.findIndex(tab => tab.input instanceof vscode.TabInputText && tab.input.uri.path === filePath);
+	console.log("Index for closing file: " + index);
+    if (index !== -1) {
+        await vscode.window.tabGroups.close(tabs[index]);
+    }
+}
+
+teardown(async () => {
+  // Clean up all editors so the next test starts fresh.
+  await vscode.commands.executeCommand('workbench.action.closeAllEditors');
+});
 
 suite('Markdown and .treatments.yaml file detection', () => {
 	vscode.window.showInformationMessage('Start all tests.');
+	console.log("Workspace folder: " + vscode.workspace.workspaceFolders?.at(0));
+
+	// extension activates after first test case: try awaiting?
+
+	// empty.treatments.yaml
+	test('detecting empty .treatments.yaml file', async () => {
+		const filePath = path.resolve('src/test/suite/fixtures/empty.treatments.yaml');
+		console.log(filePath);
+		const document = await vscode.workspace.openTextDocument(filePath);
+
+		assert.strictEqual(detectTreatmentsYaml(document), true);
+	});
+
+	// filter.treatments.yaml
+	test('detecting .treatments.yaml file', async () => {
+		const filePath = path.resolve('src/test/suite/fixtures/filter.treatments.yaml');
+		console.log(filePath);
+		const document = await vscode.workspace.openTextDocument(filePath);
+
+		console.log("document uri: " + document.uri.toString());
+
+		const diagnostics = vscode.languages.getDiagnostics(document.uri);
+		console.log("length of diagnostics from vscode.languages: " + diagnostics.length);
+		console.log("Length of diagnostics for filter: " + diagnosticCollection.get(document.uri)!!.length);
+
+		assert.strictEqual(detectTreatmentsYaml(document), true);
+	});
+
+	test('not detecting .yaml file', async () => {
+		const filePath = path.resolve('src/test/suite/fixtures/filter.yaml');
+		console.log(filePath);
+		const document = await vscode.workspace.openTextDocument(filePath);
+
+		assert.strictEqual(detectTreatmentsYaml(document), false);
+	});
+
+	// allTalk.md
+	test('not detecting markdown (or other different) file type', async () => {
+		const filePath = path.resolve('src/test/suite/fixtures/allTalk.md');
+		console.log(filePath);
+		const document = await vscode.workspace.openTextDocument(filePath);
+
+		assert.strictEqual(detectTreatmentsYaml(document), false);
+	});
+
+	// incorrectFile.txt
+	test('Wrong text file type for markdown detection', async () => {
+		const filePath = path.resolve('src/test/suite/fixtures/incorrectFile.txt');
+		console.log(filePath);
+		const document = await vscode.workspace.openTextDocument(filePath);
+
+		assert.strictEqual(detectPromptMarkdown(document), false);
+	});
 
 	// emptyField.md
 	test('Header exists but field is empty', async () => {
@@ -17,6 +91,9 @@ suite('Markdown and .treatments.yaml file detection', () => {
 		const filePath = path.resolve('src/test/suite/fixtures/emptyField.md');
 		console.log(filePath);
 		const document = await vscode.workspace.openTextDocument(filePath);
+
+		// closes document
+		// await vscode.commands.executeCommand('workbench.action.closeActiveEditor');
 
 		assert.strictEqual(detectPromptMarkdown(document), true);
 	});
@@ -29,16 +106,6 @@ suite('Markdown and .treatments.yaml file detection', () => {
 		const document = await vscode.workspace.openTextDocument(filePath);
 
 		assert.strictEqual(detectPromptMarkdown(document), true);
-	});
-
-
-	// incorrectFile.txt
-	test('Wrong text file type for markdown detection', async () => {
-		const filePath = path.resolve('src/test/suite/fixtures/incorrectFile.txt');
-		console.log(filePath);
-		const document = await vscode.workspace.openTextDocument(filePath);
-
-		assert.strictEqual(detectPromptMarkdown(document), false);
 	});
 
 
@@ -98,40 +165,6 @@ suite('Markdown and .treatments.yaml file detection', () => {
 
 		assert.strictEqual(detectPromptMarkdown(document), true);
 	});
-
-	// filter.treatments.yaml
-	test('detecting .treatments.yaml file', async () => {
-		const filePath = path.resolve('src/test/suite/fixtures/filter.treatments.yaml');
-		console.log(filePath);
-		const document = await vscode.workspace.openTextDocument(filePath);
-
-		assert.strictEqual(detectTreatmentsYaml(document), true);
-	});
-
-	test('not detecting .yaml file', async () => {
-		const filePath = path.resolve('src/test/suite/fixtures/filter.yaml');
-		console.log(filePath);
-		const document = await vscode.workspace.openTextDocument(filePath);
-
-		assert.strictEqual(detectTreatmentsYaml(document), false);
-	});
-
-	test('detecting empty .treatments.yaml file', async () => {
-		const filePath = path.resolve('src/test/suite/fixtures/empty.treatments.yaml');
-		console.log(filePath);
-		const document = await vscode.workspace.openTextDocument(filePath);
-
-		assert.strictEqual(detectTreatmentsYaml(document), true);
-	});
-
-	// allTalk.md
-	test('not detecting markdown (or other different) file type', async () => {
-		const filePath = path.resolve('src/test/suite/fixtures/allTalk.md');
-		console.log(filePath);
-		const document = await vscode.workspace.openTextDocument(filePath);
-
-		assert.strictEqual(detectTreatmentsYaml(document), false);
-	});
 });
 
 suite('Diagnostics detection', () => {
@@ -143,13 +176,16 @@ suite('Diagnostics detection', () => {
 		const document = await vscode.workspace.openTextDocument(filePath);
 		console.log(document.uri.path);
 
-		await new Promise(resolve => setTimeout(resolve, 500));
+		// await new Promise(resolve => setTimeout(resolve, 500));
 		
-		// const diagnostics = vscode.languages.getDiagnostics(document.uri);
-		
-		const diagnostics = diagnosticCollection.get(document.uri);
+		const diagnostics = vscode.languages.getDiagnostics(document.uri);
+		for (let i = 0; i < diagnostics.length; i++) {
+			const d = diagnostics[i];
+			console.log("index: " + i + " message: " + d.message + " range start line: " + d.range.start.line + " range end line: " + d.range.end.line);
+		}
 		console.log("Diagnostics undefined", diagnostics === undefined);
 		console.log("Length of diagnostics: " + diagnostics?.length);
+		console.log("Diagnostic error: " + diagnostics[0]);
 		assert.strictEqual(diagnostics?.length, 0);
 	});
 
@@ -160,47 +196,49 @@ suite('Diagnostics detection', () => {
 		const document = await vscode.workspace.openTextDocument(filePath);
 		console.log(document.uri.path);
 
-		await new Promise(resolve => setTimeout(resolve, 500));
+		// await new Promise(resolve => setTimeout(resolve, 500));
 		
-		const diagnostics = diagnosticCollection.get(document.uri);
+		const diagnostics = vscode.languages.getDiagnostics(document.uri);
+		for (let i = 0; i < diagnostics.length; i++) {
+			const d = diagnostics[i];
+			console.log("index: " + i + " message: " + d.message + " range start line: " + d.range.start.line + " range end line: " + d.range.end.line);
+		}
 		console.log("Length of diagnostics: " + diagnostics?.length);
 		assert.strictEqual(diagnostics?.length, 0);
 	});
 
-	// test('Diagnostics register on opened treatments yaml file with errors', async () => {
+	// Make more specific with testing specific diagnostics and errors
+	test('Diagnostics register on opened treatments yaml file with errors', async () => {
 
-	// 	const filePath = path.resolve('src/web/test/suite/fixtures/filter.treatments.yaml');
-	// 	console.log(filePath);
-	// 	const document = await vscode.workspace.openTextDocument(filePath);
-	// 	console.log(document.uri.path);
+		const filePath = path.resolve('src/test/suite/fixtures/filter.treatments.yaml');
+		console.log(filePath);
+		const document = await vscode.workspace.openTextDocument(filePath);
+		console.log(document.uri.path);
+		const diagnostics = vscode.languages.getDiagnostics(document.uri);
+		for (let i = 0; i < diagnostics.length; i++) {
+			const d = diagnostics[i];
+			console.log("index: " + i + " message: " + d.message + " range start line: " + d.range.start.line + " range end line: " + d.range.end.line);
+		}
+		const length = diagnostics?.length!!;
+		console.log("Length of diagnostics: " + length);
+		assert.strictEqual(length > 0, true);
+	});
 
-	// 	await new Promise(resolve => setTimeout(resolve, 500));
+	// emptyField.md
+	// 1. invalid number of --- separators
+	// 2. type is empty, should be enum
+	// 3. no prompt text
+	// make more specific to test for specific errors
+	test('Diagnostics register on opened markdown file with errors', async () => {
+
+		const filePath = path.resolve('src/test/suite/fixtures/emptyField.md');
+		console.log(filePath);
+		const document = await vscode.workspace.openTextDocument(filePath);
+		console.log(document.uri.path);
+
+		// await new Promise(resolve => setTimeout(resolve, 1000));
 		
-	// 	const diagnostics = diagnosticCollection.get(document.uri);
-	// 	const length = diagnostics?.length!!;
-	// 	console.log("Length of diagnostics: " + length);
-	// 	assert.strictEqual(length > 0, true);
-	// });
-
-	// // emptyField.md: type is empty, should be enum (will throw error)
-	// test('Diagnostics register on opened markdown file with errors', async () => {
-	// 	// const extension = vscode.extensions.getExtension('undefined_publisher.deliberation-lab-tools');
-	// 	// console.log("Loading extension");
-	// 	// assert.ok(extension);
-	// 	// console.log("Activating extension");
-	// 	// await extension?.activate();
-	// 	// assert.ok(extension!.isActive);
-
-	// 	const filePath = path.resolve('src/web/test/suite/fixtures/emptyField.md');
-	// 	console.log(filePath);
-	// 	const document = await vscode.workspace.openTextDocument(filePath);
-	// 	console.log(document.uri.path);
-
-	// 	await new Promise(resolve => setTimeout(resolve, 500));
-		
-	// 	const diagnostics = diagnosticCollection.get(document.uri);
-	// 	const length = diagnostics?.length!!;
-	// 	console.log("Length of diagnostics: " + length);
-	// 	assert.strictEqual(length > 0, true);
-	// });
+		const diagnostics = vscode.languages.getDiagnostics(document.uri);
+		assert.strictEqual(diagnostics.length, 3);
+	});
 });

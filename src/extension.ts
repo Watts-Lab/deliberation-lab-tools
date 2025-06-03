@@ -127,6 +127,7 @@ export function activate(context: vscode.ExtensionContext) {
         vscode.DiagnosticSeverity.Warning
       )
     );
+    console.log("diagnostics length on one error: " + diagnostics.length);
   }
 
   // Helper function to find the position of a node in the AST based on the path  
@@ -196,6 +197,8 @@ export function activate(context: vscode.ExtensionContext) {
   function parseDocument(document: vscode.TextDocument) {
     if (detectTreatmentsYaml(document)) {
       console.log("Processing .treatments.yaml file...");
+      console.log("Document URI from extension");
+      console.log(document.uri.toString());
       const diagnostics: vscode.Diagnostic[] = [];
 
       // Parse YAML content into AST
@@ -221,6 +224,9 @@ export function activate(context: vscode.ExtensionContext) {
             )
           );
           diagnosticCollection.set(document.uri, diagnostics);
+          console.log("document uri IN EXTENSION: " + document.uri.toString());
+          console.log("Length of diagnostics for yaml: " + diagnostics.length);
+          console.log("Length of diagnostic collection for yaml: " + diagnosticCollection.get(document.uri)!!.length);
         }
         parsedData = null;
         return;
@@ -259,6 +265,8 @@ export function activate(context: vscode.ExtensionContext) {
 
       // Update diagnostics in VS Code
       diagnosticCollection.set(document.uri, diagnostics);
+      console.log("Length of diagnostics for yaml: " + diagnostics.length);
+      console.log("Length of diagnostic collection for yaml: " + diagnosticCollection.get(document.uri)!!.length);
     } else if (detectPromptMarkdown(document)) {
       console.log("Processing .md file...");
       const diagnostics: vscode.Diagnostic[] = [];
@@ -292,6 +300,8 @@ export function activate(context: vscode.ExtensionContext) {
       try {
         const workspaceFolder = vscode.workspace.getWorkspaceFolder(document.uri);
         console.log("Workspace folder:", workspaceFolder);
+        // Is it possible to have a prompt markdown file not in a repository/folder opened in VSCode?
+        // If so, we should add an else case to catch this edge case - could just set relative path to full file system path
         if (workspaceFolder) {
           relativePath = vscode.workspace.asRelativePath(document.uri);
           console.log("Relative path:", relativePath);
@@ -343,7 +353,7 @@ export function activate(context: vscode.ExtensionContext) {
         return;
       }
 
-
+      console.log("Relative path before passing into schema: " + relativePath);
 
       //Metadata validation
       const result = metadataSchema(relativePath).safeParse(
