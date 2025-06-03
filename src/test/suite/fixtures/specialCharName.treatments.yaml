@@ -21,7 +21,7 @@ templates:
     - name: Discussion
       duration: 900
       discussion:
-        chatType: ${chatType}
+        chatType: text
         showNickname: true
         showTitle: false
       elements:

@@ -1,204 +1,424 @@
 templates:
-  - templateName: disagreeing_dyads
-    templateDesc: Main experiment template
+  - templateName: topicPrompt
+    templateContent:
+      type: prompt
+      name: "${topicName}_presurvey"
+      file: "shared/yesNo/${topicName}_survey.md"
+      tags: ["predictor"]
+
+  - templateName: topicCondition
+    templateContent:
+      reference: prompt.${topicName}_presurvey
+      comparator: exists
+
+  - templateName: introSequence
+    templateDesc: generic presurvey
+    templateContent:
+      name: ${sequenceName}
+      introSteps:
+        - name: PoliticalLeaningsSurvey
+          elements:
+            - type: survey
+              surveyName: PoliticalPartyUS
+              name: partyAffiliation
+              tags: ["predictor"]
+
+        - name: FeelingThermometerPretest # 2 questions
+          elements:
+            - type: survey
+              name: feelingThermometerPretest
+              surveyName: PartisanFeelingThermometerUS # asks about both parties
+              tags: ["predictor"]
+
+        - name: TraitRatingsPretest # 8 questions
+          elements: # if participants are not US partisans, we use this page to show them a screen-out code
+            - type: prompt
+              file: projects/css_lab/ct_topic/consider_democrats.md
+              conditions:
+                - reference: survey.partyAffiliation.result.normPosition
+                  comparator: isAbove
+                  value: 0.5
+                - reference: connectionInfo.country
+                  comparator: equals
+                  value: US
+            - type: prompt
+              file: projects/css_lab/ct_topic/consider_republicans.md
+              conditions:
+                - reference: survey.partyAffiliation.result.normPosition
+                  comparator: isBelow
+                  value: 0.5
+                - reference: connectionInfo.country
+                  comparator: equals
+                  value: US
+            - type: survey
+              surveyName: TraitRatings
+              name: traitRatingsPretest
+              tags: ["predictor"]
+              conditions:
+                - reference: survey.partyAffiliation.result.normPosition
+                  comparator: doesNotEqual
+                  value: 0.5
+                - reference: connectionInfo.country
+                  comparator: equals
+                  value: US
+
+            - type: prompt # show screener if not a partisan
+              file: projects/css_lab/ct_topic/screener.md
+              conditions:
+                - reference: survey.partyAffiliation.result.normPosition
+                  comparator: equals
+                  value: 0.5
+
+            - type: prompt # show screener if not in the US
+              file: projects/css_lab/ct_topic/screener.md
+              conditions:
+                - reference: connectionInfo.country
+                  comparator: doesNotEqual
+                  value: US
+
+        - name: RME # 10 questions
+          elements:
+            - type: survey
+              surveyName: RmeTen
+              name: RME
+              tags: ["predictor"]
+
+        - name: Big-5 # 10 questions
+          elements:
+            - type: survey
+              name: big5Personality
+              surveyName: TIPI
+              tags: ["predictor"]
+
+        - name: TopicPreSurvey
+          elements:
+            - type: prompt
+              file: projects/css_lab/ct_topic/presurvey_instructions.md
+
+            - template: topicPrompt
+              broadcast:
+                d0: ${discussionTopicNames}
+
+            - type: prompt
+              name: attentionCheck
+              file: projects/css_lab/ct_topic/attention_check.md
+
+            - template: topicPrompt
+              broadcast:
+                d0: ${otherWaveTopicNames}
+
+            - type: prompt
+              file: projects/css_lab/ct_topic/all_mandatory.md
+
+            - type: submitButton
+              buttonText: Continue
+              name: topicPreSurveySubmit
+              conditions:
+                - template: topicCondition
+                  broadcast:
+                    d0: ${discussionTopicNames}
+                - template: topicCondition
+                  broadcast:
+                    d0: ${otherWaveTopicNames}
+                - reference: prompt.attentionCheck
+                  comparator: exists
+
+        - name: Demographics
+          elements:
+            - type: survey
+              surveyName: DemographicsShortUS
+              name: demographics
+              tags: ["predictor"]
+
+  - templateName: crossPartisanDiscussion
+    templateDesc: for measuring the effect of topic on cross-party discussion outcomes
     templateContent:
       name: ${treatmentName}
       playerCount: 2
-
       groupComposition:
         - position: 0
+          title: "Democrat"
           conditions:
-            - reference: "prompt."
-              comparator: includes
-              value: ${p0}
+            - reference: survey.partyAffiliation.result.normPosition
+              comparator: isBelow
+              value: 0.5
+            - reference: prompt.${topicName}_presurvey
+              comparator: equals
+              value: ${demPosition}
+            - reference: connectionInfo.country
+              comparator: equals
+              value: US
+
         - position: 1
+          title: "Republican"
           conditions:
-            - reference: "prompt.${topic}"
-              comparator: includes
-              value: ${p1}
+            - reference: survey.partyAffiliation.result.normPosition
+              comparator: isAbove
+              value: 0.5
+            - reference: prompt.${topicName}_presurvey
+              comparator: equals
+              value: ${repPosition}
+            - reference: connectionInfo.country
+              comparator: equals
+              value: US
 
       gameStages:
-        - name: Strategies and Filler
-          duration: 180
+        - name: AttitudeAttributes
+          duration: 300
           elements:
+            - type: audio
+              file: shared/westminster_short.mp3
             - type: prompt
-              file: projects/weinstein_listening/disagreeing_dyads/please_wait.md
-              showToPositions: [0]
+              file: projects/css_lab/ct_topic/attitude_attribute_instructions_A.md
             - type: prompt
-              file: projects/weinstein_listening/disagreeing_dyads/LG_PG_why_A.md
-              showToPositions: [1]
-            - type: prompt
-              file: "projects/weinstein_listening/disagreeing_dyads/topics/${topic}_discussion.md"
-              showToPositions: [1]
-            - type: prompt
-              file: "projects/weinstein_listening/disagreeing_dyads/${learningOrPersuasion}_why_B.md"
-              name: LG_PG_why
-              showToPositions: [1]
-            - type: submitButton
-              displayTime: 120
-              buttonText: Continue
-
-        - name: Opinion Notes
-          duration: 180
-          elements:
-            - type: prompt
-              file: projects/weinstein_listening/disagreeing_dyads/GA_A.md
-              showToPositions: [0]
-            - type: prompt
-              file: projects/weinstein_listening/disagreeing_dyads/LG_PG_write_A.md
-              showToPositions: [1]
-            - type: prompt
-              file: "projects/weinstein_listening/disagreeing_dyads/topics/${topic}_discussion.md"
-            - type: prompt
-              file: projects/weinstein_listening/disagreeing_dyads/GA_B.md
-              showToPositions: [0]
-              name: GA
-            - type: prompt
-              file: "projects/weinstein_listening/disagreeing_dyads/${learningOrPersuasion}_write_B.md"
-              showToPositions: [1]
-              name: LG_PG_write
-            - type: submitButton
-              displayTime: 120
-              buttonText: Continue
-
-        - name: Attitude Attributes
-          duration: 90
-          elements:
-            - type: prompt
-              file: projects/weinstein_listening/disagreeing_dyads/presurvey/PIA_setup.md
-            - type: prompt
-              file: "projects/weinstein_listening/disagreeing_dyads/topics/${topic}_discussion.md"
-            - type: prompt
-              file: projects/weinstein_listening/disagreeing_dyads/presurvey/PIA_1.md
-              name: PIA_1
-            - type: prompt
-              file: projects/weinstein_listening/disagreeing_dyads/presurvey/PIA_2.md
-              name: PIA_2
-            - type: prompt
-              file: projects/weinstein_listening/disagreeing_dyads/presurvey/PIA_3.md
-              name: PIA_3
-            - type: prompt
-              file: projects/weinstein_listening/disagreeing_dyads/all_requested.md
-            - type: submitButton
-              buttonText: Continue
-
-        - name: Conversation Expectations
-          duration: 120
-          elements:
-            - type: prompt
-              file: projects/weinstein_listening/disagreeing_dyads/presurvey/PIQ_setup.md
-            - type: prompt
-              file: projects/weinstein_listening/disagreeing_dyads/presurvey/PIQ_1.md
-              name: PIQ_1
-            - type: prompt
-              file: projects/weinstein_listening/disagreeing_dyads/presurvey/PIQ_2.md
-              name: PIQ_2
-            - type: prompt
-              file: projects/weinstein_listening/disagreeing_dyads/presurvey/PIQ_3.md
-              name: PIQ_3
-            - type: prompt
-              file: projects/weinstein_listening/disagreeing_dyads/presurvey/PIQ_4.md
-              name: PIQ_4
-            - type: prompt
-              file: projects/weinstein_listening/disagreeing_dyads/presurvey/PIQ_5.md
-              name: PIQ_5
-            - type: prompt
-              file: projects/weinstein_listening/disagreeing_dyads/presurvey/PIQ_6.md
-              name: PIQ_6
-            - type: submitButton
-              buttonText: Continue
-
-        - name: Pre-discussion Reminder
-          duration: 60
-          elements:
-            - type: prompt
-              file: projects/weinstein_listening/disagreeing_dyads/GA_remind_A.md
-              showToPositions: [0]
-            - type: prompt
-              file: "projects/weinstein_listening/disagreeing_dyads/${learningOrPersuasion}_remind_A.md"
-              showToPositions: [1]
-            - type: prompt
-              file: "projects/weinstein_listening/disagreeing_dyads/topics/${topic}_discussion.md"
-            - type: prompt
-              file: projects/weinstein_listening/disagreeing_dyads/GA_remind_B.md
-              showToPositions: [0]
-            - type: prompt
-              file: "projects/weinstein_listening/disagreeing_dyads/${learningOrPersuasion}_remind_B.md"
-              showToPositions: [1]
+              file: "shared/yesNo/${topicName}_discussion.md"
             - type: display
-              reference: prompt.GA
+              reference: prompt.${topicName}_presurvey
+              position: player
+            - type: prompt
+              file: projects/css_lab/ct_topic/attitude_attribute_instructions_B.md
+            - type: survey
+              name: attitudeAttributes
+              surveyName: AttitudeAttributes
+              tags: ["predictor"]
+
+        - name: PreDiscussionInstructions
+          duration: 45
+          elements:
+            - type: prompt
+              file: projects/css_lab/ct_topic/pre_discussion_instructions_democrat.md
               showToPositions: [0]
-            - type: display
-              reference: prompt.LG_PG_write
+            - type: prompt
+              file: projects/css_lab/ct_topic/pre_discussion_instructions_republican.md
               showToPositions: [1]
             - type: submitButton
-              buttonText: Continue
+              name: preDiscussionInstructions
+              buttonText: Begin Discussion
 
         - name: Discussion
-          duration: 600
+          duration: 900
           discussion:
             chatType: video
             showNickname: true
-            showTitle: false
+            showTitle: true
           elements:
             - type: prompt
-              file: projects/weinstein_listening/disagreeing_dyads/discussion_instructions_5min.md
-              displayTime: 300
-              hideTime: 330
+              file: projects/css_lab/ct_topic/discussion_instructions.md
             - type: prompt
-              file: projects/weinstein_listening/disagreeing_dyads/discussion_instructions_8min.md
-              displayTime: 480
-              hideTime: 510
+              file: "shared/yesNo/${topicName}_discussion.md"
             - type: prompt
-              file: "projects/weinstein_listening/disagreeing_dyads/${learningOrPersuasion}_discussion_goal_reminder.md"
-              showToPositions: [1]
-            - type: prompt
-              file: projects/weinstein_listening/disagreeing_dyads/discussion_instructions_A.md
-            - type: prompt
-              file: "projects/weinstein_listening/disagreeing_dyads/topics/${topic}_discussion.md"
-            - type: prompt
-              file: projects/weinstein_listening/disagreeing_dyads/discussion_instructions_B.md
-            - type: display
-              reference: prompt.GA
-              showToPositions: [0]
-            - type: display
-              reference: prompt.LG_PG_write
-              showToPositions: [1]
+              file: projects/css_lab/ct_topic/discussion_wrapup.md
+              displayTime: 600
+            - type: submitButton
+              name: endCall
+              buttonText: End the call and proceed to surveys
+              displayTime: 600
+              tags: ["outcome"]
 
       exitSequence:
         - name: PostDiscussionInstructions
           elements:
             - type: prompt
-              file: projects/weinstein_listening/disagreeing_dyads/postdiscussion_instructions.md
+              file: projects/css_lab/ct_topic/post_discussion_instructions.md
             - type: submitButton
               buttonText: Proceed to Survey
-        - name: Qualtrics_Escape_Hatch
+
+        - name: AttitudeChange # 1 question
           elements:
-            - type: qualtrics
-              url: https://upenn.co1.qualtrics.com/jfe/form/SV_2bfMgUw37Y2AUZg
+            - type: prompt
+              file: projects/css_lab/ct_topic/attitude_change_instructions.md
+            - type: prompt
+              name: discussionTopicPostAttitude
+              file: "shared/yesNo/${topicName}_survey.md"
+              tags: ["outcome"]
+            - type: prompt
+              file: projects/css_lab/ct_topic/all_mandatory.md
+            - type: submitButton
+              conditions:
+                - reference: prompt.discussionTopicPostAttitude
+                  comparator: exists
+
+        - name: ManipulationCheck # 2 questions
+          elements:
+            - type: prompt
+              file: projects/css_lab/ct_topic/consider_partner.md
+
+            - type: display
+              reference: participantInfo.name
+              position: 0
+              showToPositions: [1]
+            - type: display
+              reference: participantInfo.name
+              position: 1
+              showToPositions: [0]
+
+            - type: prompt
+              file: projects/css_lab/ct_topic/guess_partner_party.md
+              name: guessPartnerParty
+              tags: ["outcome"]
+            - type: prompt
+              file: projects/css_lab/ct_topic/guess_partner_position.md
+            - type: prompt
+              file: "shared/yesNo/${topicName}_survey.md"
+              name: guessPartnerPosition
+              tags: ["outcome"]
+            - type: prompt
+              file: projects/css_lab/ct_topic/all_mandatory.md
+            - type: submitButton
+              conditions:
+                - reference: prompt.guessPartnerParty
+                  comparator: exists
+                - reference: prompt.guessPartnerPosition
+                  comparator: exists
+
+        - name: PerceptionOfPartner # 8 questions
+          elements:
+            - type: prompt
+              file: projects/css_lab/ct_topic/consider_partner.md
+
+            - type: display
+              reference: .
+              position: 0
+              showToPositions: [1]
+            - type: display
+              reference: participantInfo.name
+              position: 1
+              showToPositions: [0]
+
+            - type: survey
+              name: PerceptionOfPartner
+              surveyName: PerceptionOfOthers
+              tags: ["outcome"]
+
+        - name: DiscussionGeneralPerception # 9 questions
+          elements:
+            - type: survey
+              name: discussionGeneral
+              surveyName: DiscussionGeneral
+              tags: ["outcome"]
+
+        - name: FeelingThermometerPostTest # 2 questions
+          elements:
+            - type: survey
+              name: feelingThermometerPosttest
+              surveyName: PartisanFeelingThermometerUS # asks about both parties
+              tags: ["outcome"]
+
+        - name: TraitRatingsPostTest # 8 questions
+          elements:
+            - type: prompt
+              file: projects/css_lab/ct_topic/consider_democrats.md
+              showToPositions: [1]
+            - type: prompt
+              file: projects/css_lab/ct_topic/consider_republicans.md
+              showToPositions: [0]
+            - type: survey
+              surveyName: TraitRatings
+              name: traitRatingsPosttest
+              tags: ["outcome"]
+
+        - name: Bipartisanship # 3 questions
+          elements:
+            - type: survey
+              surveyName: BipartisanshipUS
+              name: bipartisanship
+              tags: ["outcome"]
+
+        - name: Reengagement # 3 questions
+          elements:
+            - type: survey
+              surveyName: DiscussionReengagement
+              name: discussionReengagement
+              tags: ["outcome"]
 
 introSequences:
-  - name: default
-    introSteps:
-      - name: self_construal
-        elements:
-          - type: prompt
-            file: projects/weinstein_listening/disagreeing_dyads/presurvey/SC_setup.md
-      - name: topic_survey
-        elements:
-          - type: prompt
-            file: projects/weinstein_listening/disagreeing_dyads/presurvey_instructions.md
+  - template: introSequence
+    fields:
+      sequenceName: wave1
+      discussionTopicNames:
+        - topicName: fundNeedleExchange
+        - topicName: israelAid
+        - topicName: slaveReparations
+        - topicName: universalIncome
+        - topicName: schoolDressCode
+      otherWaveTopicNames:
+        - topicName: freeInternet
+        - topicName: gunControl
+        - topicName: abortionLegality
+        - topicName: teacherTenure
+        - topicName: reduceMilitaryBudget
+
+  - template: introSequence
+    fields:
+      sequenceName: wave2
+      discussionTopicNames:
+        - topicName: drinkingAge
+        - topicName: sportsPEDs
+        - topicName: capAndTrade
+        - topicName: policeDefundingDiscrimination
+        - topicName: cubaEmbargo
+      otherWaveTopicNames:
+        - topicName: sugaryDrinkBan
+        - topicName: controlledBurns
+        - topicName: minorityGrants
+        - topicName: affirmativeAction
+        - topicName: nativeReparations
 
 treatments:
-  - template: disagreeing_dyads
+  - template: crossPartisanDiscussion
     fields:
-      treatmentName: "${learningOrPersuasion}_condition_${topic}_${p0}_${p1}"
+      waveNumber: 1
+      treatmentName: "wave_1_${topicName}_dem_${d0}_rep_${d1}"
     broadcast:
-      d0:  
-        - learningOrPersuasion: LG
-        - learningOrPersuasion: PG
+      d0:
+        - demPosition: Strongly No
+        - demPosition: Mostly No
+        - demPosition: Slightly No
+        - demPosition: Neutral
+        - demPosition: Slightly Yes
+        - demPosition: Mostly Yes
+        - demPosition: Strongly Yes
       d1:
-        - topic: bathroom_choice
-        - topic: censoring_extremism
+        - repPosition: Strongly No
+        - repPosition: Mostly No
+        - repPosition: Slightly No
+        - repPosition: Neutral
+        - repPosition: Slightly Yes
+        - repPosition: Mostly Yes
+        - repPosition: Strongly Yes
+      d2:
+        - topicName: fundNeedleExchange
+        - topicName: israelAid
+        - topicName: slaveReparations
+        - topicName: universalIncome
+        - topicName: schoolDressCode
+
+  - template: crossPartisanDiscussion
+    fields:
+      waveNumber: 2
+      treatmentName: "wave_2_${topicName}_dem_${d0}_rep_${d1}"
+    broadcast:
+      d0:
+        - demPosition: Strongly No
+        - demPosition: Mostly No
+        - demPosition: Slightly No
+        - demPosition: Neutral
+        - demPosition: Slightly Yes
+        - demPosition: Mostly Yes
+        - demPosition: Strongly Yes
+      d1:
+        - repPosition: Strongly No
+        - repPosition: Mostly No
+        - repPosition: Slightly No
+        - repPosition: Neutral
+        - repPosition: Slightly Yes
+        - repPosition: Mostly Yes
+        - repPosition: Strongly Yes
+      d2:
+        - topicName: drinkingAge
+        - topicName: sportsPEDs
+        - topicName: capAndTrade
+        - topicName: policeDefundingDiscrimination
+        - topicName: cubaEmbargo
 
 # path in reference in groupComposition is not valid path

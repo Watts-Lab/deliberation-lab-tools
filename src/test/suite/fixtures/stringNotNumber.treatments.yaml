@@ -7,7 +7,7 @@ introSequences:
           - type: survey
             surveyName: TIPI
 
-      - name: Self-awareness, Self-monitoring, and Growth Mindset
+      - name: Self-awareness Self-monitoring and Growth Mindset
         elements:
           - type: survey
             surveyName: AwarenessMonitoringGrowth
@@ -16,7 +16,6 @@ treatments:
   - name: baseline
     desc: So Good exercise baseline
     playerCount: two
-    assignPositionsBy: random
     groupComposition:
       - desc: First Speaker
         position: 0

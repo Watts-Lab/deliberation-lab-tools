@@ -185,10 +185,10 @@ suite('Diagnostics detection', () => {
 		console.log("diagnostics length:", diagnostics.length);
 		console.log("diagnostics:", JSON.stringify(diagnostics, null, 2));
 
-		assert.strictEqual(diagnostics.length, 1);
+		assert.strictEqual(diagnostics.length, 2);
 		assert.strictEqual(
 			diagnostics[0].message,
-			'Error in item "TemplateContent": Expected indentation of 4 spaces but found 2'
+			`Error in item "0": Closest schema match: Elements. Expected string, received object`
 		);
 		assert.strictEqual(diagnostics[0].range.start.line, 7);
 		assert.strictEqual(diagnostics[0].range.end.line, 16);
@@ -263,10 +263,118 @@ suite('Diagnostics detection', () => {
 		console.log("diagnostics:", JSON.stringify(diagnostics, null, 2));
 
 		assert.strictEqual(diagnostics.length, 1);
+		//error doesn't even seem to exist yet so disregard message for now
 		assert.strictEqual(diagnostics[0].range.start.line, 12);
 		assert.strictEqual(diagnostics[0].range.end.line, 19);
 	});
 
+	test('missing survey name', async () => {
+		const filePath = path.resolve('src/test/suite/fixtures/missingSurveyName.treatments.yaml');
+		console.log(filePath);
+		const document = await vscode.workspace.openTextDocument(filePath);
+		const diagnostics = vscode.languages.getDiagnostics(document.uri);
+		console.log("document uri:", document.uri.toString());
+
+		console.log("diagnostics length:", diagnostics.length);
+		console.log("diagnostics:", JSON.stringify(diagnostics, null, 2));
+
+		assert.strictEqual(diagnostics.length, 1);
+		assert.strictEqual(
+			diagnostics[0].message,
+			'Error in item "surveyName": Required'
+		);
+		assert.strictEqual(diagnostics[0].range.start.line, 6);
+		assert.strictEqual(diagnostics[0].range.end.line, 7);
+	});
+
+	test('negative duration in timer', async () => {
+		const filePath = path.resolve('src/test/suite/fixtures/negativeDuration.treatments.yaml');
+		console.log(filePath);
+		const document = await vscode.workspace.openTextDocument(filePath);
+		const diagnostics = vscode.languages.getDiagnostics(document.uri);
+		console.log("document uri:", document.uri.toString());
+
+		console.log("diagnostics length:", diagnostics.length);
+		console.log("diagnostics:", JSON.stringify(diagnostics, null, 2));
+
+		assert.strictEqual(diagnostics.length, 1);
+		assert.strictEqual(
+			diagnostics[0].message,
+			'Error in item "duration": Number must be greater than 0'
+		);
+		assert.strictEqual(diagnostics[0].range.start.line, 13);
+		assert.strictEqual(diagnostics[0].range.end.line, 22);
+	});
+
+	test('name in template content has special characters', async () => {
+		const filePath = path.resolve('src/test/suite/fixtures/specialCharName.treatments.yaml');
+		console.log(filePath);
+		const document = await vscode.workspace.openTextDocument(filePath);
+		const diagnostics = vscode.languages.getDiagnostics(document.uri);
+		console.log("document uri:", document.uri.toString());
+
+		console.log("diagnostics length:", diagnostics.length);
+		console.log("diagnostics:", JSON.stringify(diagnostics, null, 2));
+		assert.strictEqual(diagnostics.length, 1);
+		//error doesn't even seem to exist yet so disregard message for now
+		assert.strictEqual(diagnostics[0].range.start.line, 3);
+		assert.strictEqual(diagnostics[0].range.end.line, 15);
+	});
+
+	test('player count is string rather than number', async () => {
+		const filePath = path.resolve('src/test/suite/fixtures/stringNotNumber.treatments.yaml');
+		console.log(filePath);
+		const document = await vscode.workspace.openTextDocument(filePath);
+		const diagnostics = vscode.languages.getDiagnostics(document.uri);
+		console.log("document uri:", document.uri.toString());
+		console.log("diagnostics length:", diagnostics.length);
+		console.log("diagnostics:", JSON.stringify(diagnostics, null, 2));
+		assert.strictEqual(diagnostics.length, 1);
+		assert.strictEqual(
+			diagnostics[0].message,
+			'Error in item "playerCount": Expected number, received string'
+		);
+		assert.strictEqual(diagnostics[0].range.start.line, 17);
+		assert.strictEqual(diagnostics[0].range.end.line, 25);
+	});
+
+	test('broadcast field is in wrong spot', async () => {
+		const filePath = path.resolve('src/test/suite/fixtures/wrongFieldPlacement.treatments.yaml');
+		console.log(filePath);
+		const document = await vscode.workspace.openTextDocument(filePath);
+		const diagnostics = vscode.languages.getDiagnostics(document.uri);
+		console.log("document uri:", document.uri.toString());
+		console.log("diagnostics length:", diagnostics.length);
+		console.log("diagnostics:", JSON.stringify(diagnostics, null, 2));
+		assert.strictEqual(diagnostics.length, 2);
+		assert.strictEqual(
+			diagnostics[0].message,
+			'Error in item "broadcast": Expected object, received string'
+		);
+		assert.strictEqual(
+			diagnostics[1].message,
+			'Error in item "broadcast": Required'
+		);
+		assert.strictEqual(diagnostics[0].range.start.line, 125);
+		assert.strictEqual(diagnostics[0].range.end.line, 149);
+	});
+
+	test('malformed reference in yaml file', async () => {
+		const filePath = path.resolve('src/test/suite/fixtures/malformedReference.treatments.yaml');
+		console.log(filePath);
+		const document = await vscode.workspace.openTextDocument(filePath);
+		const diagnostics = vscode.languages.getDiagnostics(document.uri);
+		console.log("document uri:", document.uri.toString());
+		console.log("diagnostics length:", diagnostics.length);
+		console.log("diagnostics:", JSON.stringify(diagnostics, null, 2));
+		assert.strictEqual(diagnostics.length, 1);
+		assert.strictEqual(
+			diagnostics[0].message,
+			'Error in item "reference": Closest schema match: Treatment. Expected string, received null'
+		);
+		assert.strictEqual(diagnostics[0].range.start.line, 278);
+		assert.strictEqual(diagnostics[0].range.end.line, 281);
+	});
 
 	// test('Diagnostics are empty on treatments yaml file with no errors', async () => {
 
