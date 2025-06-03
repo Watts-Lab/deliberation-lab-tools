@@ -32,9 +32,13 @@ code --install-extension deliberation-lab-tools-0.0.1.vsix
 
 # Tests
 
-Tests are located in the file ```src/extension.test.ts``` with the test runner file ```runExtensionTests.js```. They can be ran with the following commands:
+Tests are located in the following files, separated by their functionality:
 
 ```
-npm install
-npm test
+src/test/suite/detection.test.ts
+src/test/suite/diagnostics.test.ts
 ```
+
+The file ```src/runExtensionTests.js``` runs a test script that calls the file ```src/test/suite/index.ts``` to execute these tests. All tests can be run at once with ```npm test``` (if this command is not working, make sure you run ```npm install``` first).
+
+If you want to test only one or a few test files, then run ```npm test --TEST_FILES {test_file_name} {test_file_name} ...```, making sure to separate specific test file names by spaces. For example, ```npm test --TEST_FILES detection.test.js``` runs only detection algorithm tests, and ```npm test --TEST_FILES diagnostics.test.js``` runs only diagnostic tests. ```npm test --TEST_FILES detection.test.js diagnostics.test.js``` runs both files in the specified order.
