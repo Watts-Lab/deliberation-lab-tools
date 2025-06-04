@@ -1,9 +1,8 @@
 name: Update Extension
 
 on:
-  push:
-    tags:
-      - 'v*'
+  release:
+    types: [created]
 
 jobs:
   release:
@@ -13,10 +12,16 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
 
+      # Gets commit of tag and checks if main is an ancestor of tag commit (e.g. tag is on main branch)
       - name: Verify tag commit is on main branch
         run: |
+          git fetch --tags origin
           git fetch origin main
-          if ! git merge-base --is-ancestor origin/main "$GITHUB_SHA"; then
+          TAG_NAME="${{ github.event.release.tag_name }}"
+          TAG_COMMIT=$(git rev-list -n 1 "$TAG_NAME")
+          echo "Resolved $TAG_NAME to commit $TAG_COMMIT"
+
+          if ! git merge-base --is-ancestor origin/main "$TAG_COMMIT"; then
             echo "Tag commit is not on main branch. Exiting."
             exit 1
           fi
