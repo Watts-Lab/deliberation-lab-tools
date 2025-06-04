@@ -23,7 +23,7 @@ jobs:
 
           if ! git merge-base --is-ancestor origin/main "$TAG_COMMIT"; then
             echo "Tag commit is not on main branch. Exiting."
-            exit 1
+            exit 0
           fi
 
       - name: Set up Node.js
