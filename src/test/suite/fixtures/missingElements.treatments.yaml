@@ -1,0 +1,28 @@
+introSequences:
+  - name: default
+    introSteps:
+      - name: presurvey
+        elements:
+          - type: qualtrics
+            url: https://oii.qualtrics.com/jfe/form/SV_6D1FDLFEQRqJByu
+
+treatments:
+  - name: default
+    playerCount: 2
+
+    gameStages:
+      - name: chat
+        duration: 300
+        discussion:
+          chatType: text
+          showNickname: true
+          showTitle: false
+        # ❌ Missing "elements" field here
+
+    exitSequence:
+      - name: postsurvey
+        elements:
+          - type: qualtrics
+            url: https://oii.qualtrics.com/jfe/form/SV_bCKP9iurcrlpjLM
+
+# gamestage missing required field "elements"

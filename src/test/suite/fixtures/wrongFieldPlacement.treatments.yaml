@@ -1,0 +1,161 @@
+templates:
+  - templateName: guessTask
+    templateContent:
+      - type: prompt
+        file: projects/exaptation/revision_202504/instruction_describer.md
+        hideFromPositions:
+          - ${guesserPosition}
+        conditions:
+          - reference: "prompt.continue_${lastIndex}"
+            position: any
+            comparator: exists
+          - reference: "prompt.guess_${index}"
+            position: all
+            comparator: doesNotExist
+
+      - type: image
+        file: ${imageFilepath}
+        hideFromPositions:
+          - ${guesserPosition}
+        conditions:
+          - reference: "prompt.continue_${lastIndex}"
+            position: any
+            comparator: exists
+          - reference: "prompt.continue_${index}"
+            position: all
+            comparator: doesNotExist
+
+      - type: image
+        file: ${panelFilepath}
+        showToPositions:
+          - ${guesserPosition}
+        conditions:
+          - reference: "prompt.continue_${lastIndex}"
+            position: any
+            comparator: exists
+          - reference: "prompt.continue_${index}"
+            position: all
+            comparator: doesNotExist
+
+      - type: prompt
+        name: "guess_${index}"
+        file: projects/exaptation/revision_202504/guess.md
+        showToPositions:
+          - ${guesserPosition}
+        conditions:
+          - reference: "prompt.continue_${lastIndex}"
+            position: any
+            comparator: exists
+          - reference: "prompt.guess_${index}"
+            position: all
+            comparator: doesNotExist
+
+      - type: prompt
+        file: projects/exaptation/revision_202504/answer_correct.md
+        conditions:
+          - reference: "prompt.guess_${index}"
+            position: any
+            comparator: equals
+            value: ${correctAnswer}
+          - reference: "prompt.continue_${index}"
+            position: all
+            comparator: doesNotExist
+
+      - type: prompt
+        file: projects/exaptation/revision_202504/answer_incorrect.md
+        conditions:
+          - reference: "prompt.guess_${index}"
+            position: any
+            comparator: exists
+          - reference: "prompt.guess_${index}"
+            position: all
+            comparator: doesNotEqual
+            value: ${correctAnswer}
+          - reference: "prompt.continue_${index}"
+            position: all
+            comparator: doesNotExist
+
+      - type: prompt
+        file: projects/exaptation/revision_202504/continue.md
+        name: "continue_${index}"
+        hideFromPositions:
+          - ${guesserPosition}
+        conditions:
+          - reference: "prompt.guess_${index}"
+            position: any
+            comparator: exists
+          - reference: "prompt.continue_${index}"
+            position: all
+            comparator: doesNotExist
+
+  - templateName: baseTreatment
+    templateContent:
+      name: ${name}
+      playerCount: 2
+      gameStages:
+        - name: Discussion
+          duration: 900
+          discussion:
+            chatType: ${chatType}
+            showNickname: true
+            showTitle: false
+          elements:
+            - template: guessTask
+
+            - type: submitButton
+              buttonText: "End Discussion and Proceed to Surveys"
+              conditions:
+                - reference: "prompt.continue_4_8"
+                  position: any
+                  comparator: exists
+
+      exitSequence:
+        - name: Describe Strategy
+          elements:
+            - type: prompt
+              file: projects/exaptation/revision_202504/describe_strategy.md
+            - type: submitButton
+
+        - name: Demographics
+          elements:
+            - type: survey
+              surveyName: Demographics
+
+introSequences:
+  - name: Default
+    introSteps:
+    broadcast:
+            d0:
+              - index: "1_1"
+                lastIndex: demo
+                guesserPosition: 0
+                panelFilepath: projects/exaptation/revision_202504/stimuli/round_1_panel_S.jpg
+                imageFilepath: projects/exaptation/revision_202504/stimuli/round_1_SOBB.jpg
+                correctAnswer: "2"
+      - name: Instructions Page
+        elements:
+          - type: prompt
+            file: projects/exaptation/revision_202504/instructions.md
+          - type: prompt # practice
+            file: projects/exaptation/revision_202504/guess.md
+            name: "continue_demo" # needs this name so that it can be referenced in the guessTask template for the first round
+          - type: submitButton
+            buttonText: "Continue"
+            conditions:
+              - reference: "prompt.continue_demo"
+                position: player
+                comparator: equals
+                value: "5"
+
+treatments:
+  - template: baseTreatment
+    fields:
+      name: "schema_video"
+      chatType: "video"
+
+  - template: baseTreatment
+    fields:
+      name: "schema_text"
+      chatType: "text"
+
+# broadcast field from elements field in gamestages field in templatecontent field in wrong place (introSequences)

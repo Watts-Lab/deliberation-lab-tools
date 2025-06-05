@@ -1,0 +1,329 @@
+templates:
+  # Displays a stage asking the user's opinion and knowledge of the topic,
+  # used in the intro sequence to gauge opinions.
+  - templateName: topicPrompt
+    templateContent:
+      - name: ${topicName}_presurvey
+        elements:
+          - type: prompt
+            file: projects/css_lab/dl_collab/consider_topic.md
+
+          - type: prompt
+            file: "projects/css_lab/dl_collab/topics/${topicName}.md"
+
+          - type: prompt
+            name: "${topicName}_presurvey_opinion"
+            file: projects/css_lab/dl_collab/topic_opinion.md
+            tags: ["predictor"]
+
+          - type: prompt
+            name: "${topicName}_presurvey_familiarity"
+            file: projects/css_lab/dl_collab/topic_familiarity.md
+            tags: ["predictor"]
+
+          - type: submitButton
+            buttonText: Continue
+            name: "${topicName}_presurvey_submit"
+            conditions:
+              - reference: prompt.${topicName}_presurvey_opinion
+                comparator: exists
+              - reference: prompt.${topicName}_presurvey_familiarity
+                comparator: exists
+
+  # Displays the generic exit sequence
+  - templateName: genericExitSequence
+    templateDesc: generic exit sequence
+    templateContent:
+      - name: PostDiscussionInstructions
+        elements:
+          - type: prompt
+            file: projects/css_lab/ct_topic/post_discussion_instructions.md
+          - type: submitButton
+            buttonText: Proceed to Survey
+
+      - name: AttitudeChange # 1 question
+        elements:
+          - type: prompt
+            file: projects/css_lab/dl_collab/consider_topic.md
+
+          - type: prompt
+            file: "projects/css_lab/dl_collab/topics/${topicName}.md"
+
+          - type: prompt
+            name: "discussionTopic_postSurvey_opinion"
+            file: projects/css_lab/dl_collab/topic_opinion.md
+          - type: submitButton
+            buttonText: Continue
+            name: "discussionTopic_postSurvey_submit"
+            conditions:
+              - reference: prompt.discussionTopic_postSurvey_opinion
+                comparator: exists
+
+      - name: ManipulationCheck # 1 question
+        elements:
+          - type: prompt
+            file: projects/css_lab/dl_collab/exit/consider_partner.md
+
+          - type: display
+            reference: participantInfo.name
+            position: 0
+            showToPositions: [1]
+          - type: display
+            reference: participantInfo.name
+            position: 1
+            showToPositions: [0]
+
+          - type: prompt
+            file: projects/css_lab/dl_collab/exit/guess_partner_position.md
+          - type: prompt
+            file: "projects/css_lab/dl_collab/topics/${topicName}.md"
+
+          - type: prompt
+            file: projects/css_lab/dl_collab/exit/topic_opinion_partner.md
+            name: guessPartnerPosition
+          - type: submitButton
+            conditions:
+              - reference: prompt.guessPartnerPosition
+                comparator: exists
+
+      - name: futureStudyRevision
+        # participants will be asked to revise their pretest responses
+        elements:
+          - type: prompt
+            file: projects/css_lab/dl_collab/future_study_interest_revision.md
+            name: futureStudyInterest_posttest
+          - type: prompt
+            file: projects/css_lab/dl_collab/future_study_bid_reminder.md
+          - type: display
+            reference: prompt.futureStudyBid_pretest
+          - type: prompt
+            file: projects/css_lab/dl_collab/future_study_bid_revision.md
+            name: futureStudyBid_posttest
+
+          - type: prompt
+            file: projects/css_lab/dl_collab/tell_us_about_your_decision.md
+            name: futureStudyRevision_decision_process
+
+          - type: submitButton
+            buttonText: Continue
+            name: futureStudyRevision_submit
+            conditions:
+              - reference: prompt.futureStudyInterest_posttest
+                comparator: exists
+              - reference: prompt.futureStudyBid_posttest
+                comparator: exists
+
+      - name:
+          topicReasonSelfPosttest
+          # TODO: should this be timed, to match the pretest?
+        elements:
+          - type: prompt
+            file: projects/css_lab/dl_collab/topic_response_reminder.md
+          - type: prompt
+            file: "projects/css_lab/dl_collab/topics/${topicName}.md"
+          - type: prompt
+            file: projects/css_lab/dl_collab/topic_reasons_self.md
+            name: topicReasonsSelf_posttest
+          - type: submitButton
+            buttonText: Continue
+            name: topicReasonsSelf_posttest_submit
+            conditions:
+              - reference: prompt.topicReasonsSelf_posttest
+                comparator: exists
+
+      - name: topicReasonOtherPosttest
+        # TODO: should this be timed, to match the pretest?
+        elements:
+          - type: prompt
+            file: projects/css_lab/dl_collab/topic_response_reminder.md
+          - type: prompt
+            file: "projects/css_lab/dl_collab/topics/${topicName}.md"
+          - type: prompt
+            file: projects/css_lab/dl_collab/topic_reasons_other.md
+            name: topicReasonsOther_posttest
+          - type: submitButton
+            buttonText: Continue
+            name: topicReasonsOther_posttest_submit
+            conditions:
+              - reference: prompt.topicReasonsOther_posttest
+                comparator: exists
+
+      - name: PerceptionOfPartner # 8 questions
+        elements:
+          - type: prompt
+            file: projects/css_lab/dl_collab/exit/consider_partner.md
+
+          - type: display
+            reference: participantInfo.name
+            position: 0
+            showToPositions: [1]
+          - type: display
+            reference: participantInfo.name
+            position: 1
+            showToPositions: [0]
+
+          - type: survey
+            name: PerceptionOfPartner
+            surveyName: PerceptionOfOthers
+
+      - name: DiscussionGeneralPerception # 9 questions
+        elements:
+          - type: survey
+            name: discussionGeneral
+            surveyName: DiscussionGeneral
+
+  - templateName: condition
+    templateDesc: Standard walkthrough starting with the synchronous portion
+    templateContent:
+      name: ${conditionName}
+      playerCount: 2
+      groupComposition:
+        - position: 0 # in favor of assigned topic
+          conditions:
+            - reference: prompt.${topicName}_presurvey_opinion
+              comparator: includes
+              value: "favor" # TODO: should we only use "strongly favor" here?
+            - reference: prompt.${topicName}_presurvey_familiarity
+              comparator: isOneOf
+              value: ["Very familiar", "Moderately familiar"]
+        - position: 1 # against assigned topic
+          conditions:
+            - reference: prompt.${topicName}_presurvey_opinion
+              comparator: includes
+              value: "oppose" # TODO: should we only use "strongly oppose" here?
+            - reference: prompt.${topicName}_presurvey_familiarity
+              comparator: isOneOf
+              value: ["Very familiar", "Moderately familiar"]
+
+      gameStages:
+        - name: topicReasonsSelf
+          duration: 90
+          elements:
+            - type: prompt
+              file: projects/css_lab/dl_collab/topic_response_reminder.md
+            - type: prompt
+              file: "projects/css_lab/dl_collab/topics/${topicName}.md"
+            - type: prompt
+              file: projects/css_lab/dl_collab/topic_response_you_said.md
+            - type: display
+              reference: prompt.${topicName}_presurvey_opinion
+            - type: prompt
+              file: projects/css_lab/dl_collab/topic_reasons_self.md
+              name: topicReasonsSelf_pretest
+              # TODO: should there be a submit button, or wait out the timer?
+
+        - name: topicReasonsOther
+          duration: 90
+          elements:
+            - type: prompt
+              file: projects/css_lab/dl_collab/topic_response_reminder.md
+            - type: prompt
+              file: "projects/css_lab/dl_collab/topics/${topicName}.md"
+            - type: prompt
+              file: projects/css_lab/dl_collab/topic_reasons_other.md
+              name: topicReasonsOther_pretest
+              # TODO: should there be a submit button, or wait out the timer?
+
+        - name: preDiscussionInstructions
+          duration: 45
+          elements:
+            - type: prompt
+              file: projects/css_lab/dl_collab/instructions_before_discussion.md
+            - type: submitButton
+              name: preDiscussionInstructions
+              buttonText: Begin Discussion
+
+        - name: Discussion
+          duration: 1200 # 20 minutes max
+          discussion:
+            chatType: video
+            showNickname: true
+            showTitle: false
+          elements:
+            - type: prompt
+              file: projects/css_lab/dl_collab/instructions_during_discussion.md
+            - type: prompt
+              file: "projects/css_lab/dl_collab/topics/${topicName}.md"
+            - type: prompt
+              file: projects/css_lab/ct_topic/discussion_wrapup.md
+              displayTime: 600 # 10 minutes
+            - type: submitButton
+              name: endCall
+              buttonText: End the call and proceed to surveys
+              displayTime: 600 # 10 minutes
+      exitSequence:
+        - template: genericExitSequence
+          fields:
+            topicName: "${topicName}"
+
+introSequences:
+  - name: default
+    introSteps:
+      name: PoliticalLeaningsSurvey # Two-part party ID plus identity importance
+        elements:
+          - type: survey
+            surveyName: PoliticalPartyUS
+            name: partyAffiliation
+
+      - name: FeelingThermometerPretest # 2 questions
+        elements:
+          - type: survey
+            name: feelingThermometerPretest
+            surveyName: PartisanFeelingThermometerUS # asks about both parties
+
+      - name: Big-5 # 10 questions
+        elements:
+          - type: survey
+            name: big5Personality
+            surveyName: TIPI
+
+      - template: topicPrompt
+        broadcast:
+          d0:
+            - topicName: gaza_aid
+            - topicName: pardon_january_6
+            - topicName: transgender_sports
+            - topicName: fast_food_tax
+            - topicName: religious_exemptions
+
+      - name: FutureStudyInterest
+        elements:
+          - type: prompt
+            file: projects/css_lab/dl_collab/future_study_interest.md
+            name: futureStudyInterest_pretest
+          - type: prompt
+            file: projects/css_lab/dl_collab/future_study_bid.md
+            name: futureStudyBid_pretest
+
+          - type: prompt
+            file: projects/css_lab/dl_collab/tell_us_about_your_decision.md
+            name: futureStudyInterest_decision_process
+
+          - type: submitButton
+            buttonText: Continue
+            name: futureStudyInterest_pretest_submit
+            conditions:
+              - reference: prompt.futureStudyInterest_pretest
+                comparator: exists
+              - reference: prompt.futureStudyBid_pretest
+                comparator: exists
+
+      - name: Demographics
+        elements:
+          - type: survey
+            surveyName: DemographicsShortUS
+            name: demographics
+
+treatments:
+  - template: condition
+    fields:
+      conditionName: "${topicName}_control"
+    broadcast:
+      d0:
+        - topicName: gaza_aid
+        - topicName: pardon_january_6
+        - topicName: transgender_sports
+        - topicName: fast_food_tax
+        - topicName: religious_exemptions
+
+# missing dash at line 262, introsteps need dashes
