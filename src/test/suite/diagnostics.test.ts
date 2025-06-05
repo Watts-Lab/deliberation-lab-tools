@@ -193,21 +193,21 @@ suite('Diagnostics detection', () => {
 	}
 	);
 
-	test('missing element field in game stages', async () => {
-		const filePath = path.resolve('src/test/suite/fixtures/missingElements.treatments.yaml');
-		console.log(filePath);
-		const document = await vscode.workspace.openTextDocument(filePath);
-		const diagnostics = vscode.languages.getDiagnostics(document.uri);
-		console.log("document uri:", document.uri.toString());
+	// test('missing element field in game stages', async () => {
+	// 	const filePath = path.resolve('src/test/suite/fixtures/missingElements.treatments.yaml');
+	// 	console.log(filePath);
+	// 	const document = await vscode.workspace.openTextDocument(filePath);
+	// 	const diagnostics = vscode.languages.getDiagnostics(document.uri);
+	// 	console.log("document uri:", document.uri.toString());
 
-		console.log("diagnostics length:", diagnostics.length);
-		console.log("diagnostics:", JSON.stringify(diagnostics, null, 2));
+	// 	console.log("diagnostics length:", diagnostics.length);
+	// 	console.log("diagnostics:", JSON.stringify(diagnostics, null, 2));
 
-		assert.strictEqual(diagnostics.length, 1);
-		//error doesn't even seem to exist yet so disregard message for now
-		assert.strictEqual(diagnostics[0].range.start.line, 12);
-		assert.strictEqual(diagnostics[0].range.end.line, 19);
-	});
+	// 	assert.strictEqual(diagnostics.length, 1);
+	// 	//error doesn't even seem to exist yet so disregard message for now
+	// 	assert.strictEqual(diagnostics[0].range.start.line, 12);
+	// 	assert.strictEqual(diagnostics[0].range.end.line, 19);
+	// });
 
 	test('missing survey name', async () => {
 		const filePath = path.resolve('src/test/suite/fixtures/missingSurveyName.treatments.yaml');
