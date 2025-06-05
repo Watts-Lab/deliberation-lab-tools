@@ -277,7 +277,7 @@ templates:
               file: projects/css_lab/ct_topic/consider_partner.md
 
             - type: display
-              reference: "".l
+              reference: participant
               position: 0
               showToPositions: [1]
             - type: display

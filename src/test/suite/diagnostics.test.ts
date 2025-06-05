@@ -189,7 +189,7 @@ suite('Diagnostics detection', () => {
 			'Error in item "introSteps": Expected array, received object'
 		);
 		assert.strictEqual(diagnostics[0].range.start.line, 261);
-		assert.strictEqual(diagnostics[0].range.end.line, 265);
+		assert.strictEqual(diagnostics[0].range.end.line, 316);
 	}
 	);
 
@@ -306,9 +306,9 @@ suite('Diagnostics detection', () => {
 		assert.strictEqual(diagnostics.length, 1);
 		assert.strictEqual(
 			diagnostics[0].message,
-			'Error in item "reference": Closest schema match: Treatment. Expected string, received null'
+			'Error in item "reference": Closest schema match: Treatment. Invalid reference type "participant"'
 		);
 		assert.strictEqual(diagnostics[0].range.start.line, 278);
-		assert.strictEqual(diagnostics[0].range.end.line, 281);
+		assert.strictEqual(diagnostics[0].range.end.line, 282);
 	});
 });

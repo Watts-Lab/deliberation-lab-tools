@@ -3,9 +3,8 @@ const { runTests } = require('@vscode/test-electron');
 
 async function main() {
   const workspacePath = path.resolve(__dirname, '.');
-  console.log("Workspace path: " + workspacePath + __dirname);
+  console.log("Workspace path: " + workspacePath);
 
-  // Gets string from CLI with "npm test --TEST_FILES"
   const [, , ...testFiles] = process.argv;
   process.env.TEST_FILES = testFiles || '';
 
@@ -13,7 +12,10 @@ async function main() {
     await runTests({
       extensionDevelopmentPath: path.resolve(__dirname, '.'),
       extensionTestsPath: path.resolve(__dirname, './out/test/suite/index.js'),
-      launchArgs:[workspacePath]
+      launchArgs: [
+        workspacePath,
+        '--disable-extensions'
+      ]
     });
   } catch (err) {
     console.error('Failed to run tests:', err);

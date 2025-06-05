@@ -171,14 +171,14 @@ export const referenceSchema = z
           ctx.addIssue({
             code: z.ZodIssueCode.custom,
             message: `A path must be provided, e.g. '${givenType}.${name}.object.selectors.here'`,
-            path: ["path"],
+            path: [],
           });
         }
         if (name === undefined || name.length < 1) {
           ctx.addIssue({
             code: z.ZodIssueCode.custom,
             message: `A name must be provided, e.g. '${givenType}.elementName.object.selectors.here'`,
-            path: ["name"],
+            path: [],
           });
         }
         break;
@@ -190,7 +190,7 @@ export const referenceSchema = z
           ctx.addIssue({
             code: z.ZodIssueCode.custom,
             message: `A name must be provided, e.g. '${givenType}.elementName'`,
-            path: ["name"],
+            path: [],
           });
         }
         break;
@@ -202,7 +202,7 @@ export const referenceSchema = z
           ctx.addIssue({
             code: z.ZodIssueCode.custom,
             message: `A path must be provided, e.g. '${givenType}.object.selectors.here.`,
-            path: ["path"],
+            path: [],
           });
         }
         break;
@@ -210,7 +210,7 @@ export const referenceSchema = z
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           message: `Invalid reference type "${givenType}"`,
-          path: ["type"],
+          path: [],
         });
     }
   });
@@ -638,106 +638,201 @@ export const treatmentsSchema = altTemplateContext(
 );
 
 // ------------------ Template Schemas ------------------ //
+// export const templateContentSchema = z.any().superRefine((data, ctx) => {
+//   const schemas = [
+//     { schema: introSequenceSchema, name: "Intro Sequence" },
+//     { schema: introSequencesSchema, name: "Intro Sequences" },
+//     { schema: elementsSchema, name: "Elements" },
+//     { schema: elementSchema, name: "Element" },
+//     { schema: treatmentSchema, name: "Treatment" },
+//     { schema: treatmentsSchema, name: "Treatments" },
+//     { schema: referenceSchema, name: "Reference" },
+//     { schema: conditionSchema, name: "Condition" },
+//     { schema: stageSchema, name: "Stage" },
+//     { schema: stagesSchema, name: "Stages" },
+//     { schema: playerSchema, name: "Player" },
+//     { schema: introExitStepSchema, name: "Intro Exit Step" },
+//     { schema: introExitStepsSchema, name: "Intro Exit Steps" },
+//     {
+//       schema: templateBroadcastAxisValuesSchema,
+//       name: "Template Broadcast Axis Values",
+//     },
+//   ];
+
+//   let bestSchemaResult = null;
+//   let fewestUnmatchedKeys = Infinity;
+
+//   // console.log("\n\n------------------\n\n");
+
+//   interface Issue {
+//     code: string;
+//     path: any[];
+//     keys?: string[];
+//   }
+//   interface ValidationResult {
+//     error: {
+//       issues: Issue[];
+//     };
+//   }
+
+//   for (const { schema, name } of schemas) {
+//     const result = schema.safeParse(data);
+
+//     if (result.success) {
+//       console.log(`Schema "${name}" matched successfully.`);
+//       return;
+//     } else {
+//       // console.log(`Schema "${name}" failed with errors:`, result.error.issues);
+
+//       // Check if the root type was valid by looking for type-related issues.
+//       const rootTypeError = result.error.issues.find(
+//         (issue: Issue) =>
+//           issue.code === "invalid_type" && issue.path.length === 0
+//       );
+//       if (rootTypeError) {
+//         // console.log(`Schema "${name}" skipped due to invalid root type.`);
+//         continue; // Skip schemas with invalid root types.
+//       }
+
+//       // Check if the errors indicate a missing or invalid discriminator key
+//       const discriminatorIssue = result.error.issues.find(
+//         (issue: Issue) =>
+//           issue.code === "invalid_union_discriminator" &&
+//           issue.path.length === 1
+//       );
+
+//       if (discriminatorIssue !== undefined) {
+//         // console.log(`Schema "${name}" skipped due to missing or invalid union discriminator.`);
+//         continue;
+//       }
+
+//       // Count the total number of unrecognized keys
+//       const unmatchedKeysCount = result.error.issues
+//         .filter((issue: Issue) => issue.code === "unrecognized_keys")
+//         .reduce(
+//           (sum: number, issue: Issue) =>
+//             sum + (issue.keys ? issue.keys.length : 0),
+//           0
+//         );
+
+//       if (unmatchedKeysCount < fewestUnmatchedKeys) {
+//         fewestUnmatchedKeys = unmatchedKeysCount;
+//         bestSchemaResult = { result, name };
+//       }
+//     }
+//   }
+
+//   if (bestSchemaResult) {
+//     console.log(
+//       `Best schema match is "${bestSchemaResult.name}" with ${fewestUnmatchedKeys} unmatched keys.`
+//     );
+//     bestSchemaResult.result.error.issues.forEach((issue: ZodIssue) => {
+//       ctx.addIssue({
+//         ...issue,
+//         path: issue.path,
+//         message: `Closest schema match: ${bestSchemaResult.name}. ${issue.message}`,
+//       });
+//     });
+//   } else {
+//     ctx.addIssue({
+//       code: z.ZodIssueCode.custom,
+//       message: "No schema matched the provided data.",
+//     });
+//   }
+// });
+
 export const templateContentSchema = z.any().superRefine((data, ctx) => {
-  const schemas = [
-    { schema: introSequenceSchema, name: "Intro Sequence" },
-    { schema: introSequencesSchema, name: "Intro Sequences" },
-    { schema: treatmentSchema, name: "Treatment" },
-    { schema: treatmentsSchema, name: "Treatments" },
-    { schema: referenceSchema, name: "Reference" },
-    { schema: conditionSchema, name: "Condition" },
-    { schema: elementSchema, name: "Element" },
-    { schema: elementsSchema, name: "Elements" },
-    { schema: stageSchema, name: "Stage" },
-    { schema: stagesSchema, name: "Stages" },
-    { schema: playerSchema, name: "Player" },
-    { schema: introExitStepSchema, name: "Intro Exit Step" },
-    { schema: introExitStepsSchema, name: "Intro Exit Steps" },
-    {
-      schema: templateBroadcastAxisValuesSchema,
-      name: "Template Broadcast Axis Values",
-    },
-  ];
+  if (Array.isArray(data)) {
+    // Per-item checking
+    data.forEach((item, index) => {
+      const schemas = [
+        { schema: introSequenceSchema, name: "Intro Sequence" },
+        { schema: elementsSchema, name: "Elements" },
+        { schema: elementSchema, name: "Element" },
+        { schema: treatmentSchema, name: "Treatment" },
+        { schema: stageSchema, name: "Stage" },
+        { schema: introExitStepSchema, name: "Intro Exit Step" },
+        {
+          schema: templateBroadcastAxisValuesSchema,
+          name: "Template Broadcast Axis Values",
+        },
+      ];
 
-  let bestSchemaResult = null;
-  let fewestUnmatchedKeys = Infinity;
+      let bestSchemaResult = null;
+      let fewestUnmatchedKeys = Infinity;
 
-  // console.log("\n\n------------------\n\n");
+      for (const { schema, name } of schemas) {
+        const result = schema.safeParse(item);
+        if (result.success) return;
+        const unmatchedKeysCount = result.error.issues
+          .filter((issue: ZodIssue) => issue.code === "unrecognized_keys")
+          .reduce((sum: number, issue: ZodIssue) => {
+            const keys = (issue as any).keys; // If you must access a non-standard field
+            return sum + (Array.isArray(keys) ? keys.length : 0);
+          }, 0);
 
-  interface Issue {
-    code: string;
-    path: any[];
-    keys?: string[];
-  }
-  interface ValidationResult {
-    error: {
-      issues: Issue[];
-    };
-  }
-
-  for (const { schema, name } of schemas) {
-    const result = schema.safeParse(data);
-
-    if (result.success) {
-      // console.log(`Schema "${name}" matched successfully.`);
-      return;
-    } else {
-      // console.log(`Schema "${name}" failed with errors:`, result.error.issues);
-
-      // Check if the root type was valid by looking for type-related issues.
-      const rootTypeError = result.error.issues.find(
-        (issue: Issue) =>
-          issue.code === "invalid_type" && issue.path.length === 0
-      );
-      if (rootTypeError) {
-        // console.log(`Schema "${name}" skipped due to invalid root type.`);
-        continue; // Skip schemas with invalid root types.
+        if (unmatchedKeysCount < fewestUnmatchedKeys) {
+          fewestUnmatchedKeys = unmatchedKeysCount;
+          bestSchemaResult = { result, name };
+        }
       }
 
-      // Check if the errors indicate a missing or invalid discriminator key
-      const discriminatorIssue = result.error.issues.find(
-        (issue: Issue) =>
-          issue.code === "invalid_union_discriminator" &&
-          issue.path.length === 1
-      );
-
-      if (discriminatorIssue !== undefined) {
-        // console.log(`Schema "${name}" skipped due to missing or invalid union discriminator.`);
-        continue;
+      if (bestSchemaResult) {
+        bestSchemaResult.result.error.issues.forEach((issue: ZodIssue) => {
+          ctx.addIssue({
+            ...issue,
+            path: [index, ...issue.path],
+            message: `Closest schema match: ${bestSchemaResult.name}. ${issue.message}`,
+          });
+        });
+      } else {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: [index],
+          message: "No schema matched the provided item.",
+        });
       }
+    });
+  } else {
+    // Fallback for top-level match (like your original behavior)
+    const schemas = [
+      { schema: introSequenceSchema, name: "Intro Sequence" },
+      { schema: introSequencesSchema, name: "Intro Sequences" },
+      { schema: treatmentSchema, name: "Treatment" },
+      { schema: treatmentsSchema, name: "Treatments" },
+    ];
 
-      // Count the total number of unrecognized keys
+    let bestSchemaResult = null;
+    let fewestUnmatchedKeys = Infinity;
+
+    for (const { schema, name } of schemas) {
+      const result = schema.safeParse(data);
+      if (result.success) return;
+
       const unmatchedKeysCount = result.error.issues
-        .filter((issue: Issue) => issue.code === "unrecognized_keys")
-        .reduce(
-          (sum: number, issue: Issue) =>
-            sum + (issue.keys ? issue.keys.length : 0),
-          0
-        );
+        .filter((issue) => issue.code === "unrecognized_keys")
+        .reduce((sum, issue) => sum + (issue.keys?.length ?? 0), 0);
 
       if (unmatchedKeysCount < fewestUnmatchedKeys) {
         fewestUnmatchedKeys = unmatchedKeysCount;
         bestSchemaResult = { result, name };
       }
     }
-  }
 
-  if (bestSchemaResult) {
-    console.log(
-      `Best schema match is "${bestSchemaResult.name}" with ${fewestUnmatchedKeys} unmatched keys.`
-    );
-    bestSchemaResult.result.error.issues.forEach((issue: ZodIssue) => {
-      ctx.addIssue({
-        ...issue,
-        path: issue.path,
-        message: `Closest schema match: ${bestSchemaResult.name}. ${issue.message}`,
+    if (bestSchemaResult) {
+      bestSchemaResult.result.error.issues.forEach((issue: ZodIssue) => {
+        ctx.addIssue({
+          ...issue,
+          path: issue.path,
+          message: `Closest schema match: ${bestSchemaResult.name}. ${issue.message}`,
+        });
       });
-    });
-  } else {
-    ctx.addIssue({
-      code: z.ZodIssueCode.custom,
-      message: "No schema matched the provided data.",
-    });
+    } else {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "No schema matched the provided data.",
+      });
+    }
   }
 });
 
