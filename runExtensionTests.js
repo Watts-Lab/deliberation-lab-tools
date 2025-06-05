@@ -8,6 +8,8 @@ async function main() {
   const [, , ...testFiles] = process.argv;
   process.env.TEST_FILES = testFiles || '';
 
+  // Added argument '--disable-extensions' to prevent other extensions from interfering with the tests
+  // Temporarily shuts other extensions off to ensure a clean test environment
   try {
     await runTests({
       extensionDevelopmentPath: path.resolve(__dirname, '.'),
