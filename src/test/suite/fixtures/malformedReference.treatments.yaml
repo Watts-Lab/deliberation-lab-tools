@@ -244,7 +244,7 @@ templates:
               file: projects/css_lab/ct_topic/consider_partner.md
 
             - type: display
-              reference: participantInfo.name
+              reference: participantInf
               position: 0
               showToPositions: [1]
             - type: display
@@ -277,7 +277,7 @@ templates:
               file: projects/css_lab/ct_topic/consider_partner.md
 
             - type: display
-              reference: participant
+              reference: participantInfo.name
               position: 0
               showToPositions: [1]
             - type: display
