@@ -116,21 +116,6 @@ async function main() {
     await ctx.rebuild();
     await ctx.dispose();
   }
-
-  await esbuild.build({
-    entryPoints: ["src/test/suite/extension.test.ts"], // your test entry point
-    bundle: true,
-    format: "cjs",
-    minify: production,
-    sourcemap: !production,
-    platform: "node",
-    outdir: "out/test/suite",
-    external: ["vscode", "assert", "path"],
-    logLevel: "silent",
-    plugins: [
-      esbuildProblemMatcherPlugin,
-    ],
-  });
 }
 
 main().catch((e) => {

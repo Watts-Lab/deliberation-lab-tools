@@ -1,6 +1,7 @@
 ---
-noName: projects/example/allTalk.md
-type: noResponse
+type: openRespons
+notes:
+rows: d
 ---
 
 Please describe the chair you are sitting in.
