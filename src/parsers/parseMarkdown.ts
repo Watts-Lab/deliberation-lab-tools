@@ -162,7 +162,7 @@ export function parseMarkdown(document: vscode.TextDocument) {
             // no response warning position handling
             case "noResponse": {
                 console.log("Entering no response case");
-                if (response && response.length > 0) {
+                if (response && !(/^\s*$/.test(response))) {
                     let { text, index } = getIndex(document, 3);
                     console.log("Finding position of last position");
                     const lastPos = document.positionAt(text.length - 1);
@@ -171,7 +171,7 @@ export function parseMarkdown(document: vscode.TextDocument) {
                         document.positionAt(index),  // starting position
                         lastPos   // ending position 
                     );
-                    const issue = "Response should be blank for type no response";
+                    const issue = "Response should be blank or only whitespace for type no response";
                     diagnostics.push(
                         new vscode.Diagnostic(
                             diagnosticRange,
