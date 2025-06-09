@@ -29,7 +29,7 @@ export const nameSchema = z
   .max(64)
   .regex(/^[a-zA-Z0-9-_ ]*(\$\{[a-zA-Z0-9-_ ]+\})*[a-zA-Z0-9-_ ]*$/, {
     message:
-      "Name must be alphanumeric, with optional template fields in the format ${fieldname}",
+      "Name must be alphanumeric, cannot have special characters, with optional template fields in the format ${fieldname}",
   });
 export type NameType = z.infer<typeof nameSchema>;
 
@@ -89,7 +89,17 @@ const templateFieldKeysSchema = z // todo: check that the researcher doesn't try
     message:
       "Field key must be alphanumeric, may include underscores, dashes, or spaces, or be in the format `${fieldKey}` without conflicting with reserved keys (e.g., `d0`, `d1`, etc.).",
   })
-  .min(1);
+  .min(1)
+  .superRefine((val, ctx) => {
+    //we do not want all template content data to default to template broadcast axis values schema,
+    //so we add this conditon to have the closest match be elementSchema in templateContentSchema if field 'type' is used
+    if (val == "type") {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Field key cannot be 'type', as it is reserved for element types.",
+      })
+    }
+  });
 
 const templateFieldsSchema = z.record(templateFieldKeysSchema, z.any());
 
@@ -581,6 +591,17 @@ export const stageSchema = altTemplateContext(
       elements: elementsSchema,
     })
     .strict()
+    .superRefine((data, ctx) => {
+      //For some reason, above conditions are bypassing the strict check
+      // so we add a superRefine to check that elements field exists
+      if (!data.elements) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Stage must have elements field (check elementsSchema).",
+        })
+      }
+    }
+  )
 );
 export type StageType = z.infer<typeof stageSchema>;
 
@@ -637,20 +658,7 @@ export const introSequenceSchema = altTemplateContext(
       name: nameSchema,
       desc: descriptionSchema.optional(),
       introSteps: introExitStepsSchema,
-    }).superRefine((obj, ctx) => {
-      const allowedKeys = ["name", "desc", "introSteps"];
-      const actualKeys = Object.keys(obj);
-
-      const extraKeys = actualKeys.filter((key) => !allowedKeys.includes(key));
-
-      if (extraKeys.length > 0) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.unrecognized_keys,
-          keys: extraKeys,
-          message: `Unrecognized key(s): ${extraKeys.join(", ")}. Make sure each intro sequence only includes: ${allowedKeys.join(", ")}`,
-        });
-      }
-    })
+    }).strict()
 );
 export type IntroSequenceType = z.infer<typeof introSequenceSchema>;
 

@@ -17,7 +17,7 @@ treatments:
           chatType: text
           showNickname: true
           showTitle: false
-        # ❌ Missing "elements" field here
+        
 
     exitSequence:
       - name: postsurvey
