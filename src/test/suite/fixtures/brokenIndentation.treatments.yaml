@@ -2,19 +2,19 @@ templates:
   - templateName: recallTask
     # an individual recall and feedback stage
     templateContent:
-      - name: "recall_${roundIndex}_${recallIndex}"
+      - name: "recall"
         duration: 30
         elements:
             - type: image
             file: ${imageFilepath}
           - type: prompt
-            name: "recall_${roundIndex}_${recallIndex}"
+            name: "recall"
             file: projects/exaptation/revision_202503/recall.md
           - type: submitButton
             buttonText: Submit
-            name: "recall_${roundIndex}_${recallIndex}"
+            name: "recall"
 
-      - name: "feedback_${roundIndex}_${recallIndex}"
+      - name: "feedback"
         duration: 15
         elements:
           - type: image

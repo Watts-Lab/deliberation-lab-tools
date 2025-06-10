@@ -115,26 +115,6 @@ suite('Diagnostics detection', () => {
 		assert.strictEqual(diagnostics[0].range.end.line, 54);
 	});
 
-	test('Indentation error in TemplateContent', async () => {
-		const filePath = path.resolve('src/test/suite/fixtures/brokenIndentation.treatments.yaml');
-		console.log(filePath);
-		const document = await vscode.workspace.openTextDocument(filePath);
-		await vscode.window.showTextDocument(document);
-
-		const diagnostics = vscode.languages.getDiagnostics(document.uri);
-		console.log("document uri:", document.uri.toString());
-		console.log("diagnostics length:", diagnostics.length);
-		console.log("diagnostics:", JSON.stringify(diagnostics, null, 2));
-
-		assert.strictEqual(diagnostics.length, 2);
-		assert.strictEqual(
-			diagnostics[0].message,
-			`Error in item "0": Closest schema match: Elements. Expected string, received object`
-		);
-		assert.strictEqual(diagnostics[0].range.start.line, 7);
-		assert.strictEqual(diagnostics[0].range.end.line, 14);
-	});
-
 	test('Invalid Broadcast Key', async () => {
 		const filePath = path.resolve('src/test/suite/fixtures/invalidBroadcastKey.treatments.yaml')
 		console.log(filePath);
@@ -310,5 +290,25 @@ suite('Diagnostics detection', () => {
 		);
 		assert.strictEqual(diagnostics[0].range.start.line, 278);
 		assert.strictEqual(diagnostics[0].range.end.line, 282);
+	});
+
+	test('Indentation error in TemplateContent', async () => {
+		const filePath = path.resolve('src/test/suite/fixtures/brokenIndentation.treatments.yaml');
+		console.log(filePath);
+		const document = await vscode.workspace.openTextDocument(filePath);
+		await vscode.window.showTextDocument(document);
+
+		const diagnostics = vscode.languages.getDiagnostics(document.uri);
+		console.log("document uri:", document.uri.toString());
+		console.log("diagnostics length:", diagnostics.length);
+		console.log("diagnostics:", JSON.stringify(diagnostics, null, 2));
+
+		assert.strictEqual(diagnostics.length, 2);
+		assert.strictEqual(
+			diagnostics[0].message,
+			`Error in item "0": Closest schema match: Elements. Expected string, received object`
+		);
+		assert.strictEqual(diagnostics[0].range.start.line, 7);
+		assert.strictEqual(diagnostics[0].range.end.line, 14);
 	});
 });
