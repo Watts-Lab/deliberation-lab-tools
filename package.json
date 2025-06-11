@@ -9,7 +9,9 @@
   },
   "browser": "./dist/extension.js",
   "main": "./dist/extension.js",
-  "extensionKind": ["workspace"],
+  "extensionKind": [
+    "workspace"
+  ],
   "engines": {
     "vscode": "^1.95.0"
   },
@@ -43,8 +45,21 @@
       {
         "command": "deliberation-lab-tools.helloWorld",
         "title": "Hello World"
+      },
+      {
+        "command": "deliberation-lab-tools.openMarkdownPreview",
+        "title": "Deliberation Lab Tools: Open Markdown Preview"
       }
-    ]
+    ],
+    "menus": {
+      "editor/context": [
+        {
+          "command": "deliberation-lab-tools.openMarkdownPreview",
+          "when": "editorLangId == markdown",
+          "group": "deliberation-lab-tools"
+        }
+      ]
+    }
   },
   "scripts": {
     "prepare-submodule": "git submodule update --init --recursive",
@@ -69,6 +84,8 @@
     "@types/js-yaml": "^4.0.9",
     "@types/mocha": "^10.0.10",
     "@types/node": "^22.15.20",
+    "@types/react": "^18.3.23",
+    "@types/react-dom": "^18.3.7",
     "@types/vscode": "^1.95.0",
     "@typescript-eslint/eslint-plugin": "^8.10.0",
     "@typescript-eslint/parser": "^8.7.0",
@@ -84,9 +101,23 @@
     "typescript": "^5.6.3"
   },
   "dependencies": {
+    "@empirica/core": "^1.11.2",
+    "@hello-pangea/dnd": "^16.3.0",
+    "axios": "^1.9.0",
     "cp": "^0.2.0",
+    "react": "^18.2.0",
+    "react-debounce-input": "^3.3.0",
+    "react-dom": "^18.2.0",
+    "react-markdown": "^9.0.1",
+    "remark-gfm": "^4.0.0",
     "vsce": "^2.15.0",
+    "ws": "^8.18.2",
     "yaml": "^2.6.0",
     "zod": "^3.23.8"
+  },
+  "overrides": {
+    "@empirica/core": {
+      "@empirica/tajriba": "1.5.2"
+    }
   }
 }

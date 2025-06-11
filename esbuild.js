@@ -83,10 +83,10 @@ const testBundlePlugin = {
   },
 };
 
-async function main() {
+async function buildExtension() {
   const ctx = await esbuild.context({
     entryPoints: [
-      "src/extension.ts",
+      "src/extension.ts"
     ],
     bundle: true,
     format: "cjs",
@@ -116,6 +116,34 @@ async function main() {
     await ctx.rebuild();
     await ctx.dispose();
   }
+}
+
+async function buildPrompt() {
+  const ctx = await esbuild.context({
+    entryPoints: [
+      "src/views/index.jsx"
+    ],
+    bundle: true,
+    format: "esm",
+    minify: production,
+    sourcemap: !production,
+    sourcesContent: false,
+    platform: "browser",
+    outdir: "dist/views/",
+    logLevel: "silent",
+    external: ["vscode", "path", "assert"],
+  });
+  if (watch) {
+    await ctx.watch();
+  } else {
+    await ctx.rebuild();
+    await ctx.dispose();
+  }
+}
+
+async function main() {
+  await buildExtension();
+  await buildPrompt();
 }
 
 main().catch((e) => {
