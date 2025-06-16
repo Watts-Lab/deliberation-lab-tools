@@ -1,10 +1,9 @@
 templates:
 - templateName: guessTask
+  contentType: elements
   templateContent:
   - type: prompt
     file: projects/exaptation/revision_202504/instruction_describer.md
-    hideFromPositions:
-    - ${guesserPosition}
     conditions:
     - reference: prompt.continue_${lastIndex}
       position: any
@@ -14,6 +13,7 @@ templates:
       comparator: doesNotExist
     name: Invalid*Name!
 - templateName: baseTreatment
+  contentType: treatment
   templateContent:
     name: ${name}
     playerCount: 2

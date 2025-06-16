@@ -2,6 +2,7 @@ templates:
   # Displays a stage asking the user's opinion and knowledge of the topic,
   # used in the intro sequence to gauge opinions.
   - templateName: topicPrompt
+    contentType: introExitSteps
     templateContent:
       - name: ${topicName}_presurvey
         elements:
@@ -33,6 +34,7 @@ templates:
   # Displays the generic exit sequence
   - templateName: genericExitSequence
     templateDesc: generic exit sequence
+    contentType: introExitSteps
     templateContent:
       - name: PostDiscussionInstructions
         elements:
@@ -174,6 +176,7 @@ templates:
 
   - templateName: condition
     templateDesc: Standard walkthrough starting with the synchronous portion
+    contentType: treatment
     templateContent:
       name: ${conditionName}
       playerCount: 2

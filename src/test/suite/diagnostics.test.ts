@@ -126,7 +126,7 @@ suite('Diagnostics detection', () => {
 		console.log("diagnostics length:", diagnostics.length);
 		console.log("diagnostics:", JSON.stringify(diagnostics, null, 2));
 
-		assert.strictEqual(diagnostics.length, 2);
+		assert.strictEqual(diagnostics.length, 1);
 		assert.strictEqual(
 			diagnostics[0].message,
 			`Error in item "0": Closest schema match: Elements. Expected string, received object`
@@ -150,8 +150,8 @@ suite('Diagnostics detection', () => {
 			diagnostics[0].message,
 			`Error in item "dx": String must start with 'd' followed by a nonnegative integer`
 		);
-		assert.strictEqual(diagnostics[0].range.start.line, 197);
-		assert.strictEqual(diagnostics[0].range.end.line, 199);
+		assert.strictEqual(diagnostics[0].range.start.line, 198);
+		assert.strictEqual(diagnostics[0].range.end.line, 200);
 	});
 
 	test('Invalid Comparator', async () => {
@@ -186,10 +186,10 @@ suite('Diagnostics detection', () => {
 		assert.strictEqual(diagnostics.length, 1);
 		assert.strictEqual(
 			diagnostics[0].message,
-			'Error in item "introSteps": Expected array, received object'
+			'Error in item "introSteps": Expected an array for `introSteps`. Make sure each item starts with a dash (`-`) in YAML.'
 		);
-		assert.strictEqual(diagnostics[0].range.start.line, 261);
-		assert.strictEqual(diagnostics[0].range.end.line, 316);
+		assert.strictEqual(diagnostics[0].range.start.line, 264);
+		assert.strictEqual(diagnostics[0].range.end.line, 319);
 	}
 	);
 
@@ -224,7 +224,7 @@ suite('Diagnostics detection', () => {
 			diagnostics[0].message,
 			'Error in item "surveyName": Required'
 		);
-		assert.strictEqual(diagnostics[0].range.start.line, 181);
+		assert.strictEqual(diagnostics[0].range.start.line, 183);
 	});
 
 	test('negative duration in timer', async () => {
@@ -257,8 +257,8 @@ suite('Diagnostics detection', () => {
 		console.log("diagnostics:", JSON.stringify(diagnostics, null, 2));
 		assert.strictEqual(diagnostics.length, 1);
 		//error doesn't even seem to exist yet so disregard message for now
-		assert.strictEqual(diagnostics[0].range.start.line, 3);
-		assert.strictEqual(diagnostics[0].range.end.line, 15);
+		assert.strictEqual(diagnostics[0].range.start.line, 4);
+		assert.strictEqual(diagnostics[0].range.end.line, 14);
 	});
 
 	test('player count is string rather than number', async () => {
@@ -274,8 +274,8 @@ suite('Diagnostics detection', () => {
 			diagnostics[0].message,
 			'Error in item "playerCount": Expected number, received string'
 		);
-		assert.strictEqual(diagnostics[0].range.start.line, 86);
-		assert.strictEqual(diagnostics[0].range.end.line, 135);
+		assert.strictEqual(diagnostics[0].range.start.line, 88);
+		assert.strictEqual(diagnostics[0].range.end.line, 137);
 	});
 
 	test('broadcast field is in wrong spot', async () => {
@@ -289,10 +289,10 @@ suite('Diagnostics detection', () => {
 		assert.strictEqual(diagnostics.length, 2);
 		assert.strictEqual(
 			diagnostics[0].message,
-			'Error in item "introSteps": Expected array, received null'
+			'Error in item "introSteps": Expected an array for `introSteps`. Make sure each item starts with a dash (`-`) in YAML.'
 		);
-		assert.strictEqual(diagnostics[0].range.start.line, 124);
-		assert.strictEqual(diagnostics[0].range.end.line, 149);
+		assert.strictEqual(diagnostics[0].range.start.line, 116);
+		assert.strictEqual(diagnostics[0].range.end.line, 141);
 	});
 
 	test('malformed reference in yaml file', async () => {
@@ -306,9 +306,9 @@ suite('Diagnostics detection', () => {
 		assert.strictEqual(diagnostics.length, 1);
 		assert.strictEqual(
 			diagnostics[0].message,
-			'Error in item "reference": Closest schema match: Treatment. Invalid reference type "participant"'
+			`Error in item "reference": Invalid template content for content type 'treatment': Invalid reference type "participantInf", need to be in form of a valid reference type such as 'survey', 'submitButton', 'qualtrics', 'discussion', 'participantInfo', 'prompt', 'urlParams', 'connectionInfo', or 'browserInfo' followed by a . and name or path.`
 		);
-		assert.strictEqual(diagnostics[0].range.start.line, 278);
-		assert.strictEqual(diagnostics[0].range.end.line, 282);
+		assert.strictEqual(diagnostics[0].range.start.line, 249);
+		assert.strictEqual(diagnostics[0].range.end.line, 253);
 	});
 });

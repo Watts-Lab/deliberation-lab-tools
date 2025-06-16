@@ -1,5 +1,6 @@
 templates:
   - templateName: topicPrompt
+    contentType: element
     templateContent:
       type: prompt
       name: "${topicName}_presurvey"
@@ -7,12 +8,14 @@ templates:
       tags: ["predictor"]
 
   - templateName: topicCondition
+    contentType: condition
     templateContent:
       reference: prompt.${topicName}_presurvey
       comparator: exists
 
   - templateName: introSequence
     templateDesc: generic presurvey
+    contentType: introSequence
     templateContent:
       name: ${sequenceName}
       introSteps:
@@ -132,6 +135,7 @@ templates:
 
   - templateName: crossPartisanDiscussion
     templateDesc: for measuring the effect of topic on cross-party discussion outcomes
+    contentType: treatment
     templateContent:
       name: ${treatmentName}
       playerCount: 2
