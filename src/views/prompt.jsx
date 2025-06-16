@@ -12,17 +12,6 @@ import { ListSorter } from "../../deliberation-empirica/client/src/components/Li
 export function Prompt({ file, name, shared }) {
 
   // const { text: promptString, error: fetchError } = useText({ file });
-//   const promptString = `---
-// name: src/test/suite/fixtures/allTalk.md
-// type: noResponse
-// ---
-
-// Please describe the chair you are sitting in.
-
-// Everybody talk at once. Sometimes take pauses.
-
-// ---
-// `;
   // const permalink = usePermalink(file);
 
   // string from vscode.TextDocument
@@ -55,19 +44,28 @@ export function Prompt({ file, name, shared }) {
 
   // comment out for now
   // const promptName = name || `${progressLabel}_${metaData?.name || file}`;
+
+  // should be metaData?.name but will try this for now in case metadata is invalid
+  const promptName = "placeholder";
   const rows = metaData?.rows || 5;
 
-  if (promptType !== "noResponse" && !responses.length) {
+  // add check if response string is empty
+  if (promptType !== "noResponse" && !responses.length && responseString !== '') {
     const responseItems = responseString
       .split(/\r?\n|\r|\n/g)
       .filter((i) => i)
       .map((i) => i.substring(2));
+
+    console.log("Response string", responseString);
+    console.log("Response items", responseItems);
 
     if (metaData?.shuffleOptions) {
       setResponses(responseItems.sort(() => 0.5 - Math.random())); // shuffle
     } else {
       setResponses(responseItems);
     }
+
+    console.log("Responses", responses);
   }
 
   console.log("Before prompt generation");
@@ -75,7 +73,7 @@ export function Prompt({ file, name, shared }) {
   console.log(<Markdown text={prompt} />);
 
 
-  // Prompt is rendered but not Markdown
+  // Some values (record, value) do not exist in this adhoc Prompt
   return (
     <>
       <p> Prompt loaded?</p>

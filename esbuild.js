@@ -101,12 +101,16 @@ async function buildExtension() {
     define: {
       global: "globalThis",
     },
+    alias: {
+      '@empirica/core/player/react': path.resolve(__dirname, 'src/views/mocks.js'),
+    },
 
     plugins: [
       polyfill.NodeGlobalsPolyfillPlugin({
         process: true,
         buffer: true,
       }),
+
       esbuildProblemMatcherPlugin /* add to the end of plugins array */,
     ],
   });
@@ -132,6 +136,10 @@ async function buildPrompt() {
     outdir: "dist/views/",
     logLevel: "silent",
     external: ["vscode", "path", "assert"],
+    alias: {
+      '@empirica/core/player/react': path.resolve(__dirname, 'src/views/mocks.js'),
+      'deliberation-empirica/client/src/components/hooks.js': path.resolve(__dirname, 'src/views/hooks.js')
+    },
   });
   if (watch) {
     await ctx.watch();
