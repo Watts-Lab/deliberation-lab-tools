@@ -1,5 +1,4 @@
 ---
-noName: projects/example/allTalk.md
 type: noResponse
 ---
 

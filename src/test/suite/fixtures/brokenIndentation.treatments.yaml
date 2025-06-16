@@ -1,0 +1,185 @@
+templates:
+  - templateName: recallTask
+    # an individual recall and feedback stage
+    templateContent:
+      - name: "recall_${roundIndex}_${recallIndex}"
+        duration: 30
+        elements:
+            - type: image
+            file: ${imageFilepath}
+          - type: prompt
+            name: "recall_${roundIndex}_${recallIndex}"
+            file: projects/exaptation/revision_202503/recall.md
+          - type: submitButton
+            buttonText: Submit
+            name: "recall_${roundIndex}_${recallIndex}"
+
+      - name: "feedback_${roundIndex}_${recallIndex}"
+        duration: 15
+        elements:
+          - type: image
+            file: ${imageFilepath}
+          - type: prompt
+            file: projects/exaptation/revision_202503/labels_match.md
+            conditions:
+              - reference: "prompt.recall_${roundIndex}_${recallIndex}"
+                position: percentAgreement
+                comparator: equals
+                value: 100
+              - reference: "prompt.recall_${roundIndex}_${recallIndex}"
+                position: all
+                comparator: hasLengthAtLeast
+                value: 1
+          - type: prompt
+            file: projects/exaptation/revision_202503/labels_not_match.md
+            conditions:
+              - reference: "prompt.recall_${roundIndex}_${recallIndex}"
+                position: percentAgreement
+                comparator: isBelow
+                value: 100
+
+          - type: display
+            reference: "prompt.recall_${roundIndex}_${recallIndex}"
+            position: 0
+          - type: display
+            reference: "prompt.recall_${roundIndex}_${recallIndex}"
+            position: 1
+          - type: submitButton
+
+  - templateName: round
+    # a round of discussion and recall tasks
+    templateContent:
+      - name: "Discussion ${roundIndex}"
+        duration: 600
+        discussion:
+          chatType: video
+          showNickname: true
+          showTitle: false
+        elements:
+          - type: image
+            file: "${panelFilepath}"
+          - type: submitButton
+            buttonText: End discussion and proceed to next steps
+
+            name: "labeling_${roundIndex}"
+          - name: "labeling_${roundIndex}"
+            type: prompt
+            file: projects/exaptation/revision_202503/discussion_instructions.md
+            shared: true
+
+      - template: recallTask
+        fields:
+          recallIndex: ${d0}
+          roundIndex: ${roundIndex}
+        broadcast:
+          d0: ${recallImages}
+
+introSequences:
+  - name: Default
+    introSteps:
+      - name: Instructions Page
+        elements:
+          - type: prompt
+            file: projects/exaptation/revision_202503/instructions.md
+          - type: submitButton
+
+treatments:
+  - name: schema A
+    playerCount: 2
+    gameStages:
+      - template: round
+        fields:
+          roundIndex: "1"
+          panelFilepath: projects/exaptation/revision_202503/stimuli/round_1_panel_S.jpg
+          recallImages:
+            - imageFilepath: projects/exaptation/revision_202503/stimuli/round_1_SOBB.jpg
+            - imageFilepath: projects/exaptation/revision_202503/stimuli/round_1_SORY.jpg
+            - imageFilepath: projects/exaptation/revision_202503/stimuli/round_1_SPRB.jpg
+            - imageFilepath: projects/exaptation/revision_202503/stimuli/round_1_SPBY.jpg
+
+      - template: round
+        fields:
+          roundIndex: "2"
+          panelFilepath: projects/exaptation/revision_202503/stimuli/round_2_panel_S.jpg
+          recallImages:
+            - imageFilepath: projects/exaptation/revision_202503/stimuli/round_2_SPRY.jpg
+            - imageFilepath: projects/exaptation/revision_202503/stimuli/round_2_SORB.jpg
+            - imageFilepath: projects/exaptation/revision_202503/stimuli/round_2_SORY.jpg
+            - imageFilepath: projects/exaptation/revision_202503/stimuli/round_2_SPBB.jpg
+
+      - template: round
+        fields:
+          roundIndex: "3"
+          panelFilepath: projects/exaptation/revision_202503/stimuli/round_3_panel.jpg
+          recallImages:
+            - imageFilepath: projects/exaptation/revision_202503/stimuli/round_3_SOBB.jpg
+            - imageFilepath: projects/exaptation/revision_202503/stimuli/round_3_SPBB.jpg
+            - imageFilepath: projects/exaptation/revision_202503/stimuli/round_3_SORB.jpg
+            - imageFilepath: projects/exaptation/revision_202503/stimuli/round_3_SORB.jpg # mistake in recall stage
+
+
+      - template: round
+        fields:
+          roundIndex: "4"
+          panelFilepath: projects/exaptation/revision_202503/stimuli/round_4_panel_A.jpg
+          recallImages:
+            - imageFilepath: projects/exaptation/revision_202503/stimuli/round_4_SORB3.jpg
+            - imageFilepath: projects/exaptation/revision_202503/stimuli/round_4_SPBY1.jpg
+            - imageFilepath: projects/exaptation/revision_202503/stimuli/round_4_SPBY4.jpg
+            - imageFilepath: projects/exaptation/revision_202503/stimuli/round_4_SORB4.jpg
+
+    exitSequence:
+      - name: Demographics
+        elements:
+          - type: survey
+            surveyName: Demographics
+
+  - name: schema B
+    playerCount: 2
+    gameStages:
+      - template: round
+        fields:
+          roundIndex: "1"
+          panelFilepath: projects/exaptation/revision_202503/stimuli/round_1_panel_S.jpg
+          recallImages:
+            - imageFilepath: projects/exaptation/revision_202503/stimuli/round_1_SOBB.jpg
+            - imageFilepath: projects/exaptation/revision_202503/stimuli/round_1_SORY.jpg
+            - imageFilepath: projects/exaptation/revision_202503/stimuli/round_1_SPRB.jpg
+            - imageFilepath: projects/exaptation/revision_202503/stimuli/round_1_SPBY.jpg
+
+      - template: round
+        fields:
+          roundIndex: "2"
+          panelFilepath: projects/exaptation/revision_202503/stimuli/round_2_panel_S.jpg
+          recallImages:
+            - imageFilepath: projects/exaptation/revision_202503/stimuli/round_2_SPRY.jpg
+            - imageFilepath: projects/exaptation/revision_202503/stimuli/round_2_SORB.jpg
+            - imageFilepath: projects/exaptation/revision_202503/stimuli/round_2_SORY.jpg
+            - imageFilepath: projects/exaptation/revision_202503/stimuli/round_2_SPBB.jpg
+
+      - template: round
+        fields:
+          roundIndex: "3"
+          panelFilepath: projects/exaptation/revision_202503/stimuli/round_3_panel.jpg
+          recallImages:
+            - imageFilepath: projects/exaptation/revision_202503/stimuli/round_3_SOBB.jpg
+            - imageFilepath: projects/exaptation/revision_202503/stimuli/round_3_SPBB.jpg
+            - imageFilepath: projects/exaptation/revision_202503/stimuli/round_3_SORB.jpg
+            - imageFilepath: projects/exaptation/revision_202503/stimuli/round_3_SORB.jpg # mistake in recall stage
+
+      - template: round
+        fields:
+          roundIndex: "4"
+          panelFilepath: projects/exaptation/revision_202503/stimuli/round_4_panel_B.jpg
+          recallImages:
+            - imageFilepath: projects/exaptation/revision_202503/stimuli/round_4_SORB3.jpg
+            - imageFilepath: projects/exaptation/revision_202503/stimuli/round_4_SPBY1.jpg
+            - imageFilepath: projects/exaptation/revision_202503/stimuli/round_4_SPBY4.jpg
+            - imageFilepath: projects/exaptation/revision_202503/stimuli/round_4_SORB4.jpg
+    exitSequence:
+      - name: Demographics
+        elements:
+          - type: survey
+            surveyName: Demographics
+
+# indentation error line 8

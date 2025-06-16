@@ -1,0 +1,108 @@
+introSequences:
+  - name: baseline
+    desc: Basic psychometrics and role collection
+    introSteps:
+      - name: Introsurvey Preamble
+        elements:
+          - type: prompt
+            name: preamble
+            file: projects/constructive_disagreement/super_sabbatical_wbl/introsurvey_preamble.md
+          - type: submitButton
+            buttonText: Continue
+      - name: Ten Item Personality Inventory
+        elements:
+          - type: survey
+            surveyName: TIPI
+      - name: Self-awareness Self-monitoring and Growth Mindset
+        elements:
+          - type: survey
+            surveyName: AwarenessMonitoringGrowth
+      - name: Cultural Conflict Norms
+        elements:
+          - type: survey
+            surveyName: CulturalConflictNorms
+      - name: General Information Optional Reading
+        elements:
+          - type: prompt
+            file: projects/constructive_disagreement/super_sabbatical_wbl/general_information.md
+          - type: submitButton
+            buttonText: Continue
+      - name: Complete Introductory Surveys
+        elements:
+          - type: prompt
+            file: projects/constructive_disagreement/super_sabbatical_wbl/introsurvey_done.md
+          - type: submitButton
+            buttonText: Continue
+
+treatments:
+  - name: negotiation
+    desc: Two-party negotiation between the Star Scientist and the Provost.
+    playerCount: 2
+    groupComposition:
+      - desc: Star Scientist
+        position: 0
+        title: "Star Scientist"
+      - desc: Provost
+        position: 1
+        title: "Provost"
+    
+    gameStages:
+      - name: Invalid Element Type Test
+        duration: 60
+        elements:
+          - type: form
+            file: projects/constructive_disagreement/super_sabbatical_wbl/fake_form.md
+          - type: submitButton
+            buttonText: Continue
+
+      - name: Role Reading Preamble
+        duration: 30
+        elements:
+          - type: prompt
+            file: projects/constructive_disagreement/super_sabbatical_wbl/role_specific_instructions_preamble_scientist.md
+            showToPositions:
+              - 0
+          - type: prompt
+            file: projects/constructive_disagreement/super_sabbatical_wbl/role_specific_instructions_preamble_provost.md
+            showToPositions:
+              - 1
+          - type: submitButton
+            buttonText: Continue
+
+      - name: Main Reading Time
+        duration: 420
+        elements:
+          - type: prompt
+            file: projects/constructive_disagreement/super_sabbatical_wbl/role_star_scientist.md
+            showToPositions:
+              - 0
+          - type: prompt
+            file: projects/constructive_disagreement/super_sabbatical_wbl/role_provost.md
+            showToPositions:
+              - 1
+          - type: submitButton
+            buttonText: Continue
+
+      - name: Key Things To Remember
+        duration: 90
+        elements:
+          - type: prompt
+            file: projects/constructive_disagreement/super_sabbatical_wbl/role_star_scientist_pep_talk.md
+            showToPositions:
+              - 0
+          - type: prompt
+            file: projects/constructive_disagreement/super_sabbatical_wbl/role_provost_pep_talk.md
+            showToPositions:
+              - 1
+          - type: submitButton
+            buttonText: Continue
+
+    exitSequence:
+      - name: Deal Sheet
+        elements:
+          - type: prompt
+            file: projects/constructive_disagreement/super_sabbatical_wbl/dealsheet_header.md
+          - type: submitButton
+            buttonText: Submit
+
+# An element uses an invalid type "form" which is not defined in the system.

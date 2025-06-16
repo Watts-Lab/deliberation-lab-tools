@@ -1,0 +1,56 @@
+templates:
+- templateName: guessTask
+  templateContent:
+  - type: prompt
+    file: projects/exaptation/revision_202504/instruction_describer.md
+    hideFromPositions:
+    - ${guesserPosition}
+    conditions:
+    - reference: prompt.continue_${lastIndex}
+      position: any
+      comparator: exists
+    - reference: prompt.guess_${index}
+      position: all
+      comparator: doesNotExist
+    name: Invalid*Name!
+- templateName: baseTreatment
+  templateContent:
+    name: ${name}
+    playerCount: 2
+    gameStages:
+    - name: Discussion
+      duration: 900
+      discussion:
+        chatType: ${chatType}
+        showNickname: true
+        showTitle: false
+      elements:
+      - template: guessTask
+        broadcast:
+          d0:
+          - index: '1_1'
+            lastIndex: demo
+            guesserPosition: 0
+            panelFilepath: projects/exaptation/revision_202504/stimuli/round_1_panel_S.jpg
+            imageFilepath: projects/exaptation/revision_202504/stimuli/round_1_SOBB.jpg
+            correctAnswer: '2'
+    exitSequence:
+    - name: Demographics
+      elements:
+      - type: survey
+        surveyName: Demographics
+introSequences:
+- name: Default
+  introSteps:
+  - name: Instructions Page
+    elements:
+    - type: prompt
+      file: projects/exaptation/revision_202504/instructions.md
+    - type: submitButton
+treatments:
+- template: baseTreatment
+  fields:
+    name: schema_text
+    chatType: text
+
+# name on line 15 has special characters

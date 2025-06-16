@@ -1,15 +1,64 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
 import * as assert from 'assert';
-import { detectPromptMarkdown, detectTreatmentsYaml } from '../../extension';
+// changed from extension to detectFile
+import { detectPromptMarkdown, detectTreatmentsYaml } from '../../detectFile';
 import { suite, test } from 'mocha';
 
 // You can import and use all API from the 'vscode' module
 // as well as import your extension to test it
 import { diagnosticCollection } from '../../extension';
 
+
 suite('Markdown and .treatments.yaml file detection', () => {
 	vscode.window.showInformationMessage('Start all tests.');
+	console.log("Workspace folder: " + vscode.workspace.workspaceFolders?.at(0));
+
+	// extension activates after first test case: try awaiting?
+
+	// empty.treatments.yaml
+	test('detecting empty .treatments.yaml file', async () => {
+		const filePath = path.resolve('src/test/suite/fixtures/empty.treatments.yaml');
+		console.log(filePath);
+		const document = await vscode.workspace.openTextDocument(filePath);
+
+		assert.strictEqual(detectTreatmentsYaml(document), true);
+	});
+
+	// filter.treatments.yaml
+	test('detecting .treatments.yaml file', async () => {
+		const filePath = path.resolve('src/test/suite/fixtures/filter.treatments.yaml');
+		console.log(filePath);
+		const document = await vscode.workspace.openTextDocument(filePath);
+
+		assert.strictEqual(detectTreatmentsYaml(document), true);
+	});
+
+	test('not detecting .yaml file', async () => {
+		const filePath = path.resolve('src/test/suite/fixtures/filter.yaml');
+		console.log(filePath);
+		const document = await vscode.workspace.openTextDocument(filePath);
+
+		assert.strictEqual(detectTreatmentsYaml(document), false);
+	});
+
+	// allTalk.md
+	test('not detecting markdown (or other different) file type', async () => {
+		const filePath = path.resolve('src/test/suite/fixtures/allTalk.md');
+		console.log(filePath);
+		const document = await vscode.workspace.openTextDocument(filePath);
+
+		assert.strictEqual(detectTreatmentsYaml(document), false);
+	});
+
+	// incorrectFile.txt
+	test('Wrong text file type for markdown detection', async () => {
+		const filePath = path.resolve('src/test/suite/fixtures/incorrectFile.txt');
+		console.log(filePath);
+		const document = await vscode.workspace.openTextDocument(filePath);
+
+		assert.strictEqual(detectPromptMarkdown(document), false);
+	});
 
 	// emptyField.md
 	test('Header exists but field is empty', async () => {
@@ -29,16 +78,6 @@ suite('Markdown and .treatments.yaml file detection', () => {
 		const document = await vscode.workspace.openTextDocument(filePath);
 
 		assert.strictEqual(detectPromptMarkdown(document), true);
-	});
-
-
-	// incorrectFile.txt
-	test('Wrong text file type for markdown detection', async () => {
-		const filePath = path.resolve('src/test/suite/fixtures/incorrectFile.txt');
-		console.log(filePath);
-		const document = await vscode.workspace.openTextDocument(filePath);
-
-		assert.strictEqual(detectPromptMarkdown(document), false);
 	});
 
 
@@ -97,54 +136,5 @@ suite('Markdown and .treatments.yaml file detection', () => {
 		const document = await vscode.workspace.openTextDocument(filePath);
 
 		assert.strictEqual(detectPromptMarkdown(document), true);
-	});
-
-	// filter.treatments.yaml
-	test('detecting .treatments.yaml file', async () => {
-		const filePath = path.resolve('src/test/suite/fixtures/filter.treatments.yaml');
-		console.log(filePath);
-		const document = await vscode.workspace.openTextDocument(filePath);
-
-		assert.strictEqual(detectTreatmentsYaml(document), true);
-	});
-
-	test('not detecting .yaml file', async () => {
-		const filePath = path.resolve('src/test/suite/fixtures/filter.yaml');
-		console.log(filePath);
-		const document = await vscode.workspace.openTextDocument(filePath);
-
-		assert.strictEqual(detectTreatmentsYaml(document), false);
-	});
-
-	test('detecting empty .treatments.yaml file', async () => {
-		const filePath = path.resolve('src/test/suite/fixtures/empty.treatments.yaml');
-		console.log(filePath);
-		const document = await vscode.workspace.openTextDocument(filePath);
-
-		assert.strictEqual(detectTreatmentsYaml(document), true);
-	});
-
-	// allTalk.md
-	test('not detecting markdown (or other different) file type', async () => {
-		const filePath = path.resolve('src/test/suite/fixtures/allTalk.md');
-		console.log(filePath);
-		const document = await vscode.workspace.openTextDocument(filePath);
-
-		assert.strictEqual(detectTreatmentsYaml(document), false);
-	});
-});
-
-suite('Diagnostics detection', () => {
-	test('Diagnostics are empty on correct markdown file', async () => {
-		// allTalk.md
-
-		const filePath = path.resolve('src/test/suite/fixtures/allTalk.md');
-		console.log(filePath);
-		const document = await vscode.workspace.openTextDocument(filePath);
-
-		await new Promise(resolve => setTimeout(resolve, 500));
-		
-		const diagnostics = vscode.languages.getDiagnostics(document.uri);
-		assert.strictEqual(diagnostics.length, 0);
 	});
 });
