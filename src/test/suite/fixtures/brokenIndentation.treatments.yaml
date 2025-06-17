@@ -6,14 +6,14 @@ templates:
       - name: "recall_${roundIndex}"
         duration: 30
         elements:
-            - type: image
+          - type: image
             file: ${imageFilepath}
           - type: prompt
-            name: "recall_${roundIndex}_${recallIndex}"
+            name: "recall_${roundIndex}"
             file: projects/exaptation/revision_202503/recall.md
           - type: submitButton
             buttonText: Submit
-            name: "recall_${roundIndex}_${recallIndex}"
+            name: "recall_${roundIndex} "
 
       - name: "feedback_${roundIndex}"
         duration: 15
