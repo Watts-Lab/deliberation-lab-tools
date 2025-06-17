@@ -105,9 +105,14 @@ export function Prompt({ file, name, shared }) {
     ? game.get(`prompt_${promptName}`)?.value
     : player.get(`prompt_${promptName}`)?.value;
 
-  // openResponse: loading... etherpad and shared notepad undefined
-  // Etherpad Client URL defined
-  // SharedNotepad: example_undefined
+  // openResponse: TextArea is good. Test SharedNotepad in researcher-portal
+  // can't test SharedNotepad because it doesn't load in researcher-portal
+
+  // listSorter: should be able to drag text components into the list? Text components should be boxed?
+  
+  // multipleChoice: Different bulletpoints should be on new lines?
+
+  // Overall style?
 
   return (
     <>

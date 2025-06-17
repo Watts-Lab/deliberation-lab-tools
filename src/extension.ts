@@ -59,7 +59,9 @@ export function activate(context: vscode.ExtensionContext) {
     vscode.commands.registerCommand('deliberation-lab-tools.openMarkdownPreview', () => {
       // registers before panel is created - is there a way to get this text editor while the webview is open
       const promptText = vscode.window.activeTextEditor?.document.getText();
+      const file = vscode.window.activeTextEditor?.document;
       console.log("Document text before webview", promptText);
+      console.log("Document before webview", file);
 
       const panel = vscode.window.createWebviewPanel(
         'openMarkdownPreview',
@@ -88,7 +90,8 @@ export function activate(context: vscode.ExtensionContext) {
           console.log("Text document text", promptText);
 
           // name hardcoded as "example"
-          panel.webview.postMessage({ type: 'init', promptProps: { file: promptText, name: 'example', shared: true } });
+          // shared hardcoded as either "true" (creates SharedNotepad) or "false" (creates TextArea)
+          panel.webview.postMessage({ type: 'init', promptProps: { file: promptText, name: 'example', shared: false } });
         }
       });
     })
