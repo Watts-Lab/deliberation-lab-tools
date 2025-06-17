@@ -48,7 +48,7 @@ export function activate(context: vscode.ExtensionContext) {
     vscode.workspace.onDidChangeTextDocument((event) => {
       if (event?.document !== undefined) {
         parseDocument(event?.document);
-      }
+      };
     })
   );
 
@@ -87,6 +87,7 @@ export function activate(context: vscode.ExtensionContext) {
           console.log('Webview is ready, sending prompt props');
           console.log("Text document text", promptText);
 
+          // name hardcoded as "example"
           panel.webview.postMessage({ type: 'init', promptProps: { file: promptText, name: 'example', shared: true } });
         }
       });

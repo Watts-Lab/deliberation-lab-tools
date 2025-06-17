@@ -2,7 +2,7 @@ import { useContext } from 'react';
 // import { StageContext } from '@/editor/stageContext'; // # don't know why this doesn't work
 
 // file is in deliberation-empirica/client/node_modules/@empirica/core/mocks.js
-import { StageContext } from "./stageContext"
+import { StageContext } from "./stageContext";
 // "../../../../src/app/editor/stageContext"
 
 
@@ -31,12 +31,16 @@ export function usePlayer() {
       this[varName] = value;
     },
   };
+  console.log("Player in mocks.js", player);
   return player;
 }
 
 export function useGame() {
   // This is a mock function that returns a mock game object
+
+  // ID is hardcoded at 21, and example_21 describes hardcoded SharedNotepad ID
   const game = {
+    id: 21,
     isMock: true,
     ended: false,
     get: function (varName) {
@@ -45,16 +49,20 @@ export function useGame() {
     set: function (varName, value) {
       this[varName] = value;
     },
+    example_21: "etherpad_client_URL"
   };
 
+  console.log("Game in mocks.js", game);
   return game;
 }
 
 // Commented out since this function uses StageContext, and we don't need it yet for prompt
 export function useStageTimer() {
+    // stage is undefined
+  console.log("Stage context", StageContext);
   const stage = useContext(StageContext);
-  console.log("useStageTimerMock", stage)
-  console.log("StageElapsed", stage.elapsed)
+  console.log("useStageTimerMock", stage);
+  console.log("StageElapsed", stage.elapsed);
   
   
   // This is a mock function that returns a mock stage timer object
@@ -83,7 +91,7 @@ export function useStage() {
     setRefData,
     selectedTreatmentIndex,
     setSelectedTreatmentIndex
-  } = useContext(StageContext)
+  } = useContext(StageContext);
   // const stage1 = useContext(StageContext);
   // console.log("useStageMock", stage1)
 
@@ -98,7 +106,7 @@ export function useStage() {
       const stageTemplateName = treatment.treatments[selectedTreatmentIndex]?.gameStages[currentStageIndex]?.template || "";
       var fields = treatment.treatments[selectedTreatmentIndex]?.gameStages[currentStageIndex]?.fields || [];
       if (stageTemplateName !== "") {
-        tempStage = templatesMap.get(stageTemplateName)[0]
+        tempStage = templatesMap.get(stageTemplateName)[0];
       }
       console.log("tempStage", tempStage);
 
@@ -137,14 +145,14 @@ export function useStage() {
         // console.log("revised elements", elements)
         // return elements;
 
-        var elements
+        var elements;
         if (tempStage) {
           elements = tempStage.elements;
         } else {
           elements = treatment.treatments[selectedTreatmentIndex]?.gameStages[currentStageIndex]?.elements;
         }
 
-        console.log("CURRELEMENTS", elements)
+        console.log("CURRELEMENTS", elements);
         
         // TODO: change to template if needed
         // map to templates first
@@ -154,7 +162,7 @@ export function useStage() {
           } else {
             return element;
           }
-        })
+        });
 
         //console.log("ELEMENTS_TO_DISPLAY", elements)
         // check all conditions
@@ -176,7 +184,7 @@ export function useStage() {
                 return [];
               }
             } else if (comparator === "equals") {
-              if (refData[`stage_${currentStageIndex}`]?.[reference] == value) {
+              if (refData[`stage_${currentStageIndex}`]?.[reference] === value) {
                 const newElement = {...element};
                 delete newElement.conditions;
                 return [newElement];
@@ -184,7 +192,7 @@ export function useStage() {
                 return [];
               }
             } else if (comparator === "doesNotEqual") {
-              if (refData[`stage_${currentStageIndex}`]?.[reference] != value) {
+              if (refData[`stage_${currentStageIndex}`]?.[reference] !== value) {
                 const newElement = {...element};
                 delete newElement.conditions;
                 return [newElement];

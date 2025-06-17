@@ -2,11 +2,14 @@ import React, { useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
 
 // This is where the prompt gets imported from
-import { Prompt } from "./prompt";
-// import { Prompt } from "../../deliberation-empirica/client/src/elements/Prompt";
+// import { Prompt } from "./prompt";
+import { Prompt } from "../../deliberation-empirica/client/src/elements/Prompt";
+
+import { StageProvider } from "./stageContext";
 
 const vscode = acquireVsCodeApi();
 
+// App only programmed to render Prompt at the moment
 function App() {
   const [props, setProps] = useState(null);
 
@@ -49,7 +52,10 @@ if (rootElement) {
 
   // rendering prompt
   root.render(
-    <App />);
+    <StageProvider>
+      <App />
+    </StageProvider>
+  );
 
   // Lets extension know that webview is ready to receive prompts
   window.addEventListener("DOMContentLoaded", () => {

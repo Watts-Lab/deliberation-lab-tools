@@ -1,5 +1,12 @@
+import {
+  usePlayer,
+  useGame,
+  useStageTimer,
+} from "@empirica/core/player/classic/react";
 import React from "react";
 import { load as loadYaml } from "js-yaml";
+
+// special paths for this specific location
 import { Markdown } from "../../deliberation-empirica/client/src/components/Markdown";
 import { RadioGroup } from "../../deliberation-empirica/client/src/components/RadioGroup";
 import { CheckboxGroup } from "../../deliberation-empirica/client/src/components/CheckboxGroup";
@@ -8,78 +15,104 @@ import { useText, usePermalink } from "../../deliberation-empirica/client/src/co
 import { SharedNotepad } from "../../deliberation-empirica/client/src/components/SharedNotepad";
 import { ListSorter } from "../../deliberation-empirica/client/src/components/ListSorter";
 
-// file will be a vscode.TextDocument
 export function Prompt({ file, name, shared }) {
 
+  const player = usePlayer();
+  console.log("Player", player);
+  const game = useGame();
+  console.log("Game", game);
+  const stageTimer = useStageTimer();
+
+  // const progressLabel = "hardcoded progress label";
+  const progressLabel = player.get("progressLabel");
   // const { text: promptString, error: fetchError } = useText({ file });
   // const permalink = usePermalink(file);
-
-  // string from vscode.TextDocument
-
   const promptString = file;
+  const fetchError = null;
+  console.log("Text as file", promptString);
+  const permalink = "hardcoded permalink (temporary)";
   const [responses, setResponses] = React.useState([]);
 
-  // Uncomment out if fetching is done?
-//   if (fetchError) {
-//     return <p>Error loading prompt, retrying...</p>;
-//   }
-  if (!promptString || promptString === undefined || typeof promptString !== 'string') {
-    console.log("Prompt string undefined?", promptString === undefined, typeof promptString, promptString);
-    return <p>Loading prompt...</p>;
+  if (fetchError) {
+    return <p>Error loading prompt, retrying...</p>;
   }
+  if (!promptString) return <p>Loading prompt...</p>;
 
   // Parse the prompt string into its sections
-  // const sectionRegex = /---\n/g;
-  console.log("Before splitting prompt string ", promptString, typeof promptString);
+  const sectionRegex = /---\n/g;
   const [, metaDataString, prompt, responseString] =
-    promptString?.split(/^-{3,}$/gm);
-
-  console.log("Prompt string " + promptString);
-  console.log("Meta data string" + metaDataString);
-  console.log("Response string " + responseString);
+    promptString.split(/^-{3,}$/gm);
 
   const metaData = loadYaml(metaDataString);
   const promptType = metaData?.type;
-  console.log("Prompt type " + promptType);
 
-  // comment out for now
-  // const promptName = name || `${progressLabel}_${metaData?.name || file}`;
-
-  // should be metaData?.name but will try this for now in case metadata is invalid
-  const promptName = "placeholder";
+  // name is hardcoded as "example"
+  const promptName = name || `${progressLabel}_${metaData?.name || file}`;
   const rows = metaData?.rows || 5;
 
-  // add check if response string is empty
-  if (promptType !== "noResponse" && !responses.length && responseString !== '') {
+  console.log("Prompt string properly parsed", promptString);
+
+  // added trim to fix with whitespace lines?
+  if (promptType !== "noResponse" && !responses.length && responseString.trim() !== '') {
+
+    // fix with whitespace lines
     const responseItems = responseString
       .split(/\r?\n|\r|\n/g)
       .filter((i) => i)
       .map((i) => i.substring(2));
-
-    console.log("Response string", responseString);
-    console.log("Response items", responseItems);
 
     if (metaData?.shuffleOptions) {
       setResponses(responseItems.sort(() => 0.5 - Math.random())); // shuffle
     } else {
       setResponses(responseItems);
     }
-
-    console.log("Responses", responses);
   }
 
-  console.log("Before prompt generation");
-  console.log("Prompt" + prompt);
-  console.log(<Markdown text={prompt} />);
+  const record = {
+    ...metaData,
+    permalink, // TODO: test permalink in cypress
+    name: promptName,
+    shared,
+    step: progressLabel,
+    prompt,
+    responses,
+  };
 
+  console.log("Reached before get call");
 
-  // Some values (record, value) do not exist in this adhoc Prompt
+  // undefined on player.set ... maybe we check usePlayer()
+
+  // Coordinate saving the data
+  const saveData = (newValue) => {
+    record.value = newValue;
+    const stageElapsed = (stageTimer?.elapsed || 0) / 1000;
+    record.stageTimeElapsed = stageElapsed;
+
+    if (shared) {
+      game.set(`prompt_${promptName}`, record);
+      console.log(
+        `Save game.set(prompt_${promptName}`,
+        game.get(`prompt_${promptName}`)
+      );
+    } else {
+      player.set(`prompt_${promptName}`, record);
+    }
+  };
+
+  // const value = "hardcoded value";
+  // this throws get error
+  const value = shared
+    ? game.get(`prompt_${promptName}`)?.value
+    : player.get(`prompt_${promptName}`)?.value;
+
+  // openResponse: loading... etherpad and shared notepad undefined
+  // Etherpad Client URL defined
+  // SharedNotepad: example_undefined
+
   return (
     <>
-      <p> Prompt loaded?</p>
-      <p>{prompt}</p>
       <Markdown text={prompt} />
-      {/* {promptType === "multipleChoice" &&
+      {promptType === "multipleChoice" &&
         (metaData.select === "single" || metaData.select === undefined) && (
           <RadioGroup
             options={responses.map((choice) => ({
@@ -130,7 +163,7 @@ export function Prompt({ file, name, shared }) {
           onChange={(newOrder) => saveData(newOrder)}
           testId={metaData?.name}
         />
-      )} */}
+      )}
     </>
   );
 }

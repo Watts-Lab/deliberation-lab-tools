@@ -43,10 +43,6 @@
     ],
     "commands": [
       {
-        "command": "deliberation-lab-tools.helloWorld",
-        "title": "Hello World"
-      },
-      {
         "command": "deliberation-lab-tools.openMarkdownPreview",
         "title": "Deliberation Lab Tools: Open Markdown Preview"
       }
@@ -94,6 +90,7 @@
     "@vscode/test-web": "^0.0.63",
     "@vscode/vsce": "^3.4.1",
     "esbuild": "^0.24.0",
+    "esbuild-plugin-path-alias": "^1.0.7",
     "eslint": "^9.13.0",
     "glob": "^11.0.0",
     "mocha": "^10.7.3",

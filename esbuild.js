@@ -2,6 +2,7 @@ const fs = require("fs");
 const esbuild = require("esbuild");
 const glob = require("glob");
 const path = require("path");
+const alias = require("esbuild-plugin-path-alias");
 const polyfill = require("@esbuild-plugins/node-globals-polyfill");
 
 const production = process.argv.includes("--production");
@@ -83,6 +84,20 @@ const testBundlePlugin = {
   },
 };
 
+// Points hooks.js from deliberation-empirica to the mock hooks.js file in src/views
+// Needed for rendering
+const aliasHooksImport = {
+  name: "alias-hooks-imports",
+  setup(build) {
+    build.onResolve({ filter: /^\.\.\/components\/hooks$/ }, args => {
+      return {
+        path: path.resolve(__dirname, "src/views/hooks.js"),
+      };
+    });
+  },
+};
+
+
 async function buildExtension() {
   const ctx = await esbuild.context({
     entryPoints: [
@@ -103,6 +118,8 @@ async function buildExtension() {
     },
     alias: {
       '@empirica/core/player/react': path.resolve(__dirname, 'src/views/mocks.js'),
+      '@empirica/core/player/classic/react': path.resolve(__dirname, 'src/views/mocks.js'),
+      'deliberation-empirica/client/src/components/hooks': path.resolve(__dirname, 'src/views/hooks.js')
     },
 
     plugins: [
@@ -110,6 +127,15 @@ async function buildExtension() {
         process: true,
         buffer: true,
       }),
+
+      alias({
+        aliases: {
+          "../components/hooks": path.resolve(__dirname, "src/views/hooks.js"),
+        },
+        resolve: [".js", ".jsx"],
+      }),
+
+      aliasHooksImport,
 
       esbuildProblemMatcherPlugin /* add to the end of plugins array */,
     ],
@@ -138,8 +164,19 @@ async function buildPrompt() {
     external: ["vscode", "path", "assert"],
     alias: {
       '@empirica/core/player/react': path.resolve(__dirname, 'src/views/mocks.js'),
-      'deliberation-empirica/client/src/components/hooks.js': path.resolve(__dirname, 'src/views/hooks.js')
+      '@empirica/core/player/classic/react': path.resolve(__dirname, 'src/views/mocks.js'),
+      'deliberation-empirica/client/src/components/hooks': path.resolve(__dirname, 'src/views/hooks.js')
     },
+    plugins: [
+      alias({
+        aliases: {
+          "../components/hooks": path.resolve(__dirname, "src/views/hooks.js"),
+        },
+        resolve: [".js", ".jsx"],
+      }),
+
+      aliasHooksImport
+    ]
   });
   if (watch) {
     await ctx.watch();

@@ -171,14 +171,14 @@ export const referenceSchema = z
           ctx.addIssue({
             code: z.ZodIssueCode.custom,
             message: `A path must be provided, e.g. '${givenType}.${name}.object.selectors.here'`,
-            path: ["path"],
+            path: [],
           });
         }
         if (name === undefined || name.length < 1) {
           ctx.addIssue({
             code: z.ZodIssueCode.custom,
             message: `A name must be provided, e.g. '${givenType}.elementName.object.selectors.here'`,
-            path: ["name"],
+            path: [],
           });
         }
         break;
@@ -190,7 +190,7 @@ export const referenceSchema = z
           ctx.addIssue({
             code: z.ZodIssueCode.custom,
             message: `A name must be provided, e.g. '${givenType}.elementName'`,
-            path: ["name"],
+            path: [],
           });
         }
         break;
@@ -202,15 +202,15 @@ export const referenceSchema = z
           ctx.addIssue({
             code: z.ZodIssueCode.custom,
             message: `A path must be provided, e.g. '${givenType}.object.selectors.here.`,
-            path: ["path"],
+            path: [],
           });
         }
         break;
       default:
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
-          message: `Invalid reference type "${givenType}"`,
-          path: ["type"],
+          message: `Invalid reference type "${givenType}", need to be in form of a valid reference type such as 'survey', 'submitButton', 'qualtrics', 'discussion', 'participantInfo', 'prompt', 'urlParams', 'connectionInfo', or 'browserInfo' followed by a . and name or path.`,
+          path: [],
         });
     }
   });
@@ -567,6 +567,8 @@ export type ElementType = z.infer<typeof elementSchema>;
 export const elementsSchema = altTemplateContext(
   z.array(elementSchema).nonempty()
 );
+
+
 export type ElementsType = z.infer<typeof elementsSchema>;
 
 // ------------------ Stages ------------------ //
@@ -599,8 +601,35 @@ export const introExitStepSchema = altTemplateContext(
 // and that no elements have showToPositions or hideFromPositions
 export type IntroExitStepType = z.infer<typeof introExitStepSchema>;
 
+// export const introExitStepsSchema = altTemplateContext(
+//   z.array(introExitStepSchema).nonempty()
+// );
+
 export const introExitStepsSchema = altTemplateContext(
-  z.array(introExitStepSchema).nonempty()
+  z.any().superRefine((val, ctx) => {
+    // Show a helpful message when it's not an array (e.g., YAML missing dashes)
+    if (!Array.isArray(val)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message:
+          "Expected an array for `introSteps`. Make sure each item starts with a dash (`-`) in YAML.",
+      });
+      return;
+    }
+
+    // Validate as nonempty array of introExitStepSchema
+    const schema = z.array(introExitStepSchema).nonempty();
+    const result = schema.safeParse(val);
+
+    if (!result.success) {
+      result.error.issues.forEach((issue) =>
+        ctx.addIssue({
+          ...issue,
+          path: issue.path,
+        })
+      );
+    }
+  })
 );
 
 // ------------------ Intro Sequences and Treatments ------------------ //
@@ -610,8 +639,7 @@ export const introSequenceSchema = altTemplateContext(
       name: nameSchema,
       desc: descriptionSchema.optional(),
       introSteps: introExitStepsSchema,
-    })
-    .strict()
+    }).strict()
 );
 export type IntroSequenceType = z.infer<typeof introSequenceSchema>;
 
@@ -642,12 +670,12 @@ export const templateContentSchema = z.any().superRefine((data, ctx) => {
   const schemas = [
     { schema: introSequenceSchema, name: "Intro Sequence" },
     { schema: introSequencesSchema, name: "Intro Sequences" },
+    { schema: elementsSchema, name: "Elements" },
+    { schema: elementSchema, name: "Element" },
     { schema: treatmentSchema, name: "Treatment" },
     { schema: treatmentsSchema, name: "Treatments" },
     { schema: referenceSchema, name: "Reference" },
     { schema: conditionSchema, name: "Condition" },
-    { schema: elementSchema, name: "Element" },
-    { schema: elementsSchema, name: "Elements" },
     { schema: stageSchema, name: "Stage" },
     { schema: stagesSchema, name: "Stages" },
     { schema: playerSchema, name: "Player" },
@@ -679,7 +707,7 @@ export const templateContentSchema = z.any().superRefine((data, ctx) => {
     const result = schema.safeParse(data);
 
     if (result.success) {
-      // console.log(`Schema "${name}" matched successfully.`);
+      console.log(`Schema "${name}" matched successfully.`);
       return;
     } else {
       // console.log(`Schema "${name}" failed with errors:`, result.error.issues);
@@ -740,6 +768,8 @@ export const templateContentSchema = z.any().superRefine((data, ctx) => {
     });
   }
 });
+
+
 
 export const templateSchema = z
   .object({
