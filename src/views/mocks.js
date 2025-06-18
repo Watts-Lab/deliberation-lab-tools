@@ -276,3 +276,8 @@ export function useGlobal() {
 export function Loading() {
   return "Loading...";
 }
+
+// Mock function for useRound: is there a specific type for Round?
+export function useRound() {
+  return "Round";
+}
