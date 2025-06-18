@@ -23,6 +23,30 @@ function parseDocument(document: vscode.TextDocument) {
 export function activate(context: vscode.ExtensionContext) {
   vscode.window.showInformationMessage("Extension activated");
   
+  const defaultYaml = vscode.commands.registerCommand("deliberation-lab-tools.defaultTreatmentsYaml", () => {
+    const editor = vscode.window.activeTextEditor;
+    if (editor && editor.document && editor.document.languageId === "treatmentsYaml") {
+      const defaultYamlContent = `introSequences:
+  - name: "exampleIntro"
+    introSteps:
+      - name: "exampleStep1"
+        elements:
+          - exampleElement1
+
+treatments:
+  - name: "exampleTreatment"
+    playerCount: 1
+    gameStages:
+      - name: "exampleStage1"
+        duration: 60
+        elements:
+          - exampleElement2`
+      editor.edit((editBuilder) => {
+        editBuilder.insert(editor.selection.active, defaultYamlContent);
+      });
+    }
+  });
+  context.subscriptions.push(defaultYaml);
 
   context.subscriptions.push(diagnosticCollection);
   console.log("Extension activated");

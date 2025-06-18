@@ -45,6 +45,10 @@
         "command": "deliberation-lab-tools.helloWorld",
         "title": "Hello World"
         
+      },
+      {
+        "command": "deliberation-lab-tools.defaultTreatmentsYaml",
+        "title": "Default Treatments YAML"
       }
     ]
   },
