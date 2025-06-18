@@ -47,4 +47,26 @@ export function activate(context: vscode.ExtensionContext) {
       }
     })
   );
+
+  // Command to create initial prompt markdown document
+  context.subscriptions.push(
+    vscode.commands.registerCommand('deliberation-lab-tools.initialPromptMarkdown', async () => {
+      vscode.window.showInformationMessage('Markdown document created');
+
+      const content = `---
+name:
+type: 
+---
+Fill in prompt text here.
+---
+Fill in response text here.
+		`;
+
+      const doc = await vscode.workspace.openTextDocument({
+        language: 'markdown',
+        content
+      });
+    }
+    )
+  )
 }

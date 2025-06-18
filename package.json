@@ -44,6 +44,10 @@
       {
         "command": "deliberation-lab-tools.helloWorld",
         "title": "Hello World"
+      },
+      {
+        "command": "deliberation-lab-tools.initialPromptMarkdown",
+        "title": "Deliberation Lab Tools: Create Initial Prompt Markdown"
       }
     ]
   },
