@@ -1,16 +1,2 @@
-introSequences:
-  - name: "exampleIntro"
-    introSteps:
-      - name: "exampleStep1"
-        elements:
-          - exampleElement1
 
-treatments:
-  - name: "exampleTreatment"
-    playerCount: 1
-    gameStages:
-      - name: "exampleStage1"
-        duration: 60
-        elements:
-          - exampleElement2
       

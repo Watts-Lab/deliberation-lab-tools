@@ -55,18 +55,23 @@
   "scripts": {
     "prepare-submodule": "git submodule update --init --recursive",
     "copy-validators": "cp ./deliberation-empirica/server/src/preFlight/validateTreatmentFile.ts ./src/zod-validators && cp ./deliberation-empirica/server/src/preFlight/validatePromptFile.ts ./src/zod-validators",
-    "test": "npm run compile-test && ELECTRON_DISABLE_GPU=1 xvfb-run -a node runExtensionTests.js $TEST_FILES",
-    "test:electron": "vscode-test --extensionDevelopmentPath=. --extensionTestsPath=out/test/suite/extensionTests.js",
-    "pretest": "npm run compile-web",
-    "vscode:prepublish": "npm run package-web",
-    "compile-web": "npm run prepare-submodule && npm run copy-validators && tsc -p tsconfig.json && npm run lint && node esbuild.js",
+    "prepare-web": "npm run prepare-submodule && npm run copy-validators",
+
+    "compile-web": "npm run prepare-web && tsc -p tsconfig.json && npm run lint && node esbuild.js",
+    "package-web": "npm run prepare-web && npm run check-types && npm run lint && node esbuild.js --production",
+
     "compile-test": "tsc -p tsconfig.test.json",
-    "watch-web": "npm-run-all -p watch-web:*",
-    "watch-web:esbuild": "npm run prepare-submodule && node esbuild.js --watch",
-    "watch-web:tsc": "tsc --noEmit --watch --project tsconfig.json",
-    "package-web": "npm run prepare-submodule && npm run copy-validators && npm run check-types && npm run lint && node esbuild.js --production",
+    "test": "npm run compile-test && ELECTRON_DISABLE_GPU=1 xvfb-run -a node runExtensionTests.js",
+    "test:electron": "vscode-test --extensionDevelopmentPath=. --extensionTestsPath=out/test/suite/extensionTests.js",
+
+    "vscode:prepublish": "npm run package-web",
     "check-types": "tsc --noEmit",
     "lint": "eslint src",
+
+    "watch-web": "npm-run-all -p watch-web:*",
+    "watch-web:esbuild": "npm run prepare-web && node esbuild.js --watch",
+    "watch-web:tsc": "tsc --noEmit --watch --project tsconfig.json",
+
     "run-in-browser": "vscode-test-web --browserType=chromium --extensionDevelopmentPath=. ."
   },
   "devDependencies": {
