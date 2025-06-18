@@ -44,6 +44,7 @@
       {
         "command": "deliberation-lab-tools.helloWorld",
         "title": "Hello World"
+        
       }
     ]
   },

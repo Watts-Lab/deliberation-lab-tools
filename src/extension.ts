@@ -22,6 +22,8 @@ function parseDocument(document: vscode.TextDocument) {
 // export function 
 export function activate(context: vscode.ExtensionContext) {
   vscode.window.showInformationMessage("Extension activated");
+  
+
   context.subscriptions.push(diagnosticCollection);
   console.log("Extension activated");
 

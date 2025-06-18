@@ -26,20 +26,19 @@ export function parseYaml(document: vscode.TextDocument) {
     console.log("YAML parsed successfully.");
     console.log(parsedData.errors);
 
-    if (parsedData.errors) {
+    if (parsedData.errors.length > 0) {
         console.log("YAML parsing errors found:", parsedData.errors);
         parsedData.errors.forEach((error: any) => {
-            const position = offsetToPosition(error.pos?.[0], document);
             const range = new vscode.Range(
-                position,
-                new vscode.Position(position.line, position.character + 10)
+                new vscode.Position(error.linePos[0].line - 2, 0),
+                new vscode.Position(error.linePos[0].line + 2, 10)
             );
             if (error.code === 'BAD_INDENT' || error.code === 'MISSING_CHAR' || 
                 error.code === 'BLOCK_AS_IMPLICIT_KEY' || error.code === 'MULTILINE_IMPLICIT_KEY') {
                 diagnostics.push(
                     new vscode.Diagnostic(
                         range,
-                        `YAML syntax error: ${error.code} -> ${error.message}; Check for proper indentation and formatting.`,
+                        `YAML syntax error: ${error.code} -> ${error.message}; Check for proper indentation and formatting. Check arrays elements have dashes (-) in front of them.`,
                         vscode.DiagnosticSeverity.Error
                     )
                 );

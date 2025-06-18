@@ -126,13 +126,13 @@ suite('Diagnostics detection', () => {
 		console.log("diagnostics length:", diagnostics.length);
 		console.log("diagnostics:", JSON.stringify(diagnostics, null, 2));
 
-		assert.strictEqual(diagnostics.length, 1);
-		assert.strictEqual(
-			diagnostics[0].message,
-			`Error in item "0": Closest schema match: Elements. Expected string, received object`
+		assert.strictEqual(diagnostics.length, 4);
+		assert.match(diagnostics[0].message, /^YAML syntax error: BAD_INDENT/);
+		const range = diagnostics[0].range;
+		assert.ok(
+		range.start.line <= 8 && 8 <= range.end.line,
+		`Expected error line to be within range [${range.start.line}, ${range.end.line}]`
 		);
-		assert.strictEqual(diagnostics[0].range.start.line, 7);
-		assert.strictEqual(diagnostics[0].range.end.line, 14);
 	});
 
 	test('Invalid Broadcast Key', async () => {
@@ -183,31 +183,34 @@ suite('Diagnostics detection', () => {
 		console.log("diagnostics length:", diagnostics.length);
 		console.log("diagnostics:", JSON.stringify(diagnostics, null, 2));
 
-		assert.strictEqual(diagnostics.length, 1);
-		assert.strictEqual(
-			diagnostics[0].message,
-			'Error in item "introSteps": Expected an array for `introSteps`. Make sure each item starts with a dash (`-`) in YAML.'
+		assert.strictEqual(diagnostics.length, 4);
+		assert.match(diagnostics[0].message, /^YAML syntax error: BAD_INDENT/);
+		const range = diagnostics[0].range;
+		assert.ok(
+		range.start.line <= 264 && 264 <= range.end.line,
+		`Expected error line to be within range [${range.start.line}, ${range.end.line}]`
 		);
-		assert.strictEqual(diagnostics[0].range.start.line, 264);
-		assert.strictEqual(diagnostics[0].range.end.line, 319);
 	}
 	);
 
-	// test('missing element field in game stages', async () => {
-	// 	const filePath = path.resolve('src/test/suite/fixtures/missingElements.treatments.yaml');
-	// 	console.log(filePath);
-	// 	const document = await vscode.workspace.openTextDocument(filePath);
-	// 	const diagnostics = vscode.languages.getDiagnostics(document.uri);
-	// 	console.log("document uri:", document.uri.toString());
+	test('missing element field in game stages', async () => {
+		const filePath = path.resolve('src/test/suite/fixtures/missingElements.treatments.yaml');
+		console.log(filePath);
+		const document = await vscode.workspace.openTextDocument(filePath);
+		const diagnostics = vscode.languages.getDiagnostics(document.uri);
+		console.log("document uri:", document.uri.toString());
 
-	// 	console.log("diagnostics length:", diagnostics.length);
-	// 	console.log("diagnostics:", JSON.stringify(diagnostics, null, 2));
+		console.log("diagnostics length:", diagnostics.length);
+		console.log("diagnostics:", JSON.stringify(diagnostics, null, 2));
 
-	// 	assert.strictEqual(diagnostics.length, 1);
-	// 	//error doesn't even seem to exist yet so disregard message for now
-	// 	assert.strictEqual(diagnostics[0].range.start.line, 12);
-	// 	assert.strictEqual(diagnostics[0].range.end.line, 19);
-	// });
+		assert.strictEqual(diagnostics.length, 1);
+		assert.strictEqual(
+			diagnostics[0].message,
+			'Error in item "0": Stage must have elements field (check elementsSchema).'
+		);
+		assert.strictEqual(diagnostics[0].range.start.line, 13);
+		assert.strictEqual(diagnostics[0].range.end.line, 19);
+	});
 
 	test('missing survey name', async () => {
 		const filePath = path.resolve('src/test/suite/fixtures/missingSurveyName.treatments.yaml');
@@ -286,13 +289,13 @@ suite('Diagnostics detection', () => {
 		console.log("document uri:", document.uri.toString());
 		console.log("diagnostics length:", diagnostics.length);
 		console.log("diagnostics:", JSON.stringify(diagnostics, null, 2));
-		assert.strictEqual(diagnostics.length, 2);
-		assert.strictEqual(
-			diagnostics[0].message,
-			'Error in item "introSteps": Expected an array for `introSteps`. Make sure each item starts with a dash (`-`) in YAML.'
+		assert.strictEqual(diagnostics.length, 3);
+		assert.match(diagnostics[0].message, /^YAML syntax error: BLOCK_AS_IMPLICIT_KEY/);
+		const range = diagnostics[0].range;
+		assert.ok(
+			range.start.line <= 125 && 125 <= range.end.line,
+			`Expected error line to be within range [${range.start.line}, ${range.end.line}]`
 		);
-		assert.strictEqual(diagnostics[0].range.start.line, 116);
-		assert.strictEqual(diagnostics[0].range.end.line, 141);
 	});
 
 	test('malformed reference in yaml file', async () => {
