@@ -1,7 +1,6 @@
 templates:
   - templateName: disagreeing_dyads
     templateDesc: Main experiment template
-    contentType: treatment
     templateContent:
       name: ${treatmentName}
       playerCount: 2
