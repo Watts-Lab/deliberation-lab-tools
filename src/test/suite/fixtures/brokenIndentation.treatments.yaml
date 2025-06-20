@@ -6,7 +6,7 @@ templates:
       - name: "recall_${roundIndex}"
         duration: 30
         elements:
-            - type: image
+          - type: image
             file: ${imageFilepath}
           - type: prompt
             name: "recall_${roundIndex}"

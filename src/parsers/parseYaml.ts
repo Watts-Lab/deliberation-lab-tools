@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+import { load as loadYaml } from "js-yaml";
 import * as YAML from 'yaml';
 import { diagnosticCollection } from '../extension';
 import { ZodError, ZodIssue } from "zod";
@@ -18,6 +19,16 @@ export function parseYaml(document: vscode.TextDocument) {
     console.log(document.uri.toString());
     const diagnostics: vscode.Diagnostic[] = [];
 
+    try {
+        // Load YAML content using js-yaml
+        const yamlContent = loadYaml(document.getText());
+        console.log("YAML content loaded successfully.");
+        console.log("YAML content:", yamlContent);
+        return;
+    } catch (error) {
+        console.error("Error loading YAML content:", error);
+        return;
+    }
     // Parse YAML content into AST
     let parsedData = YAML.parseDocument(document.getText(), {
         keepCstNodes: true,
