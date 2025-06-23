@@ -48,7 +48,7 @@
       },
       {
         "command": "deliberation-lab-tools.defaultTreatmentsYaml",
-        "title": "Default Treatments YAML"
+        "title": "Deliberation Lab Tools: Create Default Treatments YAML file"
       }
     ]
   },
