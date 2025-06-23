@@ -425,7 +425,7 @@ const elementBaseSchema = z
     conditions: conditionsSchema.optional(),
     tags: z.array(z.string(), {
       invalid_type_error: "Expected an array for `tags`. Make sure each item starts with a dash (`-`) in YAML.",
-  }).optional(),
+    }).optional(),
   })
   .strict();
 

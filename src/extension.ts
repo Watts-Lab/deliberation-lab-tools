@@ -22,31 +22,6 @@ function parseDocument(document: vscode.TextDocument) {
 // export function 
 export function activate(context: vscode.ExtensionContext) {
   vscode.window.showInformationMessage("Extension activated");
-  
-  const defaultYaml = vscode.commands.registerCommand("deliberation-lab-tools.defaultTreatmentsYaml", () => {
-    const editor = vscode.window.activeTextEditor;
-    if (editor && editor.document && editor.document.languageId === "treatmentsYaml") {
-      const defaultYamlContent = `introSequences:
-  - name: "exampleIntro"
-    introSteps:
-      - name: "exampleStep1"
-        elements:
-          - type: "prompt"
-            
-treatments:
-  - name: "exampleTreatment"
-    playerCount: 1
-    gameStages:
-      - name: "exampleStage1"
-        duration: 60
-        elements:
-          - type: "prompt"`
-      editor.edit((editBuilder) => {
-        editBuilder.insert(editor.selection.active, defaultYamlContent);
-      });
-    }
-  });
-  context.subscriptions.push(defaultYaml);
 
   context.subscriptions.push(diagnosticCollection);
   console.log("Extension activated");
@@ -73,4 +48,28 @@ treatments:
       }
     })
   );
+
+  const defaultYaml = vscode.commands.registerCommand("deliberation-lab-tools.defaultTreatmentsYaml", async () => {
+    const defaultYamlContent = `introSequences:
+  - name: "exampleIntro"
+    introSteps:
+      - name: "exampleStep1"
+        elements:
+          - type: "prompt"
+            
+treatments:
+  - name: "exampleTreatment"
+    playerCount: 1
+    gameStages:
+      - name: "exampleStage1"
+        duration: 60
+        elements:
+          - type: "prompt"`;
+    await vscode.workspace.openTextDocument({
+      language: 'treatmentsYaml',
+      content: defaultYamlContent
+    });
+    vscode.window.showInformationMessage("Default .treatments.yaml file created");
+  });
+  context.subscriptions.push(defaultYaml);
 }
