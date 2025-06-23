@@ -193,7 +193,7 @@ export function parseMarkdown(document: vscode.TextDocument) {
                 for (let i = lineNum; i < document.lineCount; i++) {
                     const str = document.lineAt(i).text;
                     console.log(str);
-                    if (str.substring(0, 2) !== "- ") {
+                    if (!(/^\s*$/.test(str)) && str.substring(0, 2) !== "- ") {
                         const diagnosticRange = new vscode.Range(
                             new vscode.Position(i, 0),
                             new vscode.Position(i, str.length)
@@ -220,7 +220,7 @@ export function parseMarkdown(document: vscode.TextDocument) {
                 console.log(lineNum);
                 for (let i = lineNum; i < document.lineCount; i++) {
                     const str = document.lineAt(i).text;
-                    if (str.substring(0, 2) !== "> ") {
+                    if (!(/^\s*$/.test(str)) && str.substring(0, 2) !== "> ") {
                         const diagnosticRange = new vscode.Range(
                             new vscode.Position(i, 0),
                             new vscode.Position(i, str.length)

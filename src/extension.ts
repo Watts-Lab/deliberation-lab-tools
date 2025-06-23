@@ -72,4 +72,45 @@ treatments:
     vscode.window.showInformationMessage("Default .treatments.yaml file created");
   });
   context.subscriptions.push(defaultYaml);
+
+  context.subscriptions.push(
+    vscode.window.onDidChangeActiveTextEditor(async (editor) => {
+      if (editor && editor.document && editor.document.getText() === "" && editor.document.languageId === "treatmentsYaml") {
+        const position = new vscode.Position(0, 0);
+        editor.selection = new vscode.Selection(position, position);
+        const controller = vscode.languages.registerInlineCompletionItemProvider(
+          { language: "treatmentsYaml" },
+          {
+            provideInlineCompletionItems(document, pos, ctx, token) {
+              if (pos.line === 0 && pos.character === 0 && document.getText() === "") {
+                const suggestion = new vscode.InlineCompletionItem(`# Click tab to fill with template
+introSequences:
+  - name: "exampleIntro"
+    introSteps:
+      - name: "exampleStep1"
+        elements:
+          - type: "prompt"
+            
+treatments:
+  - name: "exampleTreatment"
+    playerCount: 1
+    gameStages:
+      - name: "exampleStage1"
+        duration: 60
+        elements:
+          - type: "prompt"`);
+                suggestion.range = new vscode.Range(pos, pos);
+                return [suggestion];
+              }
+              return [];
+            },
+          }
+        );
+        context.subscriptions.push(controller);
+        await new Promise((res) => setTimeout(res, 50));
+        await vscode.commands.executeCommand("editor.action.inlineSuggest.trigger");
+      }
+    })
+  )
+
 }
