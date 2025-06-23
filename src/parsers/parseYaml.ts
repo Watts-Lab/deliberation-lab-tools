@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { load as loadYaml } from "js-yaml";
+import { load as loadYaml, YAMLException } from "js-yaml";
 import * as YAML from 'yaml';
 import { diagnosticCollection } from '../extension';
 import { ZodError, ZodIssue } from "zod";
@@ -19,17 +19,40 @@ export function parseYaml(document: vscode.TextDocument) {
     console.log(document.uri.toString());
     const diagnostics: vscode.Diagnostic[] = [];
 
-    try {
-        // Load YAML content using js-yaml
-        const yamlContent = loadYaml(document.getText());
-        console.log("YAML content loaded successfully.");
-        console.log("YAML content:", yamlContent);
-        return;
-    } catch (error) {
-        console.error("Error loading YAML content:", error);
-        return;
-    }
-    // Parse YAML content into AST
+    // try {
+    //     // Load YAML content using js-yaml
+    //     const yamlContent = loadYaml(document.getText());
+    //     console.log("YAML content loaded successfully.");
+    //     console.log("YAML content:", yamlContent);
+    // } catch (error) {
+    //     if (error instanceof YAMLException) {
+    //         console.error("YAML parsing error:", error.message);
+    //         const lineText = document.lineAt(error.mark.line).text;;
+    //         const range = new vscode.Range(
+    //             new vscode.Position(error.mark.line, error.mark.column),
+    //             new vscode.Position(error.mark.line, lineText.length)
+    //         );
+    //         let errorMessage = `YAML syntax error: ${error.message}`;
+    //         const errorDesc = 'Check for proper indentation and formatting at line or nearby lines. Ensure array elements start with dashes (-).';
+
+    //         const errorText = error.message.toLowerCase();
+    //         if (errorText.includes('bad indentation')) {
+    //             errorMessage += `\n ${errorDesc}`;
+    //         }
+    //         diagnostics.push(
+    //             new vscode.Diagnostic(
+    //                 range,
+    //                 errorMessage,
+    //                 vscode.DiagnosticSeverity.Error
+    //             )
+    //         );
+    //         diagnosticCollection.set(document.uri, diagnostics);
+    //         console.log("Length of diagnostics for yaml: " + diagnostics.length);
+    //         console.log("Length of diagnostic collection for yaml: " + diagnosticCollection.get(document.uri)!!.length);
+    //     }
+    //     return;
+    // }
+    //Parse YAML content into AST
     let parsedData = YAML.parseDocument(document.getText(), {
         keepCstNodes: true,
         keepNodeTypes: true,
@@ -49,7 +72,7 @@ export function parseYaml(document: vscode.TextDocument) {
                 diagnostics.push(
                     new vscode.Diagnostic(
                         range,
-                        `YAML syntax error: ${error.code} -> ${error.message}; Check for proper indentation and formatting. Check arrays elements have dashes (-) in front of them.`,
+                        `YAML syntax error: ${error.code} -> ${error.message}; Check for proper indentation and formatting at lines or at nearby lines. Check arrays elements have dashes (-) in front of them.`,
                         vscode.DiagnosticSeverity.Error
                     )
                 );

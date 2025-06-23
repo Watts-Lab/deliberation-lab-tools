@@ -31,8 +31,8 @@ export function activate(context: vscode.ExtensionContext) {
     introSteps:
       - name: "exampleStep1"
         elements:
-          - exampleElement1
-
+          - type: "prompt"
+            
 treatments:
   - name: "exampleTreatment"
     playerCount: 1
@@ -40,7 +40,7 @@ treatments:
       - name: "exampleStage1"
         duration: 60
         elements:
-          - exampleElement2`
+          - type: "prompt"`
       editor.edit((editBuilder) => {
         editBuilder.insert(editor.selection.active, defaultYamlContent);
       });
