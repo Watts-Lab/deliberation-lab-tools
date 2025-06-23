@@ -43,14 +43,18 @@
     ],
     "commands": [
       {
-        "command": "deliberation-lab-tools.openMarkdownPreview",
-        "title": "Deliberation Lab Tools: Open Markdown Preview"
+        "command": "deliberation-lab-tools.openPromptPreview",
+        "title": "Deliberation Lab Tools: Open Prompt Preview"
+      },
+      {
+        "command": "deliberation-lab-tools.initialPromptMarkdown",
+        "title": "Deliberation Lab Tools: Create Initial Prompt Markdown"
       }
     ],
     "menus": {
       "editor/context": [
         {
-          "command": "deliberation-lab-tools.openMarkdownPreview",
+          "command": "deliberation-lab-tools.openPromptPreview",
           "when": "editorLangId == markdown",
           "group": "deliberation-lab-tools"
         }
@@ -58,14 +62,15 @@
     }
   },
   "scripts": {
+    "build:css": "npx windicss deliberation-empirica/client/src/baseStyles.css -o src/views/styles.css --config deliberation-empirica/client/windi.config.cjs && npx tailwindcss -i src/views/index.css -o src/views/playerStyles.css --config src/views/tailwind.config.js && npx tailwindcss -i src/views/globals.css -o src/views/layout.css --config src/views/tailwind.config.js",
     "prepare-submodule": "git submodule update --init --recursive",
     "copy-validators": "cp ./deliberation-empirica/server/src/preFlight/validateTreatmentFile.ts ./src/zod-validators && cp ./deliberation-empirica/server/src/preFlight/validatePromptFile.ts ./src/zod-validators",
     "test": "npm run compile-test && ELECTRON_DISABLE_GPU=1 xvfb-run -a node runExtensionTests.js $TEST_FILES",
     "test:electron": "vscode-test --extensionDevelopmentPath=. --extensionTestsPath=out/test/suite/extensionTests.js",
     "pretest": "npm run compile-web",
     "vscode:prepublish": "npm run package-web",
-    "compile-web": "npm run prepare-submodule && npm run copy-validators && tsc -p tsconfig.json && npm run lint && node esbuild.js",
-    "compile-test": "tsc -p tsconfig.test.json",
+    "compile-web": "npm run prepare-submodule && npm run copy-validators && tsc -p tsconfig.json && npm run lint && node esbuild.js && npm run build:css",
+    "compile-test": "tsc -p tsconfig.test.json && npm run build:css",
     "watch-web": "npm-run-all -p watch-web:*",
     "watch-web:esbuild": "npm run prepare-submodule && node esbuild.js --watch",
     "watch-web:tsc": "tsc --noEmit --watch --project tsconfig.json",
@@ -89,19 +94,25 @@
     "@vscode/test-electron": "^2.5.2",
     "@vscode/test-web": "^0.0.63",
     "@vscode/vsce": "^3.4.1",
+    "autoprefixer": "^10.4.21",
     "esbuild": "^0.24.0",
     "esbuild-plugin-path-alias": "^1.0.7",
     "eslint": "^9.13.0",
     "glob": "^11.0.0",
     "mocha": "^10.7.3",
     "npm-run-all": "^4.1.5",
-    "typescript": "^5.6.3"
+    "postcss": "^8.5.6",
+    "tailwindcss": "^3.4.17",
+    "typescript": "^5.6.3",
+    "windicss": "^3.5.6"
   },
   "dependencies": {
     "@empirica/core": "^1.11.2",
     "@hello-pangea/dnd": "^16.3.0",
+    "@tailwindcss/vite": "^4.1.10",
     "axios": "^1.9.0",
     "cp": "^0.2.0",
+    "daisyui": "^5.0.43",
     "react": "^18.2.0",
     "react-debounce-input": "^3.3.0",
     "react-dom": "^18.2.0",

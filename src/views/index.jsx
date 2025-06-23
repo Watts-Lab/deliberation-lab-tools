@@ -7,6 +7,10 @@ import { Prompt } from "../../deliberation-empirica/client/src/elements/Prompt";
 
 import { StageProvider } from "./stageContext";
 
+import "../../deliberation-empirica/client/src/baseStyles.css";
+
+import "./styles.css";
+
 const vscode = acquireVsCodeApi();
 
 // App only programmed to render Prompt at the moment

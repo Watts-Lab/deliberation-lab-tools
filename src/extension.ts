@@ -56,7 +56,7 @@ export function activate(context: vscode.ExtensionContext) {
   // In researcher-portal, mocks.js creates HTML content
   // RenderPanel.tsx, Timeline.tsx
   context.subscriptions.push(
-    vscode.commands.registerCommand('deliberation-lab-tools.openMarkdownPreview', () => {
+    vscode.commands.registerCommand('deliberation-lab-tools.openPromptPreview', () => {
       // registers before panel is created - is there a way to get this text editor while the webview is open
       const promptText = vscode.window.activeTextEditor?.document.getText();
       const file = vscode.window.activeTextEditor?.document;
@@ -64,8 +64,8 @@ export function activate(context: vscode.ExtensionContext) {
       console.log("Document before webview", file);
 
       const panel = vscode.window.createWebviewPanel(
-        'openMarkdownPreview',
-        'Markdown Preview',
+        'openPromptPreview',
+        'Prompt Preview',
         vscode.ViewColumn.Beside,
         {
           enableScripts: true,
@@ -83,7 +83,22 @@ export function activate(context: vscode.ExtensionContext) {
       );
       console.log("Script URI: " + scriptUri);
 
-      panel.webview.html = getWebviewContent(scriptUri);
+      const styleUri = panel.webview.asWebviewUri(
+        vscode.Uri.joinPath(context.extensionUri, 'dist', 'views', 'styles.css')
+      );
+      console.log("Style URI: " + styleUri);
+
+      const playerStylesUri = panel.webview.asWebviewUri(
+        vscode.Uri.joinPath(context.extensionUri, 'dist', 'views', 'playerStyles.css')
+      );
+      console.log("Player Styles URI: " + playerStylesUri);
+
+      const layoutUri = panel.webview.asWebviewUri(
+        vscode.Uri.joinPath(context.extensionUri, 'dist', 'views', 'layout.css')
+      );
+      console.log("Layout URI: " + layoutUri);
+
+      panel.webview.html = getWebviewContent(scriptUri, styleUri, playerStylesUri, layoutUri);
       panel.webview.onDidReceiveMessage((message) => {
         if (message.type === 'ready') {
           console.log('Webview is ready, sending prompt props');
@@ -96,10 +111,32 @@ export function activate(context: vscode.ExtensionContext) {
       });
     })
   );
+
+  // Command to create initial prompt markdown document
+  context.subscriptions.push(
+    vscode.commands.registerCommand('deliberation-lab-tools.initialPromptMarkdown', async () => {
+      vscode.window.showInformationMessage('Markdown document created');
+
+      const content = `---
+name:
+type: 
+---
+Fill in prompt text here.
+---
+Fill in response text here.
+		`;
+
+      const doc = await vscode.workspace.openTextDocument({
+        language: 'markdown',
+        content
+      });
+    }
+    )
+  );
 }
 
 // Loads HTML content for the webview
-function getWebviewContent(scriptUri: vscode.Uri) {
+function getWebviewContent(scriptUri: vscode.Uri, styleUri: vscode.Uri, playerStylesUri: vscode.Uri, layoutUri: vscode.Uri) {
   console.log("In webview content");
   console.log("Dirname: " + __dirname);
 
@@ -108,8 +145,43 @@ function getWebviewContent(scriptUri: vscode.Uri) {
   const nonce = getNonce();
   // const html = renderToStaticMarkup(Prompt(vscode.window.activeTextEditor?.document, vscode.window.activeTextEditor?.document.fileName));
   // return html;
+
   return `<!DOCTYPE html>
-  <html lang="en">
+  <html lang="en" class="light">
+    <head>
+      <meta charset="UTF-8" />
+      <link rel="preconnect" href="https://rsms.me" />
+      <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
+      <link rel="stylesheet" href="${styleUri}" />
+      <link rel="stylesheet" href="${playerStylesUri}" />
+      <link rel="stylesheet" href="${layoutUri}" />
+      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <title>Deliberation Lab</title>
+      <style>
+        :root {
+          color-scheme: light;
+          --vscode-editor-background: white;
+          --vscode-foreground: black;
+          --vscode-textPreformat-foreground: black;
+          --vscode-textPreformat-background: white;
+        }
+
+        html {
+          --vscode-textPreformat-foreground: black;
+          --vscode-textPreformat-background: white;
+        }
+
+        body {
+          background-color: white !important;
+          color: black !important;
+        }
+
+        code {
+          background-color: white !important;
+          color: black !important;
+        }
+      </style>
+    </head>
     <body>
       <div id="root"></div>
       <script nonce="${nonce}" type="module" src="${scriptUri}"></script>

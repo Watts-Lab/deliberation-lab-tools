@@ -151,7 +151,10 @@ async function buildExtension() {
 async function buildPrompt() {
   const ctx = await esbuild.context({
     entryPoints: [
-      "src/views/index.jsx"
+      "src/views/index.jsx",
+      "src/views/styles.css",
+      "src/views/playerStyles.css",
+      "src/views/layout.css"
     ],
     bundle: true,
     format: "esm",
