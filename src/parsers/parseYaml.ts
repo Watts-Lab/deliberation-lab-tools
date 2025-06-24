@@ -6,6 +6,7 @@ import { ZodError, ZodIssue } from "zod";
 import {
   treatmentFileSchema,
   TreatmentFileType,
+  asyncValidateFilesToIssues,
 } from "../zod-validators/validateTreatmentFile";
 import { handleError, offsetToPosition } from "../errorPosition";
 import { parse } from 'path';
@@ -116,6 +117,7 @@ export function parseYaml(document: vscode.TextDocument) {
         parsedData.toJS() as TreatmentFileType
     );
 
+
     if (!validationResult.success) {
         console.log("Zod validation failed:", validationResult.error.issues);
 
@@ -129,6 +131,14 @@ export function parseYaml(document: vscode.TextDocument) {
             "Zod validation passed. Types are consistent with TreatmentFileType."
         );
     }
+
+    const missingFiles = asyncValidateFilesToIssues(
+        parsedData.toJS() as TreatmentFileType
+    ).then((issues: ZodIssue[]) => {
+        issues.forEach((issue: ZodIssue) => {
+            handleError(issue, parsedData, document, diagnostics);
+        });
+    });
 
     // Update diagnostics in VS Code
     diagnosticCollection.set(document.uri, diagnostics);
