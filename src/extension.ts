@@ -7,9 +7,9 @@ import { parseMarkdown } from "./parsers/parseMarkdown";
 export const diagnosticCollection = vscode.languages.createDiagnosticCollection("yamlDiagnostics");
 
 // helper function to call parser on a specific document type if it is detected
-function parseDocument(document: vscode.TextDocument) {
+async function parseDocument(document: vscode.TextDocument) {
   if (detectTreatmentsYaml(document)) {
-    parseYaml(document);
+    await parseYaml(document);
   } else if (detectPromptMarkdown(document)) {
     parseMarkdown(document);
   } else {
@@ -20,7 +20,7 @@ function parseDocument(document: vscode.TextDocument) {
 }
 
 // export function 
-export function activate(context: vscode.ExtensionContext) {
+export async function activate(context: vscode.ExtensionContext) {
   vscode.window.showInformationMessage("Extension activated");
 
   context.subscriptions.push(diagnosticCollection);
@@ -28,23 +28,23 @@ export function activate(context: vscode.ExtensionContext) {
 
   // Should be done once upon activation
   if (vscode.window.activeTextEditor && vscode.window.activeTextEditor?.document) {
-    parseDocument(vscode.window.activeTextEditor?.document!!);
+    await parseDocument(vscode.window.activeTextEditor?.document!!);
   }
 
   // Listen for when a document is opened
   context.subscriptions.push(
 
     // for opening document
-    vscode.workspace.onDidOpenTextDocument((event) => {
+    vscode.workspace.onDidOpenTextDocument(async (event) => {
       if (event !== undefined) {
-        parseDocument(event);
+        await parseDocument(event);
       }
     }),
 
     // for changing document
-    vscode.workspace.onDidChangeTextDocument((event) => {
+    vscode.workspace.onDidChangeTextDocument(async (event) => {
       if (event?.document !== undefined) {
-        parseDocument(event?.document);
+        await parseDocument(event?.document);
       }
     })
   );

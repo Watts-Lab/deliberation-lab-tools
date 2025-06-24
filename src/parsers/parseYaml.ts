@@ -14,7 +14,7 @@ import { off } from 'process';
 
 // YAML validator for treatments
 
-export function parseYaml(document: vscode.TextDocument) {
+export async function parseYaml(document: vscode.TextDocument) {
     console.log("Processing .treatments.yaml file...");
     console.log("Document URI from extension");
     console.log(document.uri.toString());
@@ -135,13 +135,13 @@ export function parseYaml(document: vscode.TextDocument) {
     const missingFiles = asyncValidateFilesToIssues(
         parsedData.toJS() as TreatmentFileType
     ).then((issues: ZodIssue[]) => {
+        console.log("Missing files validation issues:", issues);
         issues.forEach((issue: ZodIssue) => {
             handleError(issue, parsedData, document, diagnostics);
         });
+        // Update diagnostics in VS Code
+        diagnosticCollection.set(document.uri, diagnostics);
+        console.log("Length of diagnostics for yaml: " + diagnostics.length);
+        console.log("Length of diagnostic collection for yaml: " + diagnosticCollection.get(document.uri)!!.length);
     });
-
-    // Update diagnostics in VS Code
-    diagnosticCollection.set(document.uri, diagnostics);
-    console.log("Length of diagnostics for yaml: " + diagnostics.length);
-    console.log("Length of diagnostic collection for yaml: " + diagnosticCollection.get(document.uri)!!.length);
 }

@@ -991,5 +991,6 @@ export async function asyncValidateFilesToIssues(
 
   await recurse(data);
 
+  console.log("Validation issues found:", issues);
   return issues;
 }
