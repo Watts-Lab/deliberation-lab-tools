@@ -22,6 +22,12 @@
     "onLanguage:markdown"
   ],
   "contributes": {
+    "configurationDefaults": {
+      "[treatmentsYaml]": {
+        "editor.tabSize": 2,
+        "editor.insertSpaces": true
+      }
+    },
     "languages": [
       {
         "id": "treatmentsYaml",
@@ -30,7 +36,8 @@
         ],
         "extensions": [
           ".treatments.yaml"
-        ]
+        ],
+        "configuration": "./language-configuration.json"
       }
     ],
     "grammars": [
