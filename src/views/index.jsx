@@ -37,10 +37,15 @@ function App() {
   console.log("Props", props);
 
   if (!props) {
-    return <p>Loading...</p>;
+    return <p>Error with input. Please check that given document is valid.</p>;
   }
 
-  return <Prompt {...props} />;
+  try {
+    return <Prompt {...props} />;
+  } catch (e) {
+    console.log("Error on rendering prompt");
+    return <p>Error when rendering prompt. Please check that there are no errors in prompt Markdown file</p>;
+  }
 }
 
 // Mount Prompt component
@@ -54,12 +59,20 @@ if (rootElement) {
 
   console.log("Root is created in index.jsx");
 
-  // rendering prompt
-  root.render(
-    <StageProvider>
-      <App />
-    </StageProvider>
-  );
+  // Rendering prompt
+  // Need StageProvider for stageContext and other mocks
+  try {
+    root.render(
+      <StageProvider>
+        <App />
+      </StageProvider>
+    );
+  } catch (e) {
+    console.log(e);
+    root.render(
+      <p>Error rendering file. Please check that file is correctly formatted.</p>
+    )
+  }
 
   // Lets extension know that webview is ready to receive prompts
   window.addEventListener("DOMContentLoaded", () => {

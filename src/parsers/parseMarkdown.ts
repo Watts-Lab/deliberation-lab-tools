@@ -17,11 +17,9 @@ export function parseMarkdown(document: vscode.TextDocument) {
     // getting the separators from the document
     console.log("Document URI:", document.uri.toString());
     const separators = document.getText().match(/^-{3,}$/gm);
-    console.log("Separators found:", separators);
 
     //getting the three sections of the document
     let sections = document.getText().split(/^-{3,}$/gm);
-    console.log("Sections found:", sections);
 
     // Check if the number of separators is correct
     if (!separators || separators.length !== 3) {
@@ -96,13 +94,10 @@ export function parseMarkdown(document: vscode.TextDocument) {
         return;
     }
 
-    console.log("Relative path before passing into schema: " + relativePath);
-
     //Metadata validation
     const result = metadataLogicalSchema(relativePath).safeParse(
         parsedData.toJS() as MetadataRefineType
     );
-    console.log("result obtained from metadataSchema:", result);
 
     if (!result.success) {
         console.log("Zod validation failed:", result.error.issues);
@@ -135,7 +130,6 @@ export function parseMarkdown(document: vscode.TextDocument) {
     // Prompt validation
     if (sections && sections.length > 2) {
         const promptText = sections[2].trim();
-        console.log("Prompt text:", promptText);
         if (!promptText || typeof promptText !== "string" || promptText.length < 1) {
             let { text, index } = getIndex(document, 2);
             const startPos = offsetToPosition(index, document);
@@ -154,19 +148,15 @@ export function parseMarkdown(document: vscode.TextDocument) {
 
     // Response validation
     if (separators && separators.length === 3) {
-        console.log("Entering if statement");
         const type = parsedData.get("type");
         const response = sections[3];
         switch (type) {
 
             // no response warning position handling
             case "noResponse": {
-                console.log("Entering no response case");
                 if (response && response.length > 0) {
                     let { text, index } = getIndex(document, 3);
-                    console.log("Finding position of last position");
                     const lastPos = document.positionAt(text.length - 1);
-                    console.log(`Last position: ${lastPos}`);
                     const diagnosticRange = new vscode.Range(
                         document.positionAt(index),  // starting position
                         lastPos   // ending position 

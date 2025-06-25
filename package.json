@@ -47,8 +47,8 @@
         "title": "Deliberation Lab Tools: Open Prompt Preview"
       },
       {
-        "command": "deliberation-lab-tools.initialPromptMarkdown",
-        "title": "Deliberation Lab Tools: Create Initial Prompt Markdown"
+        "command": "deliberation-lab-tools.createDefaultPromptMarkdown",
+        "title": "Deliberation Lab Tools: Create Default Prompt Markdown"
       }
     ],
     "menus": {

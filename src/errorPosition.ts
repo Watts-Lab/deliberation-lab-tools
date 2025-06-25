@@ -68,7 +68,6 @@ export function handleError(issue: ZodIssue, parsedData: YAML.Document.Parsed, d
             vscode.DiagnosticSeverity.Warning
         )
     );
-    console.log("diagnostics length on one error: " + diagnostics.length);
 }
 
 // Helper function to find the position of a node in the AST based on the path  

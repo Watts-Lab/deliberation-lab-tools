@@ -2,10 +2,6 @@ import * as vscode from "vscode";
 import { detectPromptMarkdown, detectTreatmentsYaml } from "./detectFile";
 import { parseYaml } from "./parsers/parseYaml";
 import { parseMarkdown } from "./parsers/parseMarkdown";
-import * as path from "path";
-import React from 'react';
-import { renderToStaticMarkup } from 'react-dom/server';
-// import Prompt from 'render/prompt';
 
 // should this be named yamlDiagnostics if also using markdown?
 export const diagnosticCollection = vscode.languages.createDiagnosticCollection("yamlDiagnostics");
@@ -19,7 +15,6 @@ function parseDocument(document: vscode.TextDocument) {
   } else {
     // If file is not recognized as treatmentsYaml or promptMarkdown, clear diagnostics
     diagnosticCollection.set(document.uri, []);
-    console.log("Length of diagnostic collection (should be 0): " + diagnosticCollection.get(document.uri)!!.length);
   }
 }
 
@@ -53,11 +48,8 @@ export function activate(context: vscode.ExtensionContext) {
   );
 
   // Open Markdown preview
-  // In researcher-portal, mocks.js creates HTML content
-  // RenderPanel.tsx, Timeline.tsx
   context.subscriptions.push(
     vscode.commands.registerCommand('deliberation-lab-tools.openPromptPreview', () => {
-      // registers before panel is created - is there a way to get this text editor while the webview is open
       const promptText = vscode.window.activeTextEditor?.document.getText();
       const file = vscode.window.activeTextEditor?.document;
       console.log("Document text before webview", promptText);
@@ -104,17 +96,23 @@ export function activate(context: vscode.ExtensionContext) {
           console.log('Webview is ready, sending prompt props');
           console.log("Text document text", promptText);
 
+          // document text is passed in as "file"
           // name hardcoded as "example"
-          // shared hardcoded as either "true" (creates SharedNotepad) or "false" (creates TextArea)
+          // TODO: shared hardcoded as either "true" (creates SharedNotepad) or "false" (creates TextArea) - create an option to toggle?
           panel.webview.postMessage({ type: 'init', promptProps: { file: promptText, name: 'example', shared: false } });
         }
+      });
+
+      vscode.workspace.onDidChangeTextDocument((event) => {
+        const promptText = event.document.getText();
+        panel.webview.postMessage({ type: 'init', promptProps: { file: promptText, name: 'example', shared: false } });
       });
     })
   );
 
   // Command to create initial prompt markdown document
   context.subscriptions.push(
-    vscode.commands.registerCommand('deliberation-lab-tools.initialPromptMarkdown', async () => {
+    vscode.commands.registerCommand('deliberation-lab-tools.createDefaultPromptMarkdown', async () => {
       vscode.window.showInformationMessage('Markdown document created');
 
       const content = `---
@@ -143,8 +141,6 @@ function getWebviewContent(scriptUri: vscode.Uri, styleUri: vscode.Uri, playerSt
   console.log("Script URI in webview content: " + scriptUri.toString());
 
   const nonce = getNonce();
-  // const html = renderToStaticMarkup(Prompt(vscode.window.activeTextEditor?.document, vscode.window.activeTextEditor?.document.fileName));
-  // return html;
 
   return `<!DOCTYPE html>
   <html lang="en" class="light">
@@ -190,17 +186,6 @@ function getWebviewContent(scriptUri: vscode.Uri, styleUri: vscode.Uri, playerSt
       </script>
     </body>
   </html>`;
-
-  // Default text to make sure that webview content can be generated
-  // return `<!DOCTYPE html>
-  //  <html>
-  //   <body>
-  //     <h1>Hello from Webview</h1>
-  //     <script>
-  //       console.log("Webview JS working!");
-  //     </script>
-  //   </body>
-  // </html>`;
 }
 
 // Nonce for security
