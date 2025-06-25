@@ -274,7 +274,7 @@ export function parseMarkdown(document: vscode.TextDocument) {
             'errorCount': schemaErrors
         });
     } else if (diagnostics.length === 0) {
-        reporter?.sendTelemetryEvent("markdownParseSuccess");
+        reporter?.sendTelemetryEvent("markdownFormatSuccess");
     }
 
     // Update diagnostics in VS Code

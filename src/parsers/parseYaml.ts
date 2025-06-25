@@ -141,7 +141,7 @@ export async function parseYaml(document: vscode.TextDocument) {
         if (issues.length > 0) {
             reporter?.sendTelemetryErrorEvent("yamlMissingFilesError", {}, {'errorCount': issues.length});
         } else if (issues.length === 0 && validationResult.success) {
-            reporter?.sendTelemetryEvent("yamlParseSuccess");
+            reporter?.sendTelemetryEvent("yamlFormatSuccess");
         }
         issues.forEach((issue: ZodIssue) => {
             handleError(issue, parsedData, document, diagnostics);
