@@ -104,6 +104,7 @@
     "postcss": "^8.5.6",
     "tailwindcss": "^3.4.17",
     "typescript": "^5.6.3",
+    "vscode-extension-tester": "^8.15.0",
     "windicss": "^3.5.6"
   },
   "dependencies": {
