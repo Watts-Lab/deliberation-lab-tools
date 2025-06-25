@@ -6,7 +6,7 @@ import { load as loadYaml } from "js-yaml";
 // Detects if file is prompt Markdown format by parsing metadata with YAML
 export function detectPromptMarkdown(document: vscode.TextDocument) {
   if (document.languageId === "markdown") {
-    console.log("markdown file");
+    console.log("Markdown file");
 
     // define interface for metadata
     interface Metadata {

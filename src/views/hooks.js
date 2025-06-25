@@ -41,7 +41,6 @@ export function useFileURL({ file }) {
 // error is null because there should not be an error
 // this could probably be coded better to actually prevent these errors
 export function useText({ file }) {
-  console.log("hardcoded use text");
   return { text: file, error: null };
 }
 
@@ -102,7 +101,6 @@ export function usePermalink(file) {
 //   const resourceLookup = globals?.get("resourceLookup"); // get the permalink for this implementation of the file
 //   const permalink = resourceLookup ? resourceLookup[file] : undefined;
 //   return permalink;
-  console.log("hardcoded permalink");
   return "permalink";
 }
 

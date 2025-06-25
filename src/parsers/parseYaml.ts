@@ -12,8 +12,6 @@ import { handleError } from "../errorPosition";
 
 export function parseYaml(document: vscode.TextDocument) {
     console.log("Processing .treatments.yaml file...");
-    console.log("Document URI from extension");
-    console.log(document.uri.toString());
     const diagnostics: vscode.Diagnostic[] = [];
 
     // Parse YAML content into AST
@@ -39,8 +37,6 @@ export function parseYaml(document: vscode.TextDocument) {
                 )
             );
             diagnosticCollection.set(document.uri, diagnostics);
-            console.log("Length of diagnostics for yaml: " + diagnostics.length);
-            console.log("Length of diagnostic collection for yaml: " + diagnosticCollection.get(document.uri)!!.length);
         }
         parsedData = null;
         return;
@@ -79,6 +75,4 @@ export function parseYaml(document: vscode.TextDocument) {
 
     // Update diagnostics in VS Code
     diagnosticCollection.set(document.uri, diagnostics);
-    console.log("Length of diagnostics for yaml: " + diagnostics.length);
-    console.log("Length of diagnostic collection for yaml: " + diagnosticCollection.get(document.uri)!!.length);
 }

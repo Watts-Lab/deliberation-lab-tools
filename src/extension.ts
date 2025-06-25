@@ -52,8 +52,6 @@ export function activate(context: vscode.ExtensionContext) {
     vscode.commands.registerCommand('deliberation-lab-tools.openPromptPreview', () => {
       const promptText = vscode.window.activeTextEditor?.document.getText();
       const file = vscode.window.activeTextEditor?.document;
-      console.log("Document text before webview", promptText);
-      console.log("Document before webview", file);
 
       const panel = vscode.window.createWebviewPanel(
         'openPromptPreview',
@@ -65,36 +63,25 @@ export function activate(context: vscode.ExtensionContext) {
         }
       );
 
-      console.log("Webview created");
-      console.log("Extension URI: " + context.extensionUri);
-      console.log("Extension path?" + context.extensionPath);
-      console.log("Local resource root: " + vscode.Uri.joinPath(context.extensionUri, "dist", "views"));
-
       const scriptUri = panel.webview.asWebviewUri(
         vscode.Uri.joinPath(context.extensionUri, 'dist', 'views', 'index.js')
       );
-      console.log("Script URI: " + scriptUri);
 
       const styleUri = panel.webview.asWebviewUri(
         vscode.Uri.joinPath(context.extensionUri, 'dist', 'views', 'styles.css')
       );
-      console.log("Style URI: " + styleUri);
 
       const playerStylesUri = panel.webview.asWebviewUri(
         vscode.Uri.joinPath(context.extensionUri, 'dist', 'views', 'playerStyles.css')
       );
-      console.log("Player Styles URI: " + playerStylesUri);
 
       const layoutUri = panel.webview.asWebviewUri(
         vscode.Uri.joinPath(context.extensionUri, 'dist', 'views', 'layout.css')
       );
-      console.log("Layout URI: " + layoutUri);
 
       panel.webview.html = getWebviewContent(scriptUri, styleUri, playerStylesUri, layoutUri);
       panel.webview.onDidReceiveMessage((message) => {
         if (message.type === 'ready') {
-          console.log('Webview is ready, sending prompt props');
-          console.log("Text document text", promptText);
 
           // document text is passed in as "file"
           // name hardcoded as "example"
@@ -135,10 +122,6 @@ Fill in response text here.
 
 // Loads HTML content for the webview
 function getWebviewContent(scriptUri: vscode.Uri, styleUri: vscode.Uri, playerStylesUri: vscode.Uri, layoutUri: vscode.Uri) {
-  console.log("In webview content");
-  console.log("Dirname: " + __dirname);
-
-  console.log("Script URI in webview content: " + scriptUri.toString());
 
   const nonce = getNonce();
 
@@ -181,9 +164,6 @@ function getWebviewContent(scriptUri: vscode.Uri, styleUri: vscode.Uri, playerSt
     <body>
       <div id="root"></div>
       <script nonce="${nonce}" type="module" src="${scriptUri}"></script>
-      <script>
-        console.log("In HTML generation");
-      </script>
     </body>
   </html>`;
 }

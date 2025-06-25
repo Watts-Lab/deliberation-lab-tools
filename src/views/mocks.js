@@ -31,7 +31,6 @@ export function usePlayer() {
       this[varName] = value;
     },
   };
-  console.log("Player in mocks.js", player);
   return player;
 }
 
@@ -51,8 +50,7 @@ export function useGame() {
     },
     example_21: "etherpad_client_URL"
   };
-
-  console.log("Game in mocks.js", game);
+  
   return game;
 }
 

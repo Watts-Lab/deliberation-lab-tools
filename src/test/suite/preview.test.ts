@@ -20,7 +20,6 @@ suite('Preview', function () {
 
         it('findWebElement works', async function () {
             const element = await view.findWebElement(By.css('title'));
-            console.log(await element.getText());
             assert.strictEqual((await element.getText()), "Deliberation Lab");
         })
 	});

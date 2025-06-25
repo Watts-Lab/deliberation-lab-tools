@@ -103,15 +103,11 @@ function findPositionFromPath(
         if (currentNode && currentNode.range) {
             currentRange = currentNode.range;
         } else {
-            console.log("No range found for node:");
-            console.log(currentNode);
-            console.log(segment);
+            console.log("No range found for node:", currentNode, segment);
         }
     }
-    console.log("Found terminal node", currentNode);
-    console.log("Terminal node range:", currentRange);
 
-    // convert the character offsetts to vscode positions
+    // convert the character offsets to vscode positions
     // currentRange is a list `[start, value-end, node-end]` of character offsets for the part
     // of the source parsed into this node (undefined if not parsed).
     // The `value-end` and `node-end` positions are themselves not

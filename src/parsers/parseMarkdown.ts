@@ -23,7 +23,6 @@ export function parseMarkdown(document: vscode.TextDocument) {
 
     // Check if the number of separators is correct
     if (!separators || separators.length !== 3) {
-        console.log("Invalid number of separators");
         diagnostics.push(
             new vscode.Diagnostic(
                 new vscode.Range(
@@ -40,12 +39,10 @@ export function parseMarkdown(document: vscode.TextDocument) {
     let relativePath = "";
     try {
         const workspaceFolder = vscode.workspace.getWorkspaceFolder(document.uri);
-        console.log("Workspace folder:", workspaceFolder);
         // Is it possible to have a prompt markdown file not in a repository/folder opened in VSCode?
         // If so, we should add an else case to catch this edge case - could just set relative path to full file system path
         if (workspaceFolder) {
             relativePath = vscode.workspace.asRelativePath(document.uri);
-            console.log("Relative path:", relativePath);
         }
     } catch (error) {
         console.error("Error getting workspace folder:", error);
@@ -88,8 +85,6 @@ export function parseMarkdown(document: vscode.TextDocument) {
                 )
             );
             diagnosticCollection.set(document.uri, diagnostics);
-            console.log("Length of diagnostics: " + diagnostics.length);
-            console.log("Length of diagnostic collection: " + diagnosticCollection.get(document.uri)!!.length);
         }
         return;
     }
@@ -175,14 +170,11 @@ export function parseMarkdown(document: vscode.TextDocument) {
 
             // multiple choice warning position handling
             case "multipleChoice": {
-                console.log("Entering multiple choice case");
                 let { text, index } = getIndex(document, 3);
                 const lineNum = (document.positionAt(index).line) + 1;
-                console.log(lineNum);
-                console.log("Line count: " + document.lineCount);
                 for (let i = lineNum; i < document.lineCount; i++) {
                     const str = document.lineAt(i).text;
-                    console.log(str);
+
                     if (str.substring(0, 2) !== "- ") {
                         const diagnosticRange = new vscode.Range(
                             new vscode.Position(i, 0),
@@ -203,11 +195,8 @@ export function parseMarkdown(document: vscode.TextDocument) {
 
             // open response warning position handling          
             case "openResponse": {
-                console.log(response);
-                console.log("Entering open response case");
                 let { text, index } = getIndex(document, 3);
                 const lineNum = (document.positionAt(index).line) + 1;
-                console.log(lineNum);
                 for (let i = lineNum; i < document.lineCount; i++) {
                     const str = document.lineAt(i).text;
                     if (str.substring(0, 2) !== "> ") {
@@ -238,6 +227,4 @@ export function parseMarkdown(document: vscode.TextDocument) {
 
     // Update diagnostics in VS Code
     diagnosticCollection.set(document.uri, diagnostics);
-    console.log("Length of diagnostics for markdown: " + diagnostics.length);
-    console.log("Length of diagnostic collection: " + diagnosticCollection.get(document.uri)!!.length);
 }
