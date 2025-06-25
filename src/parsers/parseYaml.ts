@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import { load as loadYaml, YAMLException } from "js-yaml";
 import * as YAML from 'yaml';
-import { diagnosticCollection } from '../extension';
+import { diagnosticCollection, reporter } from '../extension';
 import { ZodError, ZodIssue } from "zod";
 import {
   treatmentFileSchema,
@@ -63,6 +63,7 @@ export async function parseYaml(document: vscode.TextDocument) {
 
     if (parsedData.errors.length > 0) {
         console.log("YAML parsing errors found:", parsedData.errors);
+        reporter?.sendTelemetryErrorEvent("yamlParsingError", {},  {'errorCount': parsedData.errors.length});
         parsedData.errors.forEach((error: any) => {
             const range = new vscode.Range(
                 new vscode.Position(error.linePos[0].line - 2, 0),
@@ -85,6 +86,7 @@ export async function parseYaml(document: vscode.TextDocument) {
         return;
     } else if (parsedData.warnings) {
         console.log("YAML parsing warnings found:", parsedData.warnings);
+        reporter?.sendTelemetryErrorEvent("yamlParsingWarning", {}, {'warningCount': parsedData.warnings.length});
         parsedData.warnings.forEach((warning: any) => {
             const range = new vscode.Range(
                 offsetToPosition(warning.pos?.[0], document),
@@ -120,7 +122,7 @@ export async function parseYaml(document: vscode.TextDocument) {
 
     if (!validationResult.success) {
         console.log("Zod validation failed:", validationResult.error.issues);
-
+        reporter?.sendTelemetryErrorEvent("yamlSchemaError", {}, {'errorCount': validationResult.error.issues.length});
         (validationResult.error as ZodError).issues.forEach(
             (issue: ZodIssue) => {
                 handleError(issue, parsedData, document, diagnostics);
@@ -136,6 +138,11 @@ export async function parseYaml(document: vscode.TextDocument) {
         parsedData.toJS() as TreatmentFileType
     ).then((issues: ZodIssue[]) => {
         console.log("Missing files validation issues:", issues);
+        if (issues.length > 0) {
+            reporter?.sendTelemetryErrorEvent("yamlMissingFilesError", {}, {'errorCount': issues.length});
+        } else if (issues.length === 0 && validationResult.success) {
+            reporter?.sendTelemetryEvent("yamlParseSuccess");
+        }
         issues.forEach((issue: ZodIssue) => {
             handleError(issue, parsedData, document, diagnostics);
         });

@@ -2,9 +2,13 @@ import * as vscode from "vscode";
 import { detectPromptMarkdown, detectTreatmentsYaml } from "./detectFile";
 import { parseYaml } from "./parsers/parseYaml";
 import { parseMarkdown } from "./parsers/parseMarkdown";
+import { TelemetryReporter } from '@vscode/extension-telemetry';
 
 // should this be named yamlDiagnostics if also using markdown?
 export const diagnosticCollection = vscode.languages.createDiagnosticCollection("yamlDiagnostics");
+
+const connectionString = "46b200b3-9d65-49d5-99de-ce36f669fd91";
+export let reporter: TelemetryReporter;
 
 // helper function to call parser on a specific document type if it is detected
 async function parseDocument(document: vscode.TextDocument) {
@@ -26,6 +30,10 @@ export async function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(diagnosticCollection);
   console.log("Extension activated");
 
+  // Register the reporter for telemetry
+  reporter = new TelemetryReporter(connectionString);
+  context.subscriptions.push(reporter);
+  reporter.sendTelemetryEvent('extensionActivated');
   // Should be done once upon activation
   if (vscode.window.activeTextEditor && vscode.window.activeTextEditor?.document) {
     await parseDocument(vscode.window.activeTextEditor?.document!!);
@@ -69,6 +77,7 @@ treatments:
       language: 'treatmentsYaml',
       content: defaultYamlContent
     });
+    reporter.sendTelemetryEvent('defaultTreatmentsYamlCommandExecuted');
     vscode.window.showInformationMessage("Default .treatments.yaml file created");
   });
   context.subscriptions.push(defaultYaml);

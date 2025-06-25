@@ -6,8 +6,8 @@ templates:
       - name: "recall_${roundIndex}"
         duration: 30
         elements:
-          - type: im
-            file: jjd/asjd/${imageFilepath)
+          - type: image
+            file: src/test/suite/fixtures/allTalk.md
           - type: prompt
             name: "recall_${roundIndex}"
             file: projects/exaptation/revision_202503/recall.m

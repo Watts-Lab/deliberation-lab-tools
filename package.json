@@ -10,7 +10,9 @@
   },
   "browser": "./dist/extension.js",
   "main": "./dist/extension.js",
-  "extensionKind": ["workspace"],
+  "extensionKind": [
+    "workspace"
+  ],
   "engines": {
     "vscode": "^1.95.0"
   },
@@ -44,7 +46,6 @@
       {
         "command": "deliberation-lab-tools.helloWorld",
         "title": "Hello World"
-        
       },
       {
         "command": "deliberation-lab-tools.defaultTreatmentsYaml",
@@ -56,22 +57,17 @@
     "prepare-submodule": "git submodule update --init --recursive",
     "copy-validators": "cp ./deliberation-empirica/server/src/preFlight/validateTreatmentFile.ts ./src/zod-validators && cp ./deliberation-empirica/server/src/preFlight/validatePromptFile.ts ./src/zod-validators",
     "prepare-web": "npm run prepare-submodule && npm run copy-validators",
-
     "compile-web": "npm run prepare-web && tsc -p tsconfig.json && npm run lint && node esbuild.js",
     "package-web": "npm run prepare-web && npm run check-types && npm run lint && node esbuild.js --production",
-
     "compile-test": "tsc -p tsconfig.test.json",
     "test": "npm run compile-test && ELECTRON_DISABLE_GPU=1 xvfb-run -a node runExtensionTests.js",
     "test:electron": "vscode-test --extensionDevelopmentPath=. --extensionTestsPath=out/test/suite/extensionTests.js",
-
     "vscode:prepublish": "npm run package-web",
     "check-types": "tsc --noEmit",
     "lint": "eslint src",
-
     "watch-web": "npm-run-all -p watch-web:*",
     "watch-web:esbuild": "npm run prepare-web && node esbuild.js --watch",
     "watch-web:tsc": "tsc --noEmit --watch --project tsconfig.json",
-
     "run-in-browser": "vscode-test-web --browserType=chromium --extensionDevelopmentPath=. ."
   },
   "devDependencies": {
@@ -95,6 +91,7 @@
     "typescript": "^5.6.3"
   },
   "dependencies": {
+    "@vscode/extension-telemetry": "^1.0.0",
     "cp": "^0.2.0",
     "vsce": "^2.15.0",
     "yaml": "^2.6.0",
