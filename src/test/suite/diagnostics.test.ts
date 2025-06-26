@@ -11,7 +11,7 @@ suite('Diagnostics detection', () => {
 		console.log(filePath);
 		const document = await vscode.workspace.openTextDocument(filePath);
 		console.log(document.uri.path);
-
+		await new Promise(resolve => setTimeout(resolve, 1000));
 		const diagnostics = vscode.languages.getDiagnostics(document.uri);
 		assert.strictEqual(diagnostics?.length, 0);
 	});
@@ -22,7 +22,7 @@ suite('Diagnostics detection', () => {
 		console.log(filePath);
 		const document = await vscode.workspace.openTextDocument(filePath);
 		console.log(document.uri.path);
-
+		await new Promise(resolve => setTimeout(resolve, 1000)); // wait 300ms
 		const diagnostics = vscode.languages.getDiagnostics(document.uri);
 		assert.strictEqual(diagnostics?.length, 0);
 	});
@@ -33,6 +33,7 @@ suite('Diagnostics detection', () => {
 		console.log(filePath);
 		const document = await vscode.workspace.openTextDocument(filePath);
 		console.log(document.uri.path);
+		await new Promise(resolve => setTimeout(resolve, 1000)); // wait 300ms
 		const diagnostics = vscode.languages.getDiagnostics(document.uri);
 
 		// Tests that there are 4 error messages as we expect
@@ -64,7 +65,7 @@ suite('Diagnostics detection', () => {
 		const filePath = path.resolve('src/test/suite/fixtures/emptyField.md');
 		console.log(filePath);
 		const document = await vscode.workspace.openTextDocument(filePath);
-
+		await new Promise(resolve => setTimeout(resolve, 2000)); // wait 300ms
 		const diagnostics = vscode.languages.getDiagnostics(document.uri);
 		for (let i = 0; i < diagnostics.length; i++) {
 			const d = diagnostics[i];
@@ -100,7 +101,7 @@ suite('Diagnostics detection', () => {
 		console.log(filePath);
 		const document = await vscode.workspace.openTextDocument(filePath);
 		await vscode.window.showTextDocument(document);
-
+		await new Promise(resolve => setTimeout(resolve, 2000)); // wait 300ms
 		const diagnostics = vscode.languages.getDiagnostics(document.uri);
 		console.log("document uri:", document.uri.toString());
 		console.log("diagnostics length:", diagnostics.length);
@@ -120,7 +121,7 @@ suite('Diagnostics detection', () => {
 		console.log(filePath);
 		const document = await vscode.workspace.openTextDocument(filePath);
 		await vscode.window.showTextDocument(document);
-
+		await new Promise(resolve => setTimeout(resolve, 1000));
 		const diagnostics = vscode.languages.getDiagnostics(document.uri);
 		console.log("document uri:", document.uri.toString());
 		console.log("diagnostics length:", diagnostics.length);
@@ -139,7 +140,7 @@ suite('Diagnostics detection', () => {
 		const filePath = path.resolve('src/test/suite/fixtures/invalidBroadcastKey.treatments.yaml')
 		console.log(filePath);
 		const document = await vscode.workspace.openTextDocument(filePath);
-
+		await new Promise(resolve => setTimeout(resolve, 1000));
 		const diagnostics = vscode.languages.getDiagnostics(document.uri);
 		console.log("document uri:", document.uri.toString());
 		console.log("diagnostics length:", diagnostics.length);
@@ -158,7 +159,7 @@ suite('Diagnostics detection', () => {
 		const filePath = path.resolve('src/test/suite/fixtures/invalidComparator.treatments.yaml');
 		console.log(filePath);
 		const document = await vscode.workspace.openTextDocument(filePath);
-
+		await new Promise(resolve => setTimeout(resolve, 1000));
 		const diagnostics = vscode.languages.getDiagnostics(document.uri);
 		console.log("document uri:", document.uri.toString());
 		console.log("diagnostics length:", diagnostics.length);
@@ -177,6 +178,7 @@ suite('Diagnostics detection', () => {
 		const filePath = path.resolve('src/test/suite/fixtures/missingDash.treatments.yaml');
 		console.log(filePath);
 		const document = await vscode.workspace.openTextDocument(filePath);
+		await new Promise(resolve => setTimeout(resolve, 1000));
 		const diagnostics = vscode.languages.getDiagnostics(document.uri);
 		console.log("document uri:", document.uri.toString());
 
@@ -197,6 +199,7 @@ suite('Diagnostics detection', () => {
 		const filePath = path.resolve('src/test/suite/fixtures/missingElements.treatments.yaml');
 		console.log(filePath);
 		const document = await vscode.workspace.openTextDocument(filePath);
+		await new Promise(resolve => setTimeout(resolve, 1000));
 		const diagnostics = vscode.languages.getDiagnostics(document.uri);
 		console.log("document uri:", document.uri.toString());
 
@@ -216,6 +219,7 @@ suite('Diagnostics detection', () => {
 		const filePath = path.resolve('src/test/suite/fixtures/missingSurveyName.treatments.yaml');
 		console.log(filePath);
 		const document = await vscode.workspace.openTextDocument(filePath);
+		await new Promise(resolve => setTimeout(resolve, 1000));
 		const diagnostics = vscode.languages.getDiagnostics(document.uri);
 		console.log("document uri:", document.uri.toString());
 
@@ -234,6 +238,7 @@ suite('Diagnostics detection', () => {
 		const filePath = path.resolve('src/test/suite/fixtures/negativeDuration.treatments.yaml');
 		console.log(filePath);
 		const document = await vscode.workspace.openTextDocument(filePath);
+		await new Promise(resolve => setTimeout(resolve, 1000));
 		const diagnostics = vscode.languages.getDiagnostics(document.uri);
 		console.log("document uri:", document.uri.toString());
 
@@ -253,6 +258,7 @@ suite('Diagnostics detection', () => {
 		const filePath = path.resolve('src/test/suite/fixtures/specialCharName.treatments.yaml');
 		console.log(filePath);
 		const document = await vscode.workspace.openTextDocument(filePath);
+		await new Promise(resolve => setTimeout(resolve, 1000));
 		const diagnostics = vscode.languages.getDiagnostics(document.uri);
 		console.log("document uri:", document.uri.toString());
 
@@ -268,6 +274,7 @@ suite('Diagnostics detection', () => {
 		const filePath = path.resolve('src/test/suite/fixtures/stringNotNumber.treatments.yaml');
 		console.log(filePath);
 		const document = await vscode.workspace.openTextDocument(filePath);
+		await new Promise(resolve => setTimeout(resolve, 1000));
 		const diagnostics = vscode.languages.getDiagnostics(document.uri);
 		console.log("document uri:", document.uri.toString());
 		console.log("diagnostics length:", diagnostics.length);
@@ -285,6 +292,7 @@ suite('Diagnostics detection', () => {
 		const filePath = path.resolve('src/test/suite/fixtures/wrongFieldPlacement.treatments.yaml');
 		console.log(filePath);
 		const document = await vscode.workspace.openTextDocument(filePath);
+		await new Promise(resolve => setTimeout(resolve, 1000));
 		const diagnostics = vscode.languages.getDiagnostics(document.uri);
 		console.log("document uri:", document.uri.toString());
 		console.log("diagnostics length:", diagnostics.length);
@@ -302,6 +310,7 @@ suite('Diagnostics detection', () => {
 		const filePath = path.resolve('src/test/suite/fixtures/malformedReference.treatments.yaml');
 		console.log(filePath);
 		const document = await vscode.workspace.openTextDocument(filePath);
+		await new Promise(resolve => setTimeout(resolve, 1000));
 		const diagnostics = vscode.languages.getDiagnostics(document.uri);
 		console.log("document uri:", document.uri.toString());
 		console.log("diagnostics length:", diagnostics.length);
@@ -313,5 +322,23 @@ suite('Diagnostics detection', () => {
 		);
 		assert.strictEqual(diagnostics[0].range.start.line, 249);
 		assert.strictEqual(diagnostics[0].range.end.line, 253);
+	});
+
+	test('invalid file reference in template content', async () => {
+		const filePath = path.resolve('src/test/suite/fixtures/invalidFileReference.treatments.yaml');
+		console.log(filePath);
+		const document = await vscode.workspace.openTextDocument(filePath);
+		await new Promise(resolve => setTimeout(resolve, 1000));
+		const diagnostics = vscode.languages.getDiagnostics(document.uri);
+		console.log("document uri:", document.uri.toString());
+		console.log("diagnostics length:", diagnostics.length);
+		console.log("diagnostics:", JSON.stringify(diagnostics, null, 2));
+		assert.strictEqual(diagnostics.length, 1);
+		assert.strictEqual(
+			diagnostics[0].message,
+			`Error in item "file": File "shared/yesNo/survey.md" does not exist in the workspace.`
+		);
+		assert.strictEqual(diagnostics[0].range.start.line, 4);
+		assert.strictEqual(diagnostics[0].range.end.line, 7);
 	});
 });

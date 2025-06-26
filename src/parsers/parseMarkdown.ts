@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import * as YAML from 'yaml';
-import { diagnosticCollection, reporter } from '../extension';
+import { diagnosticCollection } from '../extension';
 import { metadataLogicalSchema,
     MetadataRefineType,
     metadataTypeSchema,
@@ -36,9 +36,6 @@ export function parseMarkdown(document: vscode.TextDocument) {
                 vscode.DiagnosticSeverity.Error
             )
         );
-        reporter?.sendTelemetryErrorEvent('markdownParsingError', {'errorType': 'invalidNumberOfSeperators'}, {
-            'separatorCount': separators ? separators.length : 0
-        });
         return;
     }
 
@@ -80,7 +77,6 @@ export function parseMarkdown(document: vscode.TextDocument) {
     
     if (parsedData.errors.length > 0) {
         console.log("YAML parsing errors found:", parsedData.errors);
-        reporter?.sendTelemetryErrorEvent("markdownParsingError", {'errorType': 'yamlMetadataParsingError'}, {'errorCount': parsedData.errors.length});
         parsedData.errors.forEach((error: any) => {
             const range = new vscode.Range(
                 new vscode.Position(error.linePos[0].line - 1, 0),
@@ -135,18 +131,12 @@ export function parseMarkdown(document: vscode.TextDocument) {
         console.log("Zod validation passed. Types are consistent with MetadataType.");
     }
 
-    if (!result.success || !resultTwo.success) {
-        //reporter?.sendTelemetryErrorEvent("markdownSchemaError", {'errorType': 'metadataSchemaError'}, {'errorCount': (result.error?.issues.length ?? 0) + (resultTwo.error?.issues.length ?? 0)});
-    }
 
     // Prompt validation
-    let promptCorrect = true;
     if (sections && sections.length > 2) {
         const promptText = sections[2].trim();
         console.log("Prompt text:", promptText);
         if (!promptText || typeof promptText !== "string" || promptText.length < 1) {
-            promptCorrect = false;
-            //reporter?.sendTelemetryErrorEvent("markdownSchemaError", {'errorType': 'promptSchemaError'});
             let { text, index } = getIndex(document, 2);
             const startPos = offsetToPosition(index, document);
             diagnostics.push(
@@ -163,7 +153,6 @@ export function parseMarkdown(document: vscode.TextDocument) {
     }
 
     // Response validation
-    let responseCorrect = true;
     if (separators && separators.length === 3) {
         console.log("Entering if statement");
         const type = parsedData.get("type");
@@ -174,8 +163,6 @@ export function parseMarkdown(document: vscode.TextDocument) {
             case "noResponse": {
                 console.log("Entering no response case");
                 if (response && !(/^\s*$/.test(response))) {
-                    responseCorrect = false;
-                    //reporter?.sendTelemetryErrorEvent("markdownSchemaError", {'errorType': 'responseSchemaError', 'responseType': 'noResponse'});
                     let { text, index } = getIndex(document, 3);
                     console.log("Finding position of last position");
                     const lastPos = document.positionAt(text.length - 1);
@@ -207,8 +194,6 @@ export function parseMarkdown(document: vscode.TextDocument) {
                     const str = document.lineAt(i).text;
                     console.log(str);
                     if (!(/^\s*$/.test(str)) && str.substring(0, 2) !== "- ") {
-                        responseCorrect = false;
-                        //reporter?.sendTelemetryErrorEvent("markdownSchemaError", {'errorType': 'responseSchemaError', 'responseType': 'multipleChoice'});
                         const diagnosticRange = new vscode.Range(
                             new vscode.Position(i, 0),
                             new vscode.Position(i, str.length)
@@ -236,8 +221,6 @@ export function parseMarkdown(document: vscode.TextDocument) {
                 for (let i = lineNum; i < document.lineCount; i++) {
                     const str = document.lineAt(i).text;
                     if (!(/^\s*$/.test(str)) && str.substring(0, 2) !== "> ") {
-                        responseCorrect = false;
-                        //reporter?.sendTelemetryErrorEvent("markdownSchemaError", {'errorType': 'responseSchemaError', 'responseType': 'openResponse'});
                         const diagnosticRange = new vscode.Range(
                             new vscode.Position(i, 0),
                             new vscode.Position(i, str.length)
@@ -261,20 +244,6 @@ export function parseMarkdown(document: vscode.TextDocument) {
 
         }
 
-    }
-
-    if (!result.success || !resultTwo.success || !promptCorrect || !responseCorrect) {
-        let schemaErrors = 0;
-        for (const diagnostic of diagnostics) {
-            if (diagnostic.severity === vscode.DiagnosticSeverity.Warning) {
-                schemaErrors++;
-            }
-        }
-        reporter?.sendTelemetryErrorEvent("markdownSchemaError", {}, {
-            'errorCount': schemaErrors
-        });
-    } else if (diagnostics.length === 0) {
-        reporter?.sendTelemetryEvent("markdownFormatSuccess");
     }
 
     // Update diagnostics in VS Code

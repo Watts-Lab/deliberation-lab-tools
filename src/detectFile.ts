@@ -1,6 +1,5 @@
 import * as vscode from "vscode";
 import { load as loadYaml } from "js-yaml";
-import { reporter } from "./extension";
 
 // Helper file containing detection algorithms for file formats (.treatments.yaml and markdown)
 
@@ -31,7 +30,6 @@ export function detectPromptMarkdown(document: vscode.TextDocument) {
       if (metaData === null || metaData === undefined || metaData?.type === undefined || metaData?.name === undefined) {
         return false;
       }
-      reporter?.sendTelemetryEvent("promptMarkdownDetected");
       return true;
     } catch (YAMLException) { // YAMLException means that fields do not exist
       return false;
@@ -43,8 +41,5 @@ export function detectPromptMarkdown(document: vscode.TextDocument) {
 // Function to detect if document is treatmentsYaml format - mostly for unit tests
 export function detectTreatmentsYaml(document: vscode.TextDocument) {
   console.log("Document languageId:", document.languageId);
-  if (document.languageId === "treatmentsYaml") {
-    reporter?.sendTelemetryEvent("treatmentsYamlDetected");
-  }
   return document.languageId === "treatmentsYaml";
 }
