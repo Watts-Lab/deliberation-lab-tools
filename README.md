@@ -1,20 +1,18 @@
 # Deliberation Lab Experiment Development Tools
 
-This repository contains tools for researchers and experiment designers to create, validate, and manage experiments for the Deliberation Lab. The main functionality includes a Visual Studio Code (VS Code) extension for syntax highlighting, validation, and YAML schema validation of experiment configuration files (.treatments.yaml + elements built in markdown).
+This repository contains tools for researchers and experiment designers to create, validate, and manage experiments for the Deliberation Lab. The main functionality includes a Visual Studio Code (VS Code) extension for syntax highlighting, validation, YAML schema validation of experiment configuration files (.treatments.yaml + elements built in markdown), commands to create default experiment files, and visual previews of markdown elements.
 
-## Project Overview
+## Features
 
-This VS Code extension enhances experiment design workflows by:
-
-    1.	Providing syntax highlighting for .treatments.yaml files and elements built in markdown.
-    2.	Using Zod schemas to validate experiment configurations.
-    3.	Diagnosing errors with detailed, line-specific feedback.
-    4.	Allowing structured YAML configuration for treatments, sequences, elements, and other experiment components.
-    5.	Displaying useful, context-aware validation and error messages for experiment designers.
+- **Syntax Highlighting**: Special syntaxes, metadata, and keywords are highlighted in .treatments.yaml and prompt files built in markdown.
+- **Document Validation**: The extension will run validations on any .treatments.yaml or markdown file, ensuring that the configuration is correct for experimental templates and providing feedback through error diagnostics if it is not.
+- **Error Diagnostics**: Zod schemas are used to provide detailed, line-specific error diagnostics on .treatments.yaml and markdown files.
+- **Default File Templates**: Default .treatments.yaml and prompt markdown files can be created through commands accessed from the VS Code menu. Empty .treatments.yaml files can also be autofilled with a default template.
+- **Prompt Visual Previews**: Any prompt markdown file can be previewed on command, which opens up a visual, real-time preview of what the prompt would look like on the Deliberation Lab platform.
+- **Multi-Line Comments**: On any .treatments.yaml file, highlight a section of text and use `Ctrl + /` to comment out each line of selected text at once.
 
 ## Roadmap
 
-- [ ] Prompt file validation
 - [ ] Timeline visualization for experiment component display
 - [ ] Participant preview
 
@@ -38,13 +36,14 @@ code --install-extension [.vsix file generated above]
 
 ```
 
-# Tests
+## Tests
 
 Tests are located in the following files, separated by their functionality:
 
 ```
 src/test/suite/detection.test.ts
 src/test/suite/diagnostics.test.ts
+src/test/suite/preview.test.ts
 ```
 
 The file ```src/runExtensionTests.js``` runs a test script that calls the file ```src/test/suite/index.ts``` to execute these tests. All tests can be run at once with ```npm test``` (if this command is not working, make sure you run ```npm install``` first).
@@ -58,3 +57,7 @@ If you want to test only one or a few test files, then run ```npm test --TEST_FI
   - Provide custom defined scope to `Marketplace` scope with `Manage` access level
   - Make sure the `Organization` is set to `All accessible organizations` (NOT just for our org)
 - Update [GitHub repository](https://docs.github.com/en/actions/security-for-github-actions/security-guides/using-secrets-in-github-actions#creating-secrets-for-a-repository) with newly generated PAT
+
+## Issues and Feedback
+
+If you have a suggestion, an idea for a new feature, or an issue that you have noticed with our extension, please add it to our GitHub issues page at https://github.com/Watts-Lab/deliberation-lab-tools/issues.

@@ -3,7 +3,6 @@ const { runTests } = require('@vscode/test-electron');
 
 async function main() {
   const workspacePath = path.resolve(__dirname, '.');
-  console.log("Workspace path: " + workspacePath + __dirname);
 
   // Gets string from CLI with "npm test --TEST_FILES"
   const [, , ...testFiles] = process.argv;

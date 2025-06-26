@@ -8,9 +8,7 @@ suite('Diagnostics detection', () => {
 		// allTalk.md
 
 		const filePath = path.resolve('src/test/suite/fixtures/allTalk.md');
-		console.log(filePath);
 		const document = await vscode.workspace.openTextDocument(filePath);
-		console.log(document.uri.path);
 		
 		const diagnostics = vscode.languages.getDiagnostics(document.uri);
 		assert.strictEqual(diagnostics?.length, 0);
@@ -19,9 +17,7 @@ suite('Diagnostics detection', () => {
 	test('Diagnostics are empty on treatments yaml file with no errors', async () => {
 
 		const filePath = path.resolve('src/test/suite/fixtures/empty.treatments.yaml');
-		console.log(filePath);
 		const document = await vscode.workspace.openTextDocument(filePath);
-		console.log(document.uri.path);
 		
 		const diagnostics = vscode.languages.getDiagnostics(document.uri);
 		assert.strictEqual(diagnostics?.length, 0);
@@ -30,9 +26,7 @@ suite('Diagnostics detection', () => {
 	test('Diagnostics register on opened treatments yaml file with errors', async () => {
 
 		const filePath = path.resolve('src/test/suite/fixtures/filter.treatments.yaml');
-		console.log(filePath);
 		const document = await vscode.workspace.openTextDocument(filePath);
-		console.log(document.uri.path);
 		const diagnostics = vscode.languages.getDiagnostics(document.uri);
 
 		// Tests that there are 4 error messages as we expect
@@ -62,13 +56,11 @@ suite('Diagnostics detection', () => {
 	test('Diagnostics register on opened markdown file with errors', async () => {
 
 		const filePath = path.resolve('src/test/suite/fixtures/emptyField.md');
-		console.log(filePath);
 		const document = await vscode.workspace.openTextDocument(filePath);
 		
 		const diagnostics = vscode.languages.getDiagnostics(document.uri);
 		for (let i = 0; i < diagnostics.length; i++) {
 			const d = diagnostics[i];
-			console.log("index: " + i + " message: " + d.message + " range start line: " + d.range.start.line + " range end line: " + d.range.end.line);
 		}
 
 		// Tests that there are 4 errors/warnings

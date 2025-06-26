@@ -13,21 +13,16 @@ export async function run(): Promise<void> {
 
   let files;
 
-  console.log("Test files env: " + process.env.TEST_FILES);
-
   if (process.env.TEST_FILES) {
-    console.log("Test files: " + process.env.TEST_FILES);
 
     // environment variable TEST_FILES automatically converts array to string and separates elements by commas, so we split elements here
     const testFiles = process.env.TEST_FILES?.split(',') ?? [];
-    console.log(testFiles);
     files = testFiles;
   } else {
     files = await glob('**/*.test.js', { cwd: testsRoot });
   }
 
   for (const file of files) {
-    console.log("Test file: " + file);
     mocha.addFile(path.resolve(testsRoot, file));
   }
 
