@@ -1,4 +1,4 @@
-import type { Config } from "tailwindcss";
+import { Config } from "tailwindcss";
 const plugin = require("tailwindcss/plugin");
 
 const buttonSafe = [
@@ -22,7 +22,7 @@ const alertSafe = [
   "bg-empirica-50", "text-empirica-400", "text-empirica-800", "text-empirica-700"
 ];
 
-const config: Config = {
+const config = {
   content: [
     "./src/pages/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
