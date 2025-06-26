@@ -3,7 +3,7 @@ templates:
   contentType: elements
   templateContent:
   - type: prompt
-    file: src\test\suite\fixtures\ex.md
+    file: "src/test/suite/fixtures/ex.md"
     conditions:
     - reference: prompt.continue_${lastIndex}
       position: any
@@ -45,7 +45,7 @@ introSequences:
   - name: Instructions Page
     elements:
     - type: prompt
-      file: src\test\suite\fixtures\ex.md
+      file: "src/test/suite/fixtures/ex.md"
     - type: submitButton
 treatments:
 - template: baseTreatment

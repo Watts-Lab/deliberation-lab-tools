@@ -23,16 +23,16 @@ templates:
           duration: 180
           elements:
             - type: prompt
-              file: src\test\suite\fixtures\ex.md
+              file: "src/test/suite/fixtures/ex.md"
               showToPositions: [0]
             - type: prompt
-              file: src\test\suite\fixtures\ex.md
+              file: "src/test/suite/fixtures/ex.md"
               showToPositions: [1]
             - type: prompt
-              file: src\test\suite\fixtures\ex.md
+              file: "src/test/suite/fixtures/ex.md"
               showToPositions: [1]
             - type: prompt
-              file: src\test\suite\fixtures\ex.md
+              file: "src/test/suite/fixtures/ex.md"
               name: LG_PG_why
               showToPositions: [1]
             - type: submitButton
@@ -43,19 +43,19 @@ templates:
           duration: 180
           elements:
             - type: prompt
-              file: src\test\suite\fixtures\ex.md
+              file: "src/test/suite/fixtures/ex.md"
               showToPositions: [0]
             - type: prompt
-              file: src\test\suite\fixtures\ex.md
+              file: "src/test/suite/fixtures/ex.md"
               showToPositions: [1]
             - type: prompt
-              file: src\test\suite\fixtures\ex.md
+              file: "src/test/suite/fixtures/ex.md"
             - type: prompt
-              file: src\test\suite\fixtures\ex.md
+              file: "src/test/suite/fixtures/ex.md"
               showToPositions: [0]
               name: GA
             - type: prompt
-              file: src\test\suite\fixtures\ex.md
+              file: "src/test/suite/fixtures/ex.md"
               showToPositions: [1]
               name: LG_PG_write
             - type: submitButton
@@ -66,20 +66,20 @@ templates:
           duration: 90
           elements:
             - type: prompt
-              file: src\test\suite\fixtures\ex.md
+              file: "src/test/suite/fixtures/ex.md"
             - type: prompt
-              file: src\test\suite\fixtures\ex.md
+              file: "src/test/suite/fixtures/ex.md"
             - type: prompt
-              file: src\test\suite\fixtures\ex.md
+              file: "src/test/suite/fixtures/ex.md"
               name: PIA_1
             - type: prompt
-              file: src\test\suite\fixtures\ex.md
+              file: "src/test/suite/fixtures/ex.md"
               name: PIA_2
             - type: prompt
-              file: src\test\suite\fixtures\ex.md
+              file: "src/test/suite/fixtures/ex.md"
               name: PIA_3
             - type: prompt
-              file: src\test\suite\fixtures\ex.md
+              file: "src/test/suite/fixtures/ex.md"
             - type: submitButton
               buttonText: Continue
 
@@ -87,24 +87,24 @@ templates:
           duration: 120
           elements:
             - type: prompt
-              file: src\test\suite\fixtures\ex.md
+              file: "src/test/suite/fixtures/ex.md"
             - type: prompt
-              file: src\test\suite\fixtures\ex.md
+              file: "src/test/suite/fixtures/ex.md"
               name: PIQ_1
             - type: prompt
-              file: src\test\suite\fixtures\ex.md
+              file: "src/test/suite/fixtures/ex.md"
               name: PIQ_2
             - type: prompt
-              file: src\test\suite\fixtures\ex.md
+              file: "src/test/suite/fixtures/ex.md"
               name: PIQ_3
             - type: prompt
-              file: src\test\suite\fixtures\ex.md
+              file: "src/test/suite/fixtures/ex.md"
               name: PIQ_4
             - type: prompt
-              file: src\test\suite\fixtures\ex.md
+              file: "src/test/suite/fixtures/ex.md"
               name: PIQ_5
             - type: prompt
-              file: src\test\suite\fixtures\ex.md
+              file: "src/test/suite/fixtures/ex.md"
               name: PIQ_6
             - type: submitButton
               buttonText: Continue
@@ -113,18 +113,18 @@ templates:
           duration: 60
           elements:
             - type: prompt
-              file: src\test\suite\fixtures\ex.md
+              file: "src/test/suite/fixtures/ex.md"
               showToPositions: [0]
             - type: prompt
-              file: src\test\suite\fixtures\ex.md
+              file: "src/test/suite/fixtures/ex.md"
               showToPositions: [1]
             - type: prompt
-              file: src\test\suite\fixtures\ex.md
+              file: "src/test/suite/fixtures/ex.md"
             - type: prompt
-              file: src\test\suite\fixtures\ex.md
+              file: "src/test/suite/fixtures/ex.md"
               showToPositions: [0]
             - type: prompt
-              file: src\test\suite\fixtures\ex.md
+              file: "src/test/suite/fixtures/ex.md"
               showToPositions: [1]
             - type: display
               reference: prompt.GA
@@ -143,22 +143,22 @@ templates:
             showTitle: false
           elements:
             - type: prompt
-              file: src\test\suite\fixtures\ex.md
+              file: "src/test/suite/fixtures/ex.md"
               displayTime: 300
               hideTime: 330
             - type: prompt
-              file: src\test\suite\fixtures\ex.md
+              file: "src/test/suite/fixtures/ex.md"
               displayTime: 480
               hideTime: 510
             - type: prompt
-              file: src\test\suite\fixtures\ex.md
+              file: "src/test/suite/fixtures/ex.md"
               showToPositions: [1]
             - type: prompt
-              file: src\test\suite\fixtures\ex.md
+              file: "src/test/suite/fixtures/ex.md"
             - type: prompt
-              file: src\test\suite\fixtures\ex.md
+              file: "src/test/suite/fixtures/ex.md"
             - type: prompt
-              file: src\test\suite\fixtures\ex.md
+              file: "src/test/suite/fixtures/ex.md"
             - type: display
               reference: prompt.GA
               showToPositions: [0]
@@ -170,7 +170,7 @@ templates:
         - name: PostDiscussionInstructions
           elements:
             - type: prompt
-              file: src\test\suite\fixtures\ex.md
+              file: "src/test/suite/fixtures/ex.md"
             - type: submitButton
               buttonText: Proceed to Survey
         - name: Qualtrics_Escape_Hatch
@@ -184,11 +184,11 @@ introSequences:
       - name: self_construal
         elements:
           - type: prompt
-            file: src\test\suite\fixtures\ex.md
+            file: "src/test/suite/fixtures/ex.md"
       - name: topic_survey
         elements:
           - type: prompt
-            file: src\test\suite\fixtures\ex.md
+            file: "src/test/suite/fixtures/ex.md"
 
 treatments:
   - template: disagreeing_dyads

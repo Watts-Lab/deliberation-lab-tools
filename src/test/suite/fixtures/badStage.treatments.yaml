@@ -6,7 +6,7 @@ introSequences:
         elements:
           - type: prompt
             name: preamble
-            file: src\test\suite\fixtures\ex.md
+            file: "src/test/suite/fixtures/ex.md"
           - type: submitButton
             buttonText: Continue
       - name: Ten Item Personality Inventory
@@ -24,13 +24,13 @@ introSequences:
       - name: General Information Optional Reading
         elements:
           - type: prompt
-            file: src\test\suite\fixtures\ex.md
+            file: "src/test/suite/fixtures/ex.md"
           - type: submitButton
             buttonText: Continue
       - name: Complete Introductory Surveys
         elements:
           - type: prompt
-            file: src\test\suite\fixtures\ex.md
+            file: "src/test/suite/fixtures/ex.md"
           - type: submitButton
             buttonText: Continue
 
@@ -51,7 +51,7 @@ treatments:
         duration: 60
         elements:
           - type: form
-            file: src\test\suite\fixtures\ex.md
+            file: "src/test/suite/fixtures/ex.md"
           - type: submitButton
             buttonText: Continue
 
@@ -59,11 +59,11 @@ treatments:
         duration: 30
         elements:
           - type: prompt
-            file: src\test\suite\fixtures\ex.md
+            file: "src/test/suite/fixtures/ex.md"
             showToPositions:
               - 0
           - type: prompt
-            file: src\test\suite\fixtures\ex.md
+            file: "src/test/suite/fixtures/ex.md"
             showToPositions:
               - 1
           - type: submitButton
@@ -73,11 +73,11 @@ treatments:
         duration: 420
         elements:
           - type: prompt
-            file: src\test\suite\fixtures\ex.md
+            file: "src/test/suite/fixtures/ex.md"
             showToPositions:
               - 0
           - type: prompt
-            file: src\test\suite\fixtures\ex.md
+            file: "src/test/suite/fixtures/ex.md"
             showToPositions:
               - 1
           - type: submitButton
@@ -87,11 +87,11 @@ treatments:
         duration: 90
         elements:
           - type: prompt
-            file: src\test\suite\fixtures\ex.md
+            file: "src/test/suite/fixtures/ex.md"
             showToPositions:
               - 0
           - type: prompt
-            file: src\test\suite\fixtures\ex.md
+            file: "src/test/suite/fixtures/ex.md"
             showToPositions:
               - 1
           - type: submitButton
@@ -101,7 +101,7 @@ treatments:
       - name: Deal Sheet
         elements:
           - type: prompt
-            file: src\test\suite\fixtures\ex.md
+            file: "src/test/suite/fixtures/ex.md"
           - type: submitButton
             buttonText: Submit
 
