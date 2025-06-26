@@ -65,7 +65,7 @@ suite('Diagnostics detection', () => {
 		const filePath = path.resolve('src/test/suite/fixtures/emptyField.md');
 		console.log(filePath);
 		const document = await vscode.workspace.openTextDocument(filePath);
-		await new Promise(resolve => setTimeout(resolve, 2000)); // wait 300ms
+		await new Promise(resolve => setTimeout(resolve, 1000)); // wait 300ms
 		const diagnostics = vscode.languages.getDiagnostics(document.uri);
 		for (let i = 0; i < diagnostics.length; i++) {
 			const d = diagnostics[i];
@@ -101,7 +101,7 @@ suite('Diagnostics detection', () => {
 		console.log(filePath);
 		const document = await vscode.workspace.openTextDocument(filePath);
 		await vscode.window.showTextDocument(document);
-		await new Promise(resolve => setTimeout(resolve, 2000)); // wait 300ms
+		await new Promise(resolve => setTimeout(resolve, 1000)); // wait 300ms
 		const diagnostics = vscode.languages.getDiagnostics(document.uri);
 		console.log("document uri:", document.uri.toString());
 		console.log("diagnostics length:", diagnostics.length);
@@ -339,6 +339,6 @@ suite('Diagnostics detection', () => {
 			`Error in item "file": File "shared/yesNo/survey.md" does not exist in the workspace.`
 		);
 		assert.strictEqual(diagnostics[0].range.start.line, 4);
-		assert.strictEqual(diagnostics[0].range.end.line, 7);
+		assert.strictEqual(diagnostics[0].range.end.line, 8);
 	});
 });

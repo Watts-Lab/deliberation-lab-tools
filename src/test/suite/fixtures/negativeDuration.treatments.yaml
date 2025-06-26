@@ -19,7 +19,7 @@ treatments:
           showTitle: false
         elements:
           - type: prompt 
-            file: projects/weinstein_listening/text_5_min/discussionInstructions.md
+            file: src\test\suite\fixtures\ex.md
 
     exitSequence:
       - name: postsurvey

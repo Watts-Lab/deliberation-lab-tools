@@ -7,10 +7,10 @@ templates:
         duration: 30
         elements:
           - type: image
-            file: ${imageFilepath}
+            file: src\test\suite\fixtures\ex.md
           - type: prompt
             name: "recall_${roundIndex}"
-            file: projects/exaptation/revision_202503/recall.md
+            file: src\test\suite\fixtures\ex.md
           - type: submitButton
             buttonText: Submit
             name: "recall_${roundIndex}"
@@ -19,9 +19,9 @@ templates:
         duration: 15
         elements:
           - type: image
-            file: ${imageFilepath}
+            file: src\test\suite\fixtures\ex.md
           - type: prompt
-            file: projects/exaptation/revision_202503/labels_match.md
+            file: src\test\suite\fixtures\ex.md
             conditions:
               - reference: "prompt.recall_${roundIndex}_${recallIndex}"
                 position: percentAgreement
@@ -32,7 +32,7 @@ templates:
                 comparator: hasLengthAtLeast
                 value: 1
           - type: prompt
-            file: projects/exaptation/revision_202503/labels_not_match.md
+            file: src\test\suite\fixtures\ex.md
             conditions:
               - reference: "prompt.recall_${roundIndex}_${recallIndex}"
                 position: percentAgreement
@@ -59,14 +59,14 @@ templates:
           showTitle: false
         elements:
           - type: image
-            file: "${panelFilepath}"
+            file: src\test\suite\fixtures\ex.md
           - type: submitButton
             buttonText: End discussion and proceed to next steps
 
             name: "labeling_${roundIndex}"
           - name: "labeling_${roundIndex}"
             type: prompt
-            file: projects/exaptation/revision_202503/discussion_instructions.md
+            file: src\test\suite\fixtures\ex.md
             shared: true
 
       - template: recallTask
@@ -82,7 +82,7 @@ introSequences:
       - name: Instructions Page
         elements:
           - type: prompt
-            file: projects/exaptation/revision_202503/instructions.md
+            file: src\test\suite\fixtures\ex.md
           - type: submitButton
 
 treatments:

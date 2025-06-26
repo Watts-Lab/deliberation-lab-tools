@@ -4,7 +4,7 @@ templates:
     templateContent:
       type: prompt
       name: "${topicName}_presurvey"
-      file: "shared/yesNo/${topicName}_survey.md"
+      file: src\test\suite\fixtures\ex.md
       tags: ["predictor"]
 
   - templateName: topicCondition
@@ -36,7 +36,7 @@ templates:
         - name: TraitRatingsPretest # 8 questions
           elements: # if participants are not US partisans, we use this page to show them a screen-out code
             - type: prompt
-              file: projects/css_lab/ct_topic/consider_democrats.md
+              file: src\test\suite\fixtures\ex.md
               conditions:
                 - reference: survey.partyAffiliation.result.normPosition
                   comparator: isAbove
@@ -45,7 +45,7 @@ templates:
                   comparator: equals
                   value: US
             - type: prompt
-              file: projects/css_lab/ct_topic/consider_republicans.md
+              file: src\test\suite\fixtures\ex.md
               conditions:
                 - reference: survey.partyAffiliation.result.normPosition
                   comparator: isBelow
@@ -66,14 +66,14 @@ templates:
                   value: US
 
             - type: prompt # show screener if not a partisan
-              file: projects/css_lab/ct_topic/screener.md
+              file: src\test\suite\fixtures\ex.md
               conditions:
                 - reference: survey.partyAffiliation.result.normPosition
                   comparator: equals
                   value: 0.5
 
             - type: prompt # show screener if not in the US
-              file: projects/css_lab/ct_topic/screener.md
+              file: src\test\suite\fixtures\ex.md
               conditions:
                 - reference: connectionInfo.country
                   comparator: doesNotEqual
@@ -96,7 +96,7 @@ templates:
         - name: TopicPreSurvey
           elements:
             - type: prompt
-              file: projects/css_lab/ct_topic/presurvey_instructions.md
+              file: src\test\suite\fixtures\ex.md
 
             - template: topicPrompt
               broadcast:
@@ -104,14 +104,14 @@ templates:
 
             - type: prompt
               name: attentionCheck
-              file: projects/css_lab/ct_topic/attention_check.md
+              file: src\test\suite\fixtures\ex.md
 
             - template: topicPrompt
               broadcast:
                 d0: ${otherWaveTopicNames}
 
             - type: prompt
-              file: projects/css_lab/ct_topic/all_mandatory.md
+              file: src\test\suite\fixtures\ex.md
 
             - type: submitButton
               buttonText: Continue
@@ -171,16 +171,16 @@ templates:
           duration: 300
           elements:
             - type: audio
-              file: shared/westminster_short.mp3
+              file: src\test\suite\fixtures\ex.md
             - type: prompt
-              file: projects/css_lab/ct_topic/attitude_attribute_instructions_A.md
+              file: src\test\suite\fixtures\ex.md
             - type: prompt
-              file: "shared/yesNo/${topicName}_discussion.md"
+              file: src\test\suite\fixtures\ex.md
             - type: display
               reference: prompt.${topicName}_presurvey
               position: player
             - type: prompt
-              file: projects/css_lab/ct_topic/attitude_attribute_instructions_B.md
+              file: src\test\suite\fixtures\ex.md
             - type: survey
               name: attitudeAttributes
               surveyName: AttitudeAttributes
@@ -190,10 +190,10 @@ templates:
           duration: 45
           elements:
             - type: prompt
-              file: projects/css_lab/ct_topic/pre_discussion_instructions_democrat.md
+              file: src\test\suite\fixtures\ex.md
               showToPositions: [0]
             - type: prompt
-              file: projects/css_lab/ct_topic/pre_discussion_instructions_republican.md
+              file: src\test\suite\fixtures\ex.md
               showToPositions: [1]
             - type: submitButton
               name: preDiscussionInstructions
@@ -207,11 +207,11 @@ templates:
             showTitle: true
           elements:
             - type: prompt
-              file: projects/css_lab/ct_topic/discussion_instructions.md
+              file: src\test\suite\fixtures\ex.md
             - type: prompt
-              file: "shared/yesNo/${topicName}_discussion.md"
+              file: src\test\suite\fixtures\ex.md
             - type: prompt
-              file: projects/css_lab/ct_topic/discussion_wrapup.md
+              file: src\test\suite\fixtures\ex.md
               displayTime: 600
             - type: submitButton
               name: endCall
@@ -223,20 +223,20 @@ templates:
         - name: PostDiscussionInstructions
           elements:
             - type: prompt
-              file: projects/css_lab/ct_topic/post_discussion_instructions.md
+              file: src\test\suite\fixtures\ex.md
             - type: submitButton
               buttonText: Proceed to Survey
 
         - name: AttitudeChange # 1 question
           elements:
             - type: prompt
-              file: projects/css_lab/ct_topic/attitude_change_instructions.md
+              file: src\test\suite\fixtures\ex.md
             - type: prompt
               name: discussionTopicPostAttitude
-              file: "shared/yesNo/${topicName}_survey.md"
+              file: src\test\suite\fixtures\ex.md
               tags: ["outcome"]
             - type: prompt
-              file: projects/css_lab/ct_topic/all_mandatory.md
+              file: src\test\suite\fixtures\ex.md
             - type: submitButton
               conditions:
                 - reference: prompt.discussionTopicPostAttitude
@@ -245,7 +245,7 @@ templates:
         - name: ManipulationCheck # 2 questions
           elements:
             - type: prompt
-              file: projects/css_lab/ct_topic/consider_partner.md
+              file: src\test\suite\fixtures\ex.md
 
             - type: display
               reference: participantInf
@@ -257,17 +257,17 @@ templates:
               showToPositions: [0]
 
             - type: prompt
-              file: projects/css_lab/ct_topic/guess_partner_party.md
+              file: src\test\suite\fixtures\ex.md
               name: guessPartnerParty
               tags: ["outcome"]
             - type: prompt
-              file: projects/css_lab/ct_topic/guess_partner_position.md
+              file: src\test\suite\fixtures\ex.md
             - type: prompt
-              file: "shared/yesNo/${topicName}_survey.md"
+              file: src\test\suite\fixtures\ex.md
               name: guessPartnerPosition
               tags: ["outcome"]
             - type: prompt
-              file: projects/css_lab/ct_topic/all_mandatory.md
+              file: src\test\suite\fixtures\ex.md
             - type: submitButton
               conditions:
                 - reference: prompt.guessPartnerParty
@@ -278,7 +278,7 @@ templates:
         - name: PerceptionOfPartner # 8 questions
           elements:
             - type: prompt
-              file: projects/css_lab/ct_topic/consider_partner.md
+              file: src\test\suite\fixtures\ex.md
 
             - type: display
               reference: participantInfo.name
@@ -311,10 +311,10 @@ templates:
         - name: TraitRatingsPostTest # 8 questions
           elements:
             - type: prompt
-              file: projects/css_lab/ct_topic/consider_democrats.md
+              file: src\test\suite\fixtures\ex.md
               showToPositions: [1]
             - type: prompt
-              file: projects/css_lab/ct_topic/consider_republicans.md
+              file: src\test\suite\fixtures\ex.md
               showToPositions: [0]
             - type: survey
               surveyName: TraitRatings
