@@ -116,7 +116,7 @@ async function buildExtension() {
     define: {
       global: "globalThis",
     },
-    alias: {
+    alias: { // Aliases of empirica modules to mocks for rendering
       '@empirica/core/player/react': path.resolve(__dirname, 'src/views/mocks.js'),
       '@empirica/core/player/classic/react': path.resolve(__dirname, 'src/views/mocks.js'),
       'deliberation-empirica/client/src/components/hooks': path.resolve(__dirname, 'src/views/hooks.js')
@@ -148,6 +148,7 @@ async function buildExtension() {
   }
 }
 
+// Builds index.jsx for prompt file rendering and CSS style files
 async function buildPrompt() {
   const ctx = await esbuild.context({
     entryPoints: [
@@ -165,7 +166,7 @@ async function buildPrompt() {
     outdir: "dist/views/",
     logLevel: "silent",
     external: ["vscode", "path", "assert"],
-    alias: {
+    alias: { // Aliasing empirica module methods to point to mocks
       '@empirica/core/player/react': path.resolve(__dirname, 'src/views/mocks.js'),
       '@empirica/core/player/classic/react': path.resolve(__dirname, 'src/views/mocks.js'),
       'deliberation-empirica/client/src/components/hooks': path.resolve(__dirname, 'src/views/hooks.js')

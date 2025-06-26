@@ -63,6 +63,8 @@ export function activate(context: vscode.ExtensionContext) {
         }
       );
 
+      // URIs for CSS files and script file that will be passed into HTML content
+
       const scriptUri = panel.webview.asWebviewUri(
         vscode.Uri.joinPath(context.extensionUri, 'dist', 'views', 'index.js')
       );
@@ -80,6 +82,8 @@ export function activate(context: vscode.ExtensionContext) {
       );
 
       panel.webview.html = getWebviewContent(scriptUri, styleUri, playerStylesUri, layoutUri);
+
+      // Passes document information into webview
       panel.webview.onDidReceiveMessage((message) => {
         if (message.type === 'ready') {
 
@@ -90,6 +94,7 @@ export function activate(context: vscode.ExtensionContext) {
         }
       });
 
+      // Passes new document content into webview when document changes
       vscode.workspace.onDidChangeTextDocument((event) => {
         const promptText = event.document.getText();
         panel.webview.postMessage({ type: 'init', promptProps: { file: promptText, name: 'example', shared: false } });

@@ -2,6 +2,8 @@ import { Workbench, EditorView, WebView, By } from 'vscode-extension-tester';
 import * as assert from 'assert';
 import { suite, test, before, it } from 'mocha';
 
+// Uses vscode-extension-tester library to test that webview populates
+
 suite('Preview', function () {
 	test('Open prompt preview from markdown document', function () {
 		let view: WebView;
@@ -21,6 +23,6 @@ suite('Preview', function () {
         it('findWebElement works', async function () {
             const element = await view.findWebElement(By.css('title'));
             assert.strictEqual((await element.getText()), "Deliberation Lab");
-        })
+        });
 	});
 });
