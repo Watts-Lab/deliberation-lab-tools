@@ -101,7 +101,7 @@ suite('Diagnostics detection', () => {
 		console.log(filePath);
 		const document = await vscode.workspace.openTextDocument(filePath);
 		await vscode.window.showTextDocument(document);
-		await new Promise(resolve => setTimeout(resolve, 1000)); // wait 300ms
+		await new Promise(resolve => setTimeout(resolve, 3000)); // wait 300ms
 		const diagnostics = vscode.languages.getDiagnostics(document.uri);
 		console.log("document uri:", document.uri.toString());
 		console.log("diagnostics length:", diagnostics.length);
@@ -315,6 +315,7 @@ suite('Diagnostics detection', () => {
 		console.log("document uri:", document.uri.toString());
 		console.log("diagnostics length:", diagnostics.length);
 		console.log("diagnostics:", JSON.stringify(diagnostics, null, 2));
+		console.log("workspaceFolders:", vscode.workspace.workspaceFolders);
 		assert.strictEqual(diagnostics.length, 1);
 		assert.strictEqual(
 			diagnostics[0].message,

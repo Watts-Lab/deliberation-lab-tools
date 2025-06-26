@@ -36,7 +36,6 @@ export function parseMarkdown(document: vscode.TextDocument) {
                 vscode.DiagnosticSeverity.Error
             )
         );
-        return;
     }
 
     //getting the relative path of the file for comparison with name field in metadata
@@ -75,26 +74,6 @@ export function parseMarkdown(document: vscode.TextDocument) {
         } as any);
         console.log("YAML parsed successfully.", parsedData);
     
-    if (parsedData.errors.length > 0) {
-        console.log("YAML parsing errors found:", parsedData.errors);
-        parsedData.errors.forEach((error: any) => {
-            const range = new vscode.Range(
-                new vscode.Position(error.linePos[0].line - 1, 0),
-                new vscode.Position(error.linePos[0].line + 1, 10)
-            );
-            diagnostics.push(
-                new vscode.Diagnostic(
-                    range,
-                    `YAML syntax error: ${error.code} -> ${error.message}; Check for proper indentation and formatting at lines or at nearby lines.`,
-                    vscode.DiagnosticSeverity.Error
-                )
-            );
-        });
-        diagnosticCollection.set(document.uri, diagnostics);
-        console.log("Length of diagnostics for metadata: " + diagnostics.length);
-        console.log("Length of diagnostic collection for metadata: " + diagnosticCollection.get(document.uri)!!.length);
-        return;
-    }
     console.log("Relative path before passing into schema: " + relativePath);
 
     //Metadata validation
