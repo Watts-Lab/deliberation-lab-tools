@@ -12,14 +12,14 @@ treatments:
 
     gameStages:
       - name: chat
-        duration: 300
+        duration: -2
         discussion:
           chatType: text
           showNickname: true
           showTitle: false
         elements:
-          - type: invalidType 
-            file: projects/weinstein_listening/text_5_min/discussionInstructions.md
+          - type: prompt 
+            file: "src/test/suite/fixtures/ex.md"
 
     exitSequence:
       - name: postsurvey

@@ -1,20 +1,21 @@
 templates:
   - templateName: recallTask
     # an individual recall and feedback stage
+    contentType: stages
     templateContent:
-      - name: "recall_${roundIndex}_${recallIndex}"
+      - name: "recall_${roundIndex}"
         duration: 30
         elements:
             - type: image
-            file: ${imageFilepath}
+            file: src/test/suite/fixtures/allTalk.md
           - type: prompt
-            name: "recall_${roundIndex}_${recallIndex}"
-            file: projects/exaptation/revision_202503/recall.md
+            name: "recall_${roundIndex}"
+            file: projects/exaptation/revision_202503/recall.m
           - type: submitButton
             buttonText: Submit
-            name: "recall_${roundIndex}_${recallIndex}"
+            name: "recall_${roundIndex} "
 
-      - name: "feedback_${roundIndex}_${recallIndex}"
+      - name: "feedback_${roundIndex}"
         duration: 15
         elements:
           - type: image
@@ -48,6 +49,7 @@ templates:
 
   - templateName: round
     # a round of discussion and recall tasks
+    contentType: stages
     templateContent:
       - name: "Discussion ${roundIndex}"
         duration: 600

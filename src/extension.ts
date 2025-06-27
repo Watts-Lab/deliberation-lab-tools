@@ -6,10 +6,11 @@ import { parseMarkdown } from "./parsers/parseMarkdown";
 // should this be named yamlDiagnostics if also using markdown?
 export const diagnosticCollection = vscode.languages.createDiagnosticCollection("yamlDiagnostics");
 
+
 // helper function to call parser on a specific document type if it is detected
-function parseDocument(document: vscode.TextDocument) {
+async function parseDocument(document: vscode.TextDocument) {
   if (detectTreatmentsYaml(document)) {
-    parseYaml(document);
+    await parseYaml(document);
   } else if (detectPromptMarkdown(document)) {
     parseMarkdown(document);
   } else {
@@ -19,33 +20,98 @@ function parseDocument(document: vscode.TextDocument) {
 }
 
 // export function 
-export function activate(context: vscode.ExtensionContext) {
+export async function activate(context: vscode.ExtensionContext) {
   vscode.window.showInformationMessage("Extension activated");
+
   context.subscriptions.push(diagnosticCollection);
   console.log("Extension activated");
 
   // Should be done once upon activation (if a document is open)
   if (vscode.window.activeTextEditor && vscode.window.activeTextEditor?.document) {
-    parseDocument(vscode.window.activeTextEditor?.document!!);
+    await parseDocument(vscode.window.activeTextEditor?.document!!);
   }
 
   // Listen for when a document is opened
   context.subscriptions.push(
 
     // for opening document
-    vscode.workspace.onDidOpenTextDocument((event) => {
+    vscode.workspace.onDidOpenTextDocument(async (event) => {
       if (event !== undefined) {
-        parseDocument(event);
+        await parseDocument(event);
       }
     }),
 
     // for changing document
-    vscode.workspace.onDidChangeTextDocument((event) => {
-      if (event?.document !== undefined) {
-        parseDocument(event?.document);
-      };
+    vscode.workspace.onDidChangeTextDocument(async (event) => {
+        if (event?.document !== undefined) {
+          parseDocument(event?.document);
+        };
+      })
+    );
+
+  const defaultYaml = vscode.commands.registerCommand("deliberation-lab-tools.defaultTreatmentsYaml", async () => {
+    const defaultYamlContent = `introSequences:
+  - name: "exampleIntro"
+    introSteps:
+      - name: "exampleStep1"
+        elements:
+          - type: "prompt"
+            
+treatments:
+  - name: "exampleTreatment"
+    playerCount: 1
+    gameStages:
+      - name: "exampleStage1"
+        duration: 60
+        elements:
+          - type: "prompt"`;
+    await vscode.workspace.openTextDocument({
+      language: 'treatmentsYaml',
+      content: defaultYamlContent
+    });
+    vscode.window.showInformationMessage("Default .treatments.yaml file created");
+  });
+  context.subscriptions.push(defaultYaml);
+
+  context.subscriptions.push(
+    vscode.window.onDidChangeActiveTextEditor(async (editor) => {
+      if (editor && editor.document && editor.document.getText() === "" && editor.document.languageId === "treatmentsYaml") {
+        const position = new vscode.Position(0, 0);
+        editor.selection = new vscode.Selection(position, position);
+        const controller = vscode.languages.registerInlineCompletionItemProvider(
+          { language: "treatmentsYaml" },
+          {
+            provideInlineCompletionItems(document, pos, ctx, token) {
+              if (pos.line === 0 && pos.character === 0 && document.getText() === "") {
+                const suggestion = new vscode.InlineCompletionItem(`# Click tab to fill with template
+introSequences:
+  - name: "exampleIntro"
+    introSteps:
+      - name: "exampleStep1"
+        elements:
+          - type: "prompt"
+            
+treatments:
+  - name: "exampleTreatment"
+    playerCount: 1
+    gameStages:
+      - name: "exampleStage1"
+        duration: 60
+        elements:
+          - type: "prompt"`);
+                suggestion.range = new vscode.Range(pos, pos);
+                return [suggestion];
+              }
+              return [];
+            },
+          }
+        );
+        context.subscriptions.push(controller);
+        await new Promise((res) => setTimeout(res, 50));
+        await vscode.commands.executeCommand("editor.action.inlineSuggest.trigger");
+      }
     })
-  );
+  )
 
   // Open Markdown preview
   context.subscriptions.push(

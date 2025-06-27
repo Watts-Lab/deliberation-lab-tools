@@ -63,31 +63,13 @@ export function parseMarkdown(document: vscode.TextDocument) {
 
 
     // Parse YAML content into AST
-    let parsedData;
-    try {
-        parsedData = YAML.parseDocument(yamlText, {
+    let parsedData = YAML.parseDocument(yamlText, {
             keepCstNodes: true,
             keepNodeTypes: true,
         } as any);
         console.log("YAML parsed successfully.", parsedData);
-    } catch (error) {
-        console.log("Error parsing YAML:", error);
-        if (error instanceof Error) {
-            const range = new vscode.Range(
-                new vscode.Position(0, 0),
-                new vscode.Position(0, 1)
-            );
-            diagnostics.push(
-                new vscode.Diagnostic(
-                    range,
-                    `YAML syntax error: ${error.message}`,
-                    vscode.DiagnosticSeverity.Error
-                )
-            );
-            diagnosticCollection.set(document.uri, diagnostics);
-        }
-        return;
-    }
+    
+    console.log("Relative path before passing into schema: " + relativePath);
 
     //Metadata validation
     const result = metadataLogicalSchema(relativePath).safeParse(
@@ -122,6 +104,7 @@ export function parseMarkdown(document: vscode.TextDocument) {
         console.log("Zod validation passed. Types are consistent with MetadataType.");
     }
 
+
     // Prompt validation
     if (sections && sections.length > 2) {
         const promptText = sections[2].trim();
@@ -149,14 +132,15 @@ export function parseMarkdown(document: vscode.TextDocument) {
 
             // no response warning position handling
             case "noResponse": {
-                if (response && response.length > 0) {
+                console.log("Entering no response case");
+                if (response && !(/^\s*$/.test(response))) {
                     let { text, index } = getIndex(document, 3);
                     const lastPos = document.positionAt(text.length - 1);
                     const diagnosticRange = new vscode.Range(
                         document.positionAt(index),  // starting position
                         lastPos   // ending position 
                     );
-                    const issue = "Response should be blank for type no response";
+                    const issue = "Response should be blank or only whitespace for type no response";
                     diagnostics.push(
                         new vscode.Diagnostic(
                             diagnosticRange,
@@ -174,8 +158,8 @@ export function parseMarkdown(document: vscode.TextDocument) {
                 const lineNum = (document.positionAt(index).line) + 1;
                 for (let i = lineNum; i < document.lineCount; i++) {
                     const str = document.lineAt(i).text;
-
-                    if (str.substring(0, 2) !== "- ") {
+                    console.log(str);
+                    if (!(/^\s*$/.test(str)) && str.substring(0, 2) !== "- ") {
                         const diagnosticRange = new vscode.Range(
                             new vscode.Position(i, 0),
                             new vscode.Position(i, str.length)
@@ -199,7 +183,7 @@ export function parseMarkdown(document: vscode.TextDocument) {
                 const lineNum = (document.positionAt(index).line) + 1;
                 for (let i = lineNum; i < document.lineCount; i++) {
                     const str = document.lineAt(i).text;
-                    if (str.substring(0, 2) !== "> ") {
+                    if (!(/^\s*$/.test(str)) && str.substring(0, 2) !== "> ") {
                         const diagnosticRange = new vscode.Range(
                             new vscode.Position(i, 0),
                             new vscode.Position(i, str.length)

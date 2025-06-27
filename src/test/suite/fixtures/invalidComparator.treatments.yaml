@@ -6,7 +6,7 @@ introSequences:
         elements:
           - type: prompt
             name: preamble
-            file: projects/constructive_disagreement/super_sabbatical_wbl/introsurvey_preamble.md
+            file: "src/test/suite/fixtures/ex.md"
           - type: submitButton
             buttonText: Continue
       - name: Ten Item Personality Inventory
@@ -24,13 +24,13 @@ introSequences:
       - name: General Information
         elements:
           - type: prompt
-            file: projects/constructive_disagreement/super_sabbatical_wbl/general_information.md
+            file: "src/test/suite/fixtures/ex.md"
           - type: submitButton
             buttonText: Continue
       - name: Complete Introductory Surveys
         elements:
           - type: prompt
-            file: projects/constructive_disagreement/super_sabbatical_wbl/introsurvey_done.md
+            file: "src/test/suite/fixtures/ex.md"
           - type: submitButton
             buttonText: Continue
 
@@ -51,11 +51,11 @@ treatments:
         duration: 30
         elements:
           - type: prompt
-            file: projects/constructive_disagreement/super_sabbatical_wbl/role_specific_instructions_preamble_scientist.md
+            file: "src/test/suite/fixtures/ex.md"
             showToPositions:
               - 0
           - type: prompt
-            file: projects/constructive_disagreement/super_sabbatical_wbl/role_specific_instructions_preamble_provost.md
+            file: "src/test/suite/fixtures/ex.md"
             showToPositions:
               - 1
           - type: submitButton
@@ -64,11 +64,11 @@ treatments:
         duration: 420
         elements:
           - type: prompt
-            file: projects/constructive_disagreement/super_sabbatical_wbl/role_star_scientist.md
+            file: "src/test/suite/fixtures/ex.md"
             showToPositions:
               - 0
           - type: prompt
-            file: projects/constructive_disagreement/super_sabbatical_wbl/role_provost.md
+            file: "src/test/suite/fixtures/ex.md"
             showToPositions:
               - 1
           - type: submitButton
@@ -77,11 +77,11 @@ treatments:
         duration: 90
         elements:
           - type: prompt
-            file: projects/constructive_disagreement/super_sabbatical_wbl/role_star_scientist_pep_talk.md
+            file: "src/test/suite/fixtures/ex.md"
             showToPositions:
               - 0
           - type: prompt
-            file: projects/constructive_disagreement/super_sabbatical_wbl/role_provost_pep_talk.md
+            file: "src/test/suite/fixtures/ex.md"
             showToPositions:
               - 1
           - type: submitButton
@@ -90,13 +90,13 @@ treatments:
         duration: 420
         elements:
           - type: prompt
-            file: projects/constructive_disagreement/super_sabbatical_wbl/readingcomp_preamble.md
+            file: "src/test/suite/fixtures/ex.md"
           - type: prompt
-            file: projects/constructive_disagreement/super_sabbatical_wbl/readingcomp_scientist_1.md
+            file: "src/test/suite/fixtures/ex.md"
             name: ReadingComp1
             showToPositions: [0]
           - type: prompt
-            file: projects/constructive_disagreement/super_sabbatical_wbl/readingcomp_provost_1.md
+            file: "src/test/suite/fixtures/ex.md"
             name: ReadingComp1
             showToPositions: [1]
           - type: submitButton
@@ -110,6 +110,6 @@ treatments:
       - name: Deal Sheet
         elements:
           - type: prompt
-            file: projects/constructive_disagreement/super_sabbatical_wbl/dealsheet_header.md
+            file: "src/test/suite/fixtures/ex.md"
 
 # invalid comparator at line 106

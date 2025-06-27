@@ -1,6 +1,5 @@
 ---
-name: projects/example/allTalk.md
-: noResponse
+name: src/test/suite/fixtures/missingType.md
 ---
 
 Please describe the chair you are sitting in.

@@ -1,251 +1,184 @@
-introSequences:
-  - name: baseline
-    desc: Basic psychometrics
-    introSteps:
-      - name: Ten Item Personality Inventory
+templates:
+  - templateName: recallTask
+    # an individual recall and feedback stage
+    contentType: stages
+    templateContent:
+      - name: "recall_${roundIndex}"
+        duration: 30
         elements:
-          - type: survey
-            surveyName: TIPI
-
-      - name: Self-awareness, Self-monitoring, and Growth Mindset
-        elements:
-          - type: survey
-            surveyName: AwarenessMonitoringGrowth
-
-treatments:
-  - name: baseline
-    desc: So Good exercise baseline
-    playerCount: two
-    assignPositionsBy: random
-    groupComposition:
-      - desc: First Speaker
-        position: 0
-        title: "First Speaker"
-      - desc: Red team
-        position: 1
-        title: "Second Speaker"
-
-    gameStages:
-      - name: Intro
-        duration: 60
-        elements:
-          - projects/constructive_disagreement/so_good/instructions.md
+          - type: image
+            file: "src/test/suite/fixtures/ex.md"
+          - type: prompt
+            name: "recall_${roundIndex}"
+            file: "src/test/suite/fixtures/ex.md"
           - type: submitButton
-            buttonText: Start Exercise
-            displayTime: 10
+            buttonText: Submit
+            name: "recall_${roundIndex}"
 
-      - name: Topic Attitudes
-        duration: 180
+      - name: "feedback_${roundIndex}"
+        duration: 15
         elements:
-          - type: survey
-            surveyName: TopicAttitudes
+          - type: image
+            file: "src/test/suite/fixtures/ex.md"
+          - type: prompt
+            file: "src/test/suite/fixtures/ex.md"
+            conditions:
+              - reference: "prompt.recall_${roundIndex}_${recallIndex}"
+                position: percentAgreement
+                comparator: equals
+                value: 100
+              - reference: "prompt.recall_${roundIndex}_${recallIndex}"
+                position: all
+                comparator: hasLengthAtLeast
+                value: 1
+          - type: prompt
+            file: "src/test/suite/fixtures/ex.md"
+            conditions:
+              - reference: "prompt.recall_${roundIndex}_${recallIndex}"
+                position: percentAgreement
+                comparator: isBelow
+                value: 100
 
-      - name: Discussion
-        duration: 300
+          - type: display
+            reference: "prompt.recall_${roundIndex}_${recallIndex}"
+            position: 0
+          - type: display
+            reference: "prompt.recall_${roundIndex}_${recallIndex}"
+            position: 1
+          - type: submitButton
+
+  - templateName: round
+    # a round of discussion and recall tasks
+    contentType: stages
+    templateContent:
+      - name: "Discussion ${roundIndex}"
+        duration: 600
         discussion:
           chatType: video
           showNickname: true
-          showTitle: true
+          showTitle: false
+        elements:
+          - type: image
+            file: "src/test/suite/fixtures/ex.md"
+          - type: submitButton
+            buttonText: End discussion and proceed to next steps
+
+            name: "labeling_${roundIndex}"
+          - name: "labeling_${roundIndex}"
+            type: prompt
+            file: "src/test/suite/fixtures/ex.md"
+            shared: true
+
+      - template: recallTask
+        fields:
+          recallIndex: ${d0}
+          roundIndex: ${roundIndex}
+        broadcast:
+          d0: ${recallImages}
+
+introSequences:
+  - name: Default
+    introSteps:
+      - name: Instructions Page
         elements:
           - type: prompt
-            file: projects/constructive_disagreement/so_good/introduce.md
-            hideTime: 120
-          - type: timer
-            hideTime: 120
-            warnTimeRemaining: 15
-          - type: audio
-            file: shared/airplane_chime.mp3
-            displayTime: 120
-
-          - type: prompt
-            file: projects/constructive_disagreement/so_good/speak.md
-            displayTime: 120
-            hideTime: 180
-            showToPositions:
-              - 0
-          - type: prompt
-            file: projects/constructive_disagreement/so_good/listen.md
-            displayTime: 120
-            hideTime: 180
-            showToPositions:
-              - 1
-
-          - type: prompt
-            file: projects/constructive_disagreement/so_good/speak.md
-            displayTime: 180
-            hideTime: 240
-            showToPositions:
-              - 1
-          - type: prompt
-            file: projects/constructive_disagreement/so_good/listen.md
-            displayTime: 180
-            hideTime: 240
-            showToPositions:
-              - 0
-
-          - type: prompt
-            file: projects/constructive_disagreement/so_good/question.md
-            displayTime: 120
-            hideTime: 240
-
-          - type: timer
-            displayTime: 120
-            hideTime: 180
-            warnTimeRemaining: 15
-          - type: audio
-            file: shared/airplane_chime.mp3
-            displayTime: 180
-
-          - type: timer
-            displayTime: 180
-            hideTime: 240
-            warnTimeRemaining: 15
-          - type: audio
-            file: shared/airplane_chime.mp3
-            displayTime: 240
-
-          - type: prompt
-            file: projects/constructive_disagreement/so_good/discussion_end.md
-            displayTime: 240
+            file: "src/test/suite/fixtures/ex.md"
           - type: submitButton
-            buttonText: End discussion and proceed to survey
-            displayTime: 240
 
-      - name: Hand gesture partner
-        duration: 120
-        elements:
-          - type: prompt
-            file: projects/constructive_disagreement/so_good/hand_gesture_partner.md
-            name: handGesturePartner
-          - type: submitButton
-            buttonText: Submit Response
-            conditions:
-              - promptName: handGesturePartner
-                comparator: lengthAtLeast
-                value: 50
+treatments:
+  - name: schema A
+    playerCount: two
+    gameStages:
+      - template: round
+        fields:
+          roundIndex: "1"
+          panelFilepath: projects/exaptation/revision_202503/stimuli/round_1_panel_S.jpg
+          recallImages:
+            - imageFilepath: projects/exaptation/revision_202503/stimuli/round_1_SOBB.jpg
+            - imageFilepath: projects/exaptation/revision_202503/stimuli/round_1_SORY.jpg
+            - imageFilepath: projects/exaptation/revision_202503/stimuli/round_1_SPRB.jpg
+            - imageFilepath: projects/exaptation/revision_202503/stimuli/round_1_SPBY.jpg
 
-      - name: Hand gesture self
-        duration: 120
-        elements:
-          - type: prompt
-            file: projects/constructive_disagreement/so_good/hand_gesture_self.md
-            name: handGestureSelf
-          - type: submitButton
-            buttonText: Submit Response
-            conditions:
-              - promptName: handGestureSelf
-                comparator: lengthAtLeast
-                value: 50
+      - template: round
+        fields:
+          roundIndex: "2"
+          panelFilepath: projects/exaptation/revision_202503/stimuli/round_2_panel_S.jpg
+          recallImages:
+            - imageFilepath: projects/exaptation/revision_202503/stimuli/round_2_SPRY.jpg
+            - imageFilepath: projects/exaptation/revision_202503/stimuli/round_2_SORB.jpg
+            - imageFilepath: projects/exaptation/revision_202503/stimuli/round_2_SORY.jpg
+            - imageFilepath: projects/exaptation/revision_202503/stimuli/round_2_SPBB.jpg
+
+      - template: round
+        fields:
+          roundIndex: "3"
+          panelFilepath: projects/exaptation/revision_202503/stimuli/round_3_panel.jpg
+          recallImages:
+            - imageFilepath: projects/exaptation/revision_202503/stimuli/round_3_SOBB.jpg
+            - imageFilepath: projects/exaptation/revision_202503/stimuli/round_3_SPBB.jpg
+            - imageFilepath: projects/exaptation/revision_202503/stimuli/round_3_SORB.jpg
+            - imageFilepath: projects/exaptation/revision_202503/stimuli/round_3_SORB.jpg # mistake in recall stage
+
+
+      - template: round
+        fields:
+          roundIndex: "4"
+          panelFilepath: projects/exaptation/revision_202503/stimuli/round_4_panel_A.jpg
+          recallImages:
+            - imageFilepath: projects/exaptation/revision_202503/stimuli/round_4_SORB3.jpg
+            - imageFilepath: projects/exaptation/revision_202503/stimuli/round_4_SPBY1.jpg
+            - imageFilepath: projects/exaptation/revision_202503/stimuli/round_4_SPBY4.jpg
+            - imageFilepath: projects/exaptation/revision_202503/stimuli/round_4_SORB4.jpg
 
     exitSequence:
-      - name: Perception of others
+      - name: Demographics
         elements:
           - type: survey
-            surveyName: PerceptionOfOthers
+            surveyName: Demographics
 
-      - name: Conflict and Team Viability
-        elements:
-          - type: survey
-            surveyName: ConflictAndViability
+  - name: schema B
+    playerCount: 2
+    gameStages:
+      - template: round
+        fields:
+          roundIndex: "1"
+          panelFilepath: projects/exaptation/revision_202503/stimuli/round_1_panel_S.jpg
+          recallImages:
+            - imageFilepath: projects/exaptation/revision_202503/stimuli/round_1_SOBB.jpg
+            - imageFilepath: projects/exaptation/revision_202503/stimuli/round_1_SORY.jpg
+            - imageFilepath: projects/exaptation/revision_202503/stimuli/round_1_SPRB.jpg
+            - imageFilepath: projects/exaptation/revision_202503/stimuli/round_1_SPBY.jpg
 
-      - name: Compare Self
-        elements:
-          - type: prompt
-            file: projects/constructive_disagreement/so_good/gesture_you_header.md
+      - template: round
+        fields:
+          roundIndex: "2"
+          panelFilepath: projects/exaptation/revision_202503/stimuli/round_2_panel_S.jpg
+          recallImages:
+            - imageFilepath: projects/exaptation/revision_202503/stimuli/round_2_SPRY.jpg
+            - imageFilepath: projects/exaptation/revision_202503/stimuli/round_2_SORB.jpg
+            - imageFilepath: projects/exaptation/revision_202503/stimuli/round_2_SORY.jpg
+            - imageFilepath: projects/exaptation/revision_202503/stimuli/round_2_SPBB.jpg
 
-          - type: separator
-          - type: prompt
-            file: projects/constructive_disagreement/so_good/what_you_said.md
+      - template: round
+        fields:
+          roundIndex: "3"
+          panelFilepath: projects/exaptation/revision_202503/stimuli/round_3_panel.jpg
+          recallImages:
+            - imageFilepath: projects/exaptation/revision_202503/stimuli/round_3_SOBB.jpg
+            - imageFilepath: projects/exaptation/revision_202503/stimuli/round_3_SPBB.jpg
+            - imageFilepath: projects/exaptation/revision_202503/stimuli/round_3_SORB.jpg
+            - imageFilepath: projects/exaptation/revision_202503/stimuli/round_3_SORB.jpg # mistake in recall stage
 
-          - type: display
-            promptName: handGestureSelf
-            position: 0
-            showToPositions:
-              - 0
-
-          - type: display
-            promptName: handGestureSelf
-            position: 1
-            showToPositions:
-              - 1
-
-          - type: separator
-            style: thin
-          - type: prompt
-            file: projects/constructive_disagreement/so_good/what_your_partner_said.md
-
-          - type: display
-            promptName: handGesturePartner
-            position: 1
-            showToPositions:
-              - 0
-
-          - type: display
-            promptName: handGesturePartner
-            position: 0
-            showToPositions:
-              - 1
-
-          - type: separator
-
-          - type: prompt
-            file: projects/constructive_disagreement/so_good/gesture_match.md
-            name: gestureMatchSelf
-
-          - type: submitButton
-            buttonText: Continue
-            conditions:
-              - promptName: gestureMatchSelf
-                comparator: exists
-
-      - name: Compare Partner
-        elements:
-          - type: prompt
-            file: projects/constructive_disagreement/so_good/gesture_your_partner.md
-
-          - type: separator
-          - type: prompt
-            file: projects/constructive_disagreement/so_good/what_you_said.md
-
-          - type: display
-            promptName: handGesturePartner
-            position: 1
-            showToPositions:
-              - 1
-          - type: display
-            promptName: handGesturePartner
-            position: 0
-            showToPositions:
-              - 0
-
-          - type: separator
-            style: thin
-          - type: prompt
-            file: projects/constructive_disagreement/so_good/what_your_partner_said.md
-
-          - type: display
-            promptName: handGestureSelf
-            position: 0
-            showToPositions:
-              - 1
-          - type: display
-            promptName: handGestureSelf
-            position: 1
-            showToPositions:
-              - 0
-
-          - type: separator
-
-          - type: prompt
-            file: projects/constructive_disagreement/so_good/gesture_match.md
-            name: gestureMatchPartner
-
-          - type: submitButton
-            buttonText: Continue
-            conditions:
-              - promptName: gestureMatchPartner
-                comparator: exists
-
+      - template: round
+        fields:
+          roundIndex: "4"
+          panelFilepath: projects/exaptation/revision_202503/stimuli/round_4_panel_B.jpg
+          recallImages:
+            - imageFilepath: projects/exaptation/revision_202503/stimuli/round_4_SORB3.jpg
+            - imageFilepath: projects/exaptation/revision_202503/stimuli/round_4_SPBY1.jpg
+            - imageFilepath: projects/exaptation/revision_202503/stimuli/round_4_SPBY4.jpg
+            - imageFilepath: projects/exaptation/revision_202503/stimuli/round_4_SORB4.jpg
+    exitSequence:
       - name: Demographics
         elements:
           - type: survey

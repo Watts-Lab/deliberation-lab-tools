@@ -1,6 +1,7 @@
 templates:
   - templateName: disagreeing_dyads
     templateDesc: Main experiment template
+    contentType: treatment
     templateContent:
       name: ${treatmentName}
       playerCount: 2
@@ -22,16 +23,16 @@ templates:
           duration: 180
           elements:
             - type: prompt
-              file: projects/weinstein_listening/disagreeing_dyads/please_wait.md
+              file: "src/test/suite/fixtures/ex.md"
               showToPositions: [0]
             - type: prompt
-              file: projects/weinstein_listening/disagreeing_dyads/LG_PG_why_A.md
+              file: "src/test/suite/fixtures/ex.md"
               showToPositions: [1]
             - type: prompt
-              file: "projects/weinstein_listening/disagreeing_dyads/topics/${topic}_discussion.md"
+              file: "src/test/suite/fixtures/ex.md"
               showToPositions: [1]
             - type: prompt
-              file: "projects/weinstein_listening/disagreeing_dyads/${learningOrPersuasion}_why_B.md"
+              file: "src/test/suite/fixtures/ex.md"
               name: LG_PG_why
               showToPositions: [1]
             - type: submitButton
@@ -42,19 +43,19 @@ templates:
           duration: 180
           elements:
             - type: prompt
-              file: projects/weinstein_listening/disagreeing_dyads/GA_A.md
+              file: "src/test/suite/fixtures/ex.md"
               showToPositions: [0]
             - type: prompt
-              file: projects/weinstein_listening/disagreeing_dyads/LG_PG_write_A.md
+              file: "src/test/suite/fixtures/ex.md"
               showToPositions: [1]
             - type: prompt
-              file: "projects/weinstein_listening/disagreeing_dyads/topics/${topic}_discussion.md"
+              file: "src/test/suite/fixtures/ex.md"
             - type: prompt
-              file: projects/weinstein_listening/disagreeing_dyads/GA_B.md
+              file: "src/test/suite/fixtures/ex.md"
               showToPositions: [0]
               name: GA
             - type: prompt
-              file: "projects/weinstein_listening/disagreeing_dyads/${learningOrPersuasion}_write_B.md"
+              file: "src/test/suite/fixtures/ex.md"
               showToPositions: [1]
               name: LG_PG_write
             - type: submitButton
@@ -65,20 +66,20 @@ templates:
           duration: 90
           elements:
             - type: prompt
-              file: projects/weinstein_listening/disagreeing_dyads/presurvey/PIA_setup.md
+              file: "src/test/suite/fixtures/ex.md"
             - type: prompt
-              file: "projects/weinstein_listening/disagreeing_dyads/topics/${topic}_discussion.md"
+              file: "src/test/suite/fixtures/ex.md"
             - type: prompt
-              file: projects/weinstein_listening/disagreeing_dyads/presurvey/PIA_1.md
+              file: "src/test/suite/fixtures/ex.md"
               name: PIA_1
             - type: prompt
-              file: projects/weinstein_listening/disagreeing_dyads/presurvey/PIA_2.md
+              file: "src/test/suite/fixtures/ex.md"
               name: PIA_2
             - type: prompt
-              file: projects/weinstein_listening/disagreeing_dyads/presurvey/PIA_3.md
+              file: "src/test/suite/fixtures/ex.md"
               name: PIA_3
             - type: prompt
-              file: projects/weinstein_listening/disagreeing_dyads/all_requested.md
+              file: "src/test/suite/fixtures/ex.md"
             - type: submitButton
               buttonText: Continue
 
@@ -86,24 +87,24 @@ templates:
           duration: 120
           elements:
             - type: prompt
-              file: projects/weinstein_listening/disagreeing_dyads/presurvey/PIQ_setup.md
+              file: "src/test/suite/fixtures/ex.md"
             - type: prompt
-              file: projects/weinstein_listening/disagreeing_dyads/presurvey/PIQ_1.md
+              file: "src/test/suite/fixtures/ex.md"
               name: PIQ_1
             - type: prompt
-              file: projects/weinstein_listening/disagreeing_dyads/presurvey/PIQ_2.md
+              file: "src/test/suite/fixtures/ex.md"
               name: PIQ_2
             - type: prompt
-              file: projects/weinstein_listening/disagreeing_dyads/presurvey/PIQ_3.md
+              file: "src/test/suite/fixtures/ex.md"
               name: PIQ_3
             - type: prompt
-              file: projects/weinstein_listening/disagreeing_dyads/presurvey/PIQ_4.md
+              file: "src/test/suite/fixtures/ex.md"
               name: PIQ_4
             - type: prompt
-              file: projects/weinstein_listening/disagreeing_dyads/presurvey/PIQ_5.md
+              file: "src/test/suite/fixtures/ex.md"
               name: PIQ_5
             - type: prompt
-              file: projects/weinstein_listening/disagreeing_dyads/presurvey/PIQ_6.md
+              file: "src/test/suite/fixtures/ex.md"
               name: PIQ_6
             - type: submitButton
               buttonText: Continue
@@ -112,18 +113,18 @@ templates:
           duration: 60
           elements:
             - type: prompt
-              file: projects/weinstein_listening/disagreeing_dyads/GA_remind_A.md
+              file: "src/test/suite/fixtures/ex.md"
               showToPositions: [0]
             - type: prompt
-              file: "projects/weinstein_listening/disagreeing_dyads/${learningOrPersuasion}_remind_A.md"
+              file: "src/test/suite/fixtures/ex.md"
               showToPositions: [1]
             - type: prompt
-              file: "projects/weinstein_listening/disagreeing_dyads/topics/${topic}_discussion.md"
+              file: "src/test/suite/fixtures/ex.md"
             - type: prompt
-              file: projects/weinstein_listening/disagreeing_dyads/GA_remind_B.md
+              file: "src/test/suite/fixtures/ex.md"
               showToPositions: [0]
             - type: prompt
-              file: "projects/weinstein_listening/disagreeing_dyads/${learningOrPersuasion}_remind_B.md"
+              file: "src/test/suite/fixtures/ex.md"
               showToPositions: [1]
             - type: display
               reference: prompt.GA
@@ -142,22 +143,22 @@ templates:
             showTitle: false
           elements:
             - type: prompt
-              file: projects/weinstein_listening/disagreeing_dyads/discussion_instructions_5min.md
+              file: "src/test/suite/fixtures/ex.md"
               displayTime: 300
               hideTime: 330
             - type: prompt
-              file: projects/weinstein_listening/disagreeing_dyads/discussion_instructions_8min.md
+              file: "src/test/suite/fixtures/ex.md"
               displayTime: 480
               hideTime: 510
             - type: prompt
-              file: "projects/weinstein_listening/disagreeing_dyads/${learningOrPersuasion}_discussion_goal_reminder.md"
+              file: "src/test/suite/fixtures/ex.md"
               showToPositions: [1]
             - type: prompt
-              file: projects/weinstein_listening/disagreeing_dyads/discussion_instructions_A.md
+              file: "src/test/suite/fixtures/ex.md"
             - type: prompt
-              file: "projects/weinstein_listening/disagreeing_dyads/topics/${topic}_discussion.md"
+              file: "src/test/suite/fixtures/ex.md"
             - type: prompt
-              file: projects/weinstein_listening/disagreeing_dyads/discussion_instructions_B.md
+              file: "src/test/suite/fixtures/ex.md"
             - type: display
               reference: prompt.GA
               showToPositions: [0]
@@ -169,7 +170,7 @@ templates:
         - name: PostDiscussionInstructions
           elements:
             - type: prompt
-              file: projects/weinstein_listening/disagreeing_dyads/postdiscussion_instructions.md
+              file: "src/test/suite/fixtures/ex.md"
             - type: submitButton
               buttonText: Proceed to Survey
         - name: Qualtrics_Escape_Hatch
@@ -183,11 +184,11 @@ introSequences:
       - name: self_construal
         elements:
           - type: prompt
-            file: projects/weinstein_listening/disagreeing_dyads/presurvey/SC_setup.md
+            file: "src/test/suite/fixtures/ex.md"
       - name: topic_survey
         elements:
           - type: prompt
-            file: projects/weinstein_listening/disagreeing_dyads/presurvey_instructions.md
+            file: "src/test/suite/fixtures/ex.md"
 
 treatments:
   - template: disagreeing_dyads

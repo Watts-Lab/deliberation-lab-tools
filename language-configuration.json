@@ -1,0 +1,15 @@
+{
+  "comments": {
+    "lineComment": "#"
+  },
+  "indentationRules": {
+    "increaseIndentPattern": "^.*:\\s*$",
+    "decreaseIndentPattern": "^\\s*\\}"
+  },
+  "onEnterRules": [
+    {
+      "beforeText": "^\\s*-\\s.*$",
+      "action": { "indent": "indent" }
+    }
+  ]
+}

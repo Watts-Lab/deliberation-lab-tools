@@ -1,10 +1,9 @@
 templates:
   - templateName: guessTask
+    contentType: elements
     templateContent:
       - type: prompt
         file: projects/exaptation/revision_202504/instruction_describer.md
-        hideFromPositions:
-          - ${guesserPosition}
         conditions:
           - reference: "prompt.continue_${lastIndex}"
             position: any
@@ -15,8 +14,6 @@ templates:
 
       - type: image
         file: ${imageFilepath}
-        hideFromPositions:
-          - ${guesserPosition}
         conditions:
           - reference: "prompt.continue_${lastIndex}"
             position: any
@@ -27,8 +24,6 @@ templates:
 
       - type: image
         file: ${panelFilepath}
-        showToPositions:
-          - ${guesserPosition}
         conditions:
           - reference: "prompt.continue_${lastIndex}"
             position: any
@@ -40,8 +35,6 @@ templates:
       - type: prompt
         name: "guess_${index}"
         file: projects/exaptation/revision_202504/guess.md
-        showToPositions:
-          - ${guesserPosition}
         conditions:
           - reference: "prompt.continue_${lastIndex}"
             position: any
@@ -78,8 +71,6 @@ templates:
       - type: prompt
         file: projects/exaptation/revision_202504/continue.md
         name: "continue_${index}"
-        hideFromPositions:
-          - ${guesserPosition}
         conditions:
           - reference: "prompt.guess_${index}"
             position: any
@@ -89,6 +80,7 @@ templates:
             comparator: doesNotExist
 
   - templateName: baseTreatment
+    contentType: treatment
     templateContent:
       name: ${name}
       playerCount: 2
@@ -96,7 +88,7 @@ templates:
         - name: Discussion
           duration: 900
           discussion:
-            chatType: ${chatType}
+            chatType: text
             showNickname: true
             showTitle: false
           elements:
