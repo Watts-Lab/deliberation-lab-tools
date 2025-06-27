@@ -15,8 +15,6 @@ import { off } from 'process';
 
 export async function parseYaml(document: vscode.TextDocument) {
     console.log("Processing .treatments.yaml file...");
-    console.log("Document URI from extension");
-    console.log(document.uri.toString());
     const diagnostics: vscode.Diagnostic[] = [];
 
     // try {
@@ -97,7 +95,7 @@ export async function parseYaml(document: vscode.TextDocument) {
                 )
             );
         });
-    }   
+    } 
 
     // Check if the YAML document is empty
     if (

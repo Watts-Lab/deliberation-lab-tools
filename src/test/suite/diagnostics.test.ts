@@ -8,10 +8,9 @@ suite('Diagnostics detection', () => {
 		// allTalk.md
 
 		const filePath = path.resolve('src/test/suite/fixtures/allTalk.md');
-		console.log(filePath);
 		const document = await vscode.workspace.openTextDocument(filePath);
-		console.log(document.uri.path);
 		await new Promise(resolve => setTimeout(resolve, 1000));
+		
 		const diagnostics = vscode.languages.getDiagnostics(document.uri);
 		assert.strictEqual(diagnostics?.length, 0);
 	});
@@ -19,10 +18,8 @@ suite('Diagnostics detection', () => {
 	test('Diagnostics are empty on treatments yaml file with no errors', async () => {
 
 		const filePath = path.resolve('src/test/suite/fixtures/empty.treatments.yaml');
-		console.log(filePath);
 		const document = await vscode.workspace.openTextDocument(filePath);
-		console.log(document.uri.path);
-		await new Promise(resolve => setTimeout(resolve, 1000)); // wait 300ms
+		await new Promise(resolve => setTimeout(resolve, 1000)); 
 		const diagnostics = vscode.languages.getDiagnostics(document.uri);
 		assert.strictEqual(diagnostics?.length, 0);
 	});
@@ -30,10 +27,8 @@ suite('Diagnostics detection', () => {
 	test('Diagnostics register on opened treatments yaml file with errors', async () => {
 
 		const filePath = path.resolve('src/test/suite/fixtures/filter.treatments.yaml');
-		console.log(filePath);
 		const document = await vscode.workspace.openTextDocument(filePath);
-		console.log(document.uri.path);
-		await new Promise(resolve => setTimeout(resolve, 1000)); // wait 300ms
+		await new Promise(resolve => setTimeout(resolve, 1000));
 		const diagnostics = vscode.languages.getDiagnostics(document.uri);
 
 		// Tests that there are 4 error messages as we expect
@@ -63,13 +58,11 @@ suite('Diagnostics detection', () => {
 	test('Diagnostics register on opened markdown file with errors', async () => {
 
 		const filePath = path.resolve('src/test/suite/fixtures/emptyField.md');
-		console.log(filePath);
 		const document = await vscode.workspace.openTextDocument(filePath);
 		await new Promise(resolve => setTimeout(resolve, 1000)); // wait 300ms
 		const diagnostics = vscode.languages.getDiagnostics(document.uri);
 		for (let i = 0; i < diagnostics.length; i++) {
 			const d = diagnostics[i];
-			console.log("index: " + i + " message: " + d.message + " range start line: " + d.range.start.line + " range end line: " + d.range.end.line);
 		}
 
 		// Tests that there are 4 errors/warnings
@@ -98,14 +91,10 @@ suite('Diagnostics detection', () => {
 
 	test('Incorrect type in gameStage element', async () => {
 		const filePath = path.resolve('src/test/suite/fixtures/badStage.treatments.yaml');
-		console.log(filePath);
 		const document = await vscode.workspace.openTextDocument(filePath);
 		await vscode.window.showTextDocument(document);
 		await new Promise(resolve => setTimeout(resolve, 3000)); // wait 300ms
 		const diagnostics = vscode.languages.getDiagnostics(document.uri);
-		console.log("document uri:", document.uri.toString());
-		console.log("diagnostics length:", diagnostics.length);
-		console.log("diagnostics:", JSON.stringify(diagnostics, null, 2));
 
 		assert.strictEqual(diagnostics.length, 1);
 		assert.strictEqual(
@@ -118,14 +107,10 @@ suite('Diagnostics detection', () => {
 
 	test('Indentation error in TemplateContent', async () => {
 		const filePath = path.resolve('src/test/suite/fixtures/brokenIndentation.treatments.yaml');
-		console.log(filePath);
 		const document = await vscode.workspace.openTextDocument(filePath);
 		await vscode.window.showTextDocument(document);
 		await new Promise(resolve => setTimeout(resolve, 1000));
 		const diagnostics = vscode.languages.getDiagnostics(document.uri);
-		console.log("document uri:", document.uri.toString());
-		console.log("diagnostics length:", diagnostics.length);
-		console.log("diagnostics:", JSON.stringify(diagnostics, null, 2));
 
 		assert.strictEqual(diagnostics.length, 4);
 		assert.match(diagnostics[0].message, /^YAML syntax error: BAD_INDENT/);
@@ -138,14 +123,9 @@ suite('Diagnostics detection', () => {
 
 	test('Invalid Broadcast Key', async () => {
 		const filePath = path.resolve('src/test/suite/fixtures/invalidBroadcastKey.treatments.yaml')
-		console.log(filePath);
 		const document = await vscode.workspace.openTextDocument(filePath);
 		await new Promise(resolve => setTimeout(resolve, 1000));
 		const diagnostics = vscode.languages.getDiagnostics(document.uri);
-		console.log("document uri:", document.uri.toString());
-		console.log("diagnostics length:", diagnostics.length);
-		console.log("diagnostics:", JSON.stringify(diagnostics, null, 2));
-
 		assert.strictEqual(diagnostics.length, 1);
 		assert.strictEqual(
 			diagnostics[0].message,
@@ -157,13 +137,9 @@ suite('Diagnostics detection', () => {
 
 	test('Invalid Comparator', async () => {
 		const filePath = path.resolve('src/test/suite/fixtures/invalidComparator.treatments.yaml');
-		console.log(filePath);
 		const document = await vscode.workspace.openTextDocument(filePath);
 		await new Promise(resolve => setTimeout(resolve, 1000));
 		const diagnostics = vscode.languages.getDiagnostics(document.uri);
-		console.log("document uri:", document.uri.toString());
-		console.log("diagnostics length:", diagnostics.length);
-		console.log("diagnostics:", JSON.stringify(diagnostics, null, 2));
 
 		assert.strictEqual(diagnostics.length, 1);
 		assert.strictEqual(
@@ -176,15 +152,9 @@ suite('Diagnostics detection', () => {
 
 	test('Missing dash', async () => {
 		const filePath = path.resolve('src/test/suite/fixtures/missingDash.treatments.yaml');
-		console.log(filePath);
 		const document = await vscode.workspace.openTextDocument(filePath);
 		await new Promise(resolve => setTimeout(resolve, 1000));
 		const diagnostics = vscode.languages.getDiagnostics(document.uri);
-		console.log("document uri:", document.uri.toString());
-
-		console.log("diagnostics length:", diagnostics.length);
-		console.log("diagnostics:", JSON.stringify(diagnostics, null, 2));
-
 		assert.strictEqual(diagnostics.length, 4);
 		assert.match(diagnostics[0].message, /^YAML syntax error: BAD_INDENT/);
 		const range = diagnostics[0].range;
@@ -197,14 +167,9 @@ suite('Diagnostics detection', () => {
 
 	test('missing element field in game stages', async () => {
 		const filePath = path.resolve('src/test/suite/fixtures/missingElements.treatments.yaml');
-		console.log(filePath);
 		const document = await vscode.workspace.openTextDocument(filePath);
 		await new Promise(resolve => setTimeout(resolve, 1000));
 		const diagnostics = vscode.languages.getDiagnostics(document.uri);
-		console.log("document uri:", document.uri.toString());
-
-		console.log("diagnostics length:", diagnostics.length);
-		console.log("diagnostics:", JSON.stringify(diagnostics, null, 2));
 
 		assert.strictEqual(diagnostics.length, 1);
 		assert.strictEqual(
@@ -217,14 +182,9 @@ suite('Diagnostics detection', () => {
 
 	test('missing survey name', async () => {
 		const filePath = path.resolve('src/test/suite/fixtures/missingSurveyName.treatments.yaml');
-		console.log(filePath);
 		const document = await vscode.workspace.openTextDocument(filePath);
 		await new Promise(resolve => setTimeout(resolve, 1000));
 		const diagnostics = vscode.languages.getDiagnostics(document.uri);
-		console.log("document uri:", document.uri.toString());
-
-		console.log("diagnostics length:", diagnostics.length);
-		console.log("diagnostics:", JSON.stringify(diagnostics, null, 2));
 
 		assert.strictEqual(diagnostics.length, 1);
 		assert.strictEqual(
@@ -236,14 +196,9 @@ suite('Diagnostics detection', () => {
 
 	test('negative duration in timer', async () => {
 		const filePath = path.resolve('src/test/suite/fixtures/negativeDuration.treatments.yaml');
-		console.log(filePath);
 		const document = await vscode.workspace.openTextDocument(filePath);
 		await new Promise(resolve => setTimeout(resolve, 1000));
 		const diagnostics = vscode.languages.getDiagnostics(document.uri);
-		console.log("document uri:", document.uri.toString());
-
-		console.log("diagnostics length:", diagnostics.length);
-		console.log("diagnostics:", JSON.stringify(diagnostics, null, 2));
 
 		assert.strictEqual(diagnostics.length, 1);
 		assert.strictEqual(
@@ -256,14 +211,9 @@ suite('Diagnostics detection', () => {
 
 	test('name in template content has special characters', async () => {
 		const filePath = path.resolve('src/test/suite/fixtures/specialCharName.treatments.yaml');
-		console.log(filePath);
 		const document = await vscode.workspace.openTextDocument(filePath);
 		await new Promise(resolve => setTimeout(resolve, 1000));
 		const diagnostics = vscode.languages.getDiagnostics(document.uri);
-		console.log("document uri:", document.uri.toString());
-
-		console.log("diagnostics length:", diagnostics.length);
-		console.log("diagnostics:", JSON.stringify(diagnostics, null, 2));
 		assert.strictEqual(diagnostics.length, 1);
 		//error doesn't even seem to exist yet so disregard message for now
 		assert.strictEqual(diagnostics[0].range.start.line, 4);
@@ -272,13 +222,9 @@ suite('Diagnostics detection', () => {
 
 	test('player count is string rather than number', async () => {
 		const filePath = path.resolve('src/test/suite/fixtures/stringNotNumber.treatments.yaml');
-		console.log(filePath);
 		const document = await vscode.workspace.openTextDocument(filePath);
 		await new Promise(resolve => setTimeout(resolve, 1000));
 		const diagnostics = vscode.languages.getDiagnostics(document.uri);
-		console.log("document uri:", document.uri.toString());
-		console.log("diagnostics length:", diagnostics.length);
-		console.log("diagnostics:", JSON.stringify(diagnostics, null, 2));
 		assert.strictEqual(diagnostics.length, 1);
 		assert.strictEqual(
 			diagnostics[0].message,
@@ -290,13 +236,9 @@ suite('Diagnostics detection', () => {
 
 	test('broadcast field is in wrong spot', async () => {
 		const filePath = path.resolve('src/test/suite/fixtures/wrongFieldPlacement.treatments.yaml');
-		console.log(filePath);
 		const document = await vscode.workspace.openTextDocument(filePath);
 		await new Promise(resolve => setTimeout(resolve, 1000));
 		const diagnostics = vscode.languages.getDiagnostics(document.uri);
-		console.log("document uri:", document.uri.toString());
-		console.log("diagnostics length:", diagnostics.length);
-		console.log("diagnostics:", JSON.stringify(diagnostics, null, 2));
 		assert.strictEqual(diagnostics.length, 3);
 		assert.match(diagnostics[0].message, /^YAML syntax error: BLOCK_AS_IMPLICIT_KEY/);
 		const range = diagnostics[0].range;
@@ -308,14 +250,9 @@ suite('Diagnostics detection', () => {
 
 	test('malformed reference in yaml file', async () => {
 		const filePath = path.resolve('src/test/suite/fixtures/malformedReference.treatments.yaml');
-		console.log(filePath);
 		const document = await vscode.workspace.openTextDocument(filePath);
 		await new Promise(resolve => setTimeout(resolve, 1000));
 		const diagnostics = vscode.languages.getDiagnostics(document.uri);
-		console.log("document uri:", document.uri.toString());
-		console.log("diagnostics length:", diagnostics.length);
-		console.log("diagnostics:", JSON.stringify(diagnostics, null, 2));
-		console.log("workspaceFolders:", vscode.workspace.workspaceFolders);
 		assert.strictEqual(diagnostics.length, 1);
 		assert.strictEqual(
 			diagnostics[0].message,
@@ -327,13 +264,9 @@ suite('Diagnostics detection', () => {
 
 	test('invalid file reference in template content', async () => {
 		const filePath = path.resolve('src/test/suite/fixtures/invalidFileReference.treatments.yaml');
-		console.log(filePath);
 		const document = await vscode.workspace.openTextDocument(filePath);
 		await new Promise(resolve => setTimeout(resolve, 1000));
 		const diagnostics = vscode.languages.getDiagnostics(document.uri);
-		console.log("document uri:", document.uri.toString());
-		console.log("diagnostics length:", diagnostics.length);
-		console.log("diagnostics:", JSON.stringify(diagnostics, null, 2));
 		assert.strictEqual(diagnostics.length, 1);
 		assert.strictEqual(
 			diagnostics[0].message,

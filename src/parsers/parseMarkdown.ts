@@ -17,15 +17,12 @@ export function parseMarkdown(document: vscode.TextDocument) {
     // getting the separators from the document
     console.log("Document URI:", document.uri.toString());
     const separators = document.getText().match(/^-{3,}$/gm);
-    console.log("Separators found:", separators);
 
     //getting the three sections of the document
     let sections = document.getText().split(/^-{3,}$/gm);
-    console.log("Sections found:", sections);
 
     // Check if the number of separators is correct
     if (!separators || separators.length !== 3) {
-        console.log("Invalid number of separators");
         diagnostics.push(
             new vscode.Diagnostic(
                 new vscode.Range(
@@ -42,12 +39,10 @@ export function parseMarkdown(document: vscode.TextDocument) {
     let relativePath = "";
     try {
         const workspaceFolder = vscode.workspace.getWorkspaceFolder(document.uri);
-        console.log("Workspace folder:", workspaceFolder);
         // Is it possible to have a prompt markdown file not in a repository/folder opened in VSCode?
         // If so, we should add an else case to catch this edge case - could just set relative path to full file system path
         if (workspaceFolder) {
             relativePath = vscode.workspace.asRelativePath(document.uri);
-            console.log("Relative path:", relativePath);
         }
     } catch (error) {
         console.error("Error getting workspace folder:", error);
@@ -80,7 +75,6 @@ export function parseMarkdown(document: vscode.TextDocument) {
     const result = metadataLogicalSchema(relativePath).safeParse(
         parsedData.toJS() as MetadataRefineType
     );
-    console.log("result obtained from metadataSchema:", result);
 
     if (!result.success) {
         console.log("Zod validation failed:", result.error.issues);
@@ -114,7 +108,6 @@ export function parseMarkdown(document: vscode.TextDocument) {
     // Prompt validation
     if (sections && sections.length > 2) {
         const promptText = sections[2].trim();
-        console.log("Prompt text:", promptText);
         if (!promptText || typeof promptText !== "string" || promptText.length < 1) {
             let { text, index } = getIndex(document, 2);
             const startPos = offsetToPosition(index, document);
@@ -133,7 +126,6 @@ export function parseMarkdown(document: vscode.TextDocument) {
 
     // Response validation
     if (separators && separators.length === 3) {
-        console.log("Entering if statement");
         const type = parsedData.get("type");
         const response = sections[3];
         switch (type) {
@@ -143,9 +135,7 @@ export function parseMarkdown(document: vscode.TextDocument) {
                 console.log("Entering no response case");
                 if (response && !(/^\s*$/.test(response))) {
                     let { text, index } = getIndex(document, 3);
-                    console.log("Finding position of last position");
                     const lastPos = document.positionAt(text.length - 1);
-                    console.log(`Last position: ${lastPos}`);
                     const diagnosticRange = new vscode.Range(
                         document.positionAt(index),  // starting position
                         lastPos   // ending position 
@@ -164,11 +154,8 @@ export function parseMarkdown(document: vscode.TextDocument) {
 
             // multiple choice warning position handling
             case "multipleChoice": {
-                console.log("Entering multiple choice case");
                 let { text, index } = getIndex(document, 3);
                 const lineNum = (document.positionAt(index).line) + 1;
-                console.log(lineNum);
-                console.log("Line count: " + document.lineCount);
                 for (let i = lineNum; i < document.lineCount; i++) {
                     const str = document.lineAt(i).text;
                     console.log(str);
@@ -192,11 +179,8 @@ export function parseMarkdown(document: vscode.TextDocument) {
 
             // open response warning position handling          
             case "openResponse": {
-                console.log(response);
-                console.log("Entering open response case");
                 let { text, index } = getIndex(document, 3);
                 const lineNum = (document.positionAt(index).line) + 1;
-                console.log(lineNum);
                 for (let i = lineNum; i < document.lineCount; i++) {
                     const str = document.lineAt(i).text;
                     if (!(/^\s*$/.test(str)) && str.substring(0, 2) !== "> ") {
@@ -227,6 +211,4 @@ export function parseMarkdown(document: vscode.TextDocument) {
 
     // Update diagnostics in VS Code
     diagnosticCollection.set(document.uri, diagnostics);
-    console.log("Length of diagnostics for markdown: " + diagnostics.length);
-    console.log("Length of diagnostic collection: " + diagnosticCollection.get(document.uri)!!.length);
 }

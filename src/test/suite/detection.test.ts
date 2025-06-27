@@ -19,7 +19,6 @@ suite('Markdown and .treatments.yaml file detection', () => {
 	// empty.treatments.yaml
 	test('detecting empty .treatments.yaml file', async () => {
 		const filePath = path.resolve('src/test/suite/fixtures/empty.treatments.yaml');
-		console.log(filePath);
 		const document = await vscode.workspace.openTextDocument(filePath);
 
 		assert.strictEqual(detectTreatmentsYaml(document), true);
@@ -28,7 +27,6 @@ suite('Markdown and .treatments.yaml file detection', () => {
 	// filter.treatments.yaml
 	test('detecting .treatments.yaml file', async () => {
 		const filePath = path.resolve('src/test/suite/fixtures/filter.treatments.yaml');
-		console.log(filePath);
 		const document = await vscode.workspace.openTextDocument(filePath);
 
 		assert.strictEqual(detectTreatmentsYaml(document), true);
@@ -36,7 +34,6 @@ suite('Markdown and .treatments.yaml file detection', () => {
 
 	test('not detecting .yaml file', async () => {
 		const filePath = path.resolve('src/test/suite/fixtures/filter.yaml');
-		console.log(filePath);
 		const document = await vscode.workspace.openTextDocument(filePath);
 
 		assert.strictEqual(detectTreatmentsYaml(document), false);
@@ -45,7 +42,6 @@ suite('Markdown and .treatments.yaml file detection', () => {
 	// allTalk.md
 	test('not detecting markdown (or other different) file type', async () => {
 		const filePath = path.resolve('src/test/suite/fixtures/allTalk.md');
-		console.log(filePath);
 		const document = await vscode.workspace.openTextDocument(filePath);
 
 		assert.strictEqual(detectTreatmentsYaml(document), false);
@@ -54,7 +50,6 @@ suite('Markdown and .treatments.yaml file detection', () => {
 	// incorrectFile.txt
 	test('Wrong text file type for markdown detection', async () => {
 		const filePath = path.resolve('src/test/suite/fixtures/incorrectFile.txt');
-		console.log(filePath);
 		const document = await vscode.workspace.openTextDocument(filePath);
 
 		assert.strictEqual(detectPromptMarkdown(document), false);
@@ -64,7 +59,6 @@ suite('Markdown and .treatments.yaml file detection', () => {
 	test('Header exists but field is empty', async () => {
 
 		const filePath = path.resolve('src/test/suite/fixtures/emptyField.md');
-		console.log(filePath);
 		const document = await vscode.workspace.openTextDocument(filePath);
 
 		assert.strictEqual(detectPromptMarkdown(document), true);
@@ -74,7 +68,6 @@ suite('Markdown and .treatments.yaml file detection', () => {
 
 		// allTalk.md
 		const filePath = path.resolve('src/test/suite/fixtures/allTalk.md');
-		console.log(filePath);
 		const document = await vscode.workspace.openTextDocument(filePath);
 
 		assert.strictEqual(detectPromptMarkdown(document), true);
@@ -84,7 +77,6 @@ suite('Markdown and .treatments.yaml file detection', () => {
 	// missingName.md
 	test('Wrong markdown file header: name does not exist', async () => {
 		const filePath = path.resolve('src/test/suite/fixtures/missingName.md');
-		console.log(filePath);
 		const document = await vscode.workspace.openTextDocument(filePath);
 
 		assert.strictEqual(detectPromptMarkdown(document), false);
@@ -93,7 +85,6 @@ suite('Markdown and .treatments.yaml file detection', () => {
 	// missingType.md
 	test('Wrong markdown file header: type does not exist', async () => {
 		const filePath = path.resolve('src/test/suite/fixtures/missingType.md');
-		console.log(filePath);
 		const document = await vscode.workspace.openTextDocument(filePath);
 
 		assert.strictEqual(detectPromptMarkdown(document), false);
@@ -103,7 +94,6 @@ suite('Markdown and .treatments.yaml file detection', () => {
 	// missingStartDashes.md
 	test('Wrong markdown file header: dashes do not exist at beginning', async () => {
 		const filePath = path.resolve('src/test/suite/fixtures/missingStartDashes.md');
-		console.log(filePath);
 		const document = await vscode.workspace.openTextDocument(filePath);
 
 		assert.strictEqual(detectPromptMarkdown(document), false);
@@ -113,7 +103,6 @@ suite('Markdown and .treatments.yaml file detection', () => {
 	// differentOrder.md
 	test('Correct markdown format for name and type in different order', async () => {
 		const filePath = path.resolve('src/test/suite/fixtures/differentOrder.md');
-		console.log(filePath);
 		const document = await vscode.workspace.openTextDocument(filePath);
 
 		assert.strictEqual(detectPromptMarkdown(document), true);
@@ -122,7 +111,6 @@ suite('Markdown and .treatments.yaml file detection', () => {
 	// noDashes.md
 	test('Incorrect markdown file formatting with no dashes', async () => {
 		const filePath = path.resolve('src/test/suite/fixtures/noDashes.md');
-		console.log(filePath);
 		const document = await vscode.workspace.openTextDocument(filePath);
 
 		assert.strictEqual(detectPromptMarkdown(document), false);
@@ -132,7 +120,6 @@ suite('Markdown and .treatments.yaml file detection', () => {
 	test('Only first section exists, correct markdown format', async () => {
 
 		const filePath = path.resolve('src/test/suite/fixtures/firstSection.md');
-		console.log(filePath);
 		const document = await vscode.workspace.openTextDocument(filePath);
 
 		assert.strictEqual(detectPromptMarkdown(document), true);

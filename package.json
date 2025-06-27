@@ -50,10 +50,28 @@
       {
         "command": "deliberation-lab-tools.defaultTreatmentsYaml",
         "title": "Deliberation Lab Tools: Create Default Treatments YAML file"
+      },
+      {
+        "command": "deliberation-lab-tools.openPromptPreview",
+        "title": "Deliberation Lab Tools: Open Prompt Preview"
+      },
+      {
+        "command": "deliberation-lab-tools.createDefaultPromptMarkdown",
+        "title": "Deliberation Lab Tools: Create Default Prompt Markdown"
       }
-    ]
+    ],
+    "menus": {
+      "editor/context": [
+        {
+          "command": "deliberation-lab-tools.openPromptPreview",
+          "when": "editorLangId == markdown",
+          "group": "deliberation-lab-tools"
+        }
+      ]
+    }
   },
   "scripts": {
+    "build:css": "npx windicss deliberation-empirica/client/src/baseStyles.css -o src/views/styles.css --config deliberation-empirica/client/windi.config.cjs && npx tailwindcss -i src/views/index.css -o src/views/playerStyles.css --config src/views/tailwind.config.js && npx tailwindcss -i src/views/globals.css -o src/views/layout.css --config src/views/tailwind.config.js",
     "prepare-submodule": "git submodule update --init --recursive",
     "copy-validators": "cp ./deliberation-empirica/server/src/preFlight/validateTreatmentFile.ts ./src/zod-validators && cp ./deliberation-empirica/server/src/preFlight/validatePromptFile.ts ./src/zod-validators",
     "prepare-web": "npm run prepare-submodule && npm run copy-validators",
@@ -76,6 +94,8 @@
     "@types/js-yaml": "^4.0.9",
     "@types/mocha": "^10.0.10",
     "@types/node": "^22.15.20",
+    "@types/react": "^18.3.23",
+    "@types/react-dom": "^18.3.7",
     "@types/vscode": "^1.95.0",
     "@typescript-eslint/eslint-plugin": "^8.10.0",
     "@typescript-eslint/parser": "^8.7.0",
@@ -83,18 +103,40 @@
     "@vscode/test-electron": "^2.5.2",
     "@vscode/test-web": "^0.0.63",
     "@vscode/vsce": "^3.4.1",
+    "autoprefixer": "^10.4.21",
     "esbuild": "^0.24.0",
+    "esbuild-plugin-path-alias": "^1.0.7",
     "eslint": "^9.13.0",
     "glob": "^11.0.0",
     "mocha": "^10.7.3",
     "npm-run-all": "^4.1.5",
-    "typescript": "^5.6.3"
+    "postcss": "^8.5.6",
+    "tailwindcss": "^3.4.17",
+    "typescript": "^5.6.3",
+    "vscode-extension-tester": "^8.15.0",
+    "windicss": "^3.5.6"
   },
   "dependencies": {
     "@vscode/extension-telemetry": "^1.0.0",
+    "@empirica/core": "^1.11.2",
+    "@hello-pangea/dnd": "^16.3.0",
+    "@tailwindcss/vite": "^4.1.10",
+    "axios": "^1.9.0",
     "cp": "^0.2.0",
+    "daisyui": "^5.0.43",
+    "react": "^18.2.0",
+    "react-debounce-input": "^3.3.0",
+    "react-dom": "^18.2.0",
+    "react-markdown": "^9.0.1",
+    "remark-gfm": "^4.0.0",
     "vsce": "^2.15.0",
+    "ws": "^8.18.2",
     "yaml": "^2.6.0",
     "zod": "^3.23.8"
+  },
+  "overrides": {
+    "@empirica/core": {
+      "@empirica/tajriba": "1.5.2"
+    }
   }
 }
