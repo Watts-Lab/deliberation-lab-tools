@@ -4,7 +4,7 @@
   "displayName": "Deliberation Lab Experiment Development Tools",
   "description": "Tools for experiment designers to use in creating experiments for deliberation lab",
   "icon": "images/favicon.png",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "repository": {
     "type": "git",
     "url": "https://github.com/Watts-Lab/deliberation-lab-tools"
