@@ -116,12 +116,15 @@ treatments:
   // Open Markdown preview
   context.subscriptions.push(
     vscode.commands.registerCommand('deliberation-lab-tools.openPromptPreview', () => {
-      const promptText = vscode.window.activeTextEditor?.document.getText();
       const file = vscode.window.activeTextEditor?.document;
+      const promptText = file?.getText();
+
+      // Get filename without directory or folder names listed
+      const fileName = file?.fileName.split('\\').at(-1);
 
       const panel = vscode.window.createWebviewPanel(
         'openPromptPreview',
-        'Prompt Preview',
+        'Prompt Preview: ' + fileName,
         vscode.ViewColumn.Beside,
         {
           enableScripts: true,
