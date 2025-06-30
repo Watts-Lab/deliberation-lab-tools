@@ -1,13 +1,12 @@
 import { get } from "http";
 import * as vscode from "vscode";
 import { getExtensionUri } from "./contextStore";
-import * as path from 'path';
-import * as fs from 'fs';
 
 // Command to create default treatments YAML file
 export const defaultYaml = vscode.commands.registerCommand("deliberation-lab-tools.defaultTreatmentsYaml", async () => {
-    const treatmentsYamlFilePath = path.resolve('src/fixtures/defaultTreatment.treatments.yaml');
-    const defaultYamlContent = fs.readFileSync(treatmentsYamlFilePath, "utf-8");
+    const treatmentsYamlFileUri = vscode.Uri.joinPath(vscode.workspace.workspaceFolders![0].uri, "src", "fixtures", "defaultTreatment.treatments.yaml");
+    const fileBytes = await vscode.workspace.fs.readFile(treatmentsYamlFileUri);
+    const defaultYamlContent = new TextDecoder("utf-8").decode(fileBytes);
     await vscode.workspace.openTextDocument({
       language: 'treatmentsYaml',
       content: defaultYamlContent
@@ -18,8 +17,9 @@ export const defaultYaml = vscode.commands.registerCommand("deliberation-lab-too
 // Command to create initial prompt markdown document
 export const defaultMarkdown = vscode.commands.registerCommand('deliberation-lab-tools.createDefaultPromptMarkdown', async () => {
     vscode.window.showInformationMessage('Markdown document created');
-    const defaultMarkdownFilePath = path.resolve('src/fixtures/defaultPromptMarkdown.md');
-    const defaultMarkdownContent = fs.readFileSync(defaultMarkdownFilePath, "utf-8");
+    const promptMarkdownFileUri = vscode.Uri.joinPath(vscode.workspace.workspaceFolders![0].uri, "src", "fixtures", "defaultPromptMarkdown.md");
+    const fileBytes = await vscode.workspace.fs.readFile(promptMarkdownFileUri);
+    const defaultMarkdownContent = new TextDecoder("utf-8").decode(fileBytes);
     const doc = await vscode.workspace.openTextDocument({
         language: 'markdown',
         content: defaultMarkdownContent
@@ -31,10 +31,11 @@ export const defaultMarkdown = vscode.commands.registerCommand('deliberation-lab
 export const inlineSuggestion = vscode.languages.registerInlineCompletionItemProvider(
     { language: "treatmentsYaml" },
     {
-        provideInlineCompletionItems(document, pos, ctx, token) {
+        async provideInlineCompletionItems(document, pos, ctx, token) {
             if (pos.line === 0 && pos.character === 0 && document.getText() === "") {
-                const suggestionFilePath = path.resolve('src/fixtures/inlineSuggestion.treatments.yaml');
-                const inlineSuggestionContent = fs.readFileSync(suggestionFilePath, "utf-8");
+                const suggestionFileUri = vscode.Uri.joinPath(vscode.workspace.workspaceFolders![0].uri, "src", "fixtures", "inlineSuggestion.treatments.yaml");
+                const fileBytes = await vscode.workspace.fs.readFile(suggestionFileUri);
+                const inlineSuggestionContent = new TextDecoder("utf-8").decode(fileBytes);
                 const suggestion = new vscode.InlineCompletionItem(inlineSuggestionContent);
                 suggestion.range = new vscode.Range(pos, pos);
                 return [suggestion];
