@@ -43,11 +43,11 @@ export async function activate(context: vscode.ExtensionContext) {
 
     // for changing document
     vscode.workspace.onDidChangeTextDocument(async (event) => {
-        if (event?.document !== undefined) {
-          parseDocument(event?.document);
-        };
-      })
-    );
+      if (event?.document !== undefined) {
+        parseDocument(event?.document);
+      };
+    })
+  );
 
   const defaultYaml = vscode.commands.registerCommand("deliberation-lab-tools.defaultTreatmentsYaml", async () => {
     const defaultYamlContent = `introSequences:
@@ -125,7 +125,10 @@ treatments:
       const panel = vscode.window.createWebviewPanel(
         'openPromptPreview',
         'Prompt Preview: ' + fileName,
-        vscode.ViewColumn.Beside,
+        {
+          viewColumn: vscode.ViewColumn.Beside,
+          preserveFocus: true
+        },
         {
           enableScripts: true,
           localResourceRoots: [vscode.Uri.joinPath(context.extensionUri, "dist", "views")],
@@ -167,6 +170,18 @@ treatments:
       vscode.workspace.onDidChangeTextDocument((event) => {
         const promptText = event.document.getText();
         panel.webview.postMessage({ type: 'init', promptProps: { file: promptText, name: 'example', shared: false } });
+      });
+
+      // Passes new document content into webview when we switch to a new document
+      vscode.window.onDidChangeActiveTextEditor((event) => {
+        const file = event?.document;
+        if (file?.languageId === "markdown") {
+          const promptText = file?.getText();
+          const fileName = file?.fileName.split('\\').at(-1);
+
+          panel.webview.postMessage({ type: 'init', promptProps: { file: promptText, name: 'example', shared: false } });
+          panel.title = 'Prompt Preview: ' + fileName;
+        }
       });
     })
   );
