@@ -8,11 +8,11 @@ export const defaultYaml = vscode.commands.registerCommand("deliberation-lab-too
     const fileBytes = await vscode.workspace.fs.readFile(treatmentsYamlFileUri);
     const defaultYamlContent = new TextDecoder("utf-8").decode(fileBytes);
     await vscode.workspace.openTextDocument({
-      language: 'treatmentsYaml',
-      content: defaultYamlContent
+        language: 'treatmentsYaml',
+        content: defaultYamlContent
     });
     vscode.window.showInformationMessage("Default .treatments.yaml file created");
-  });
+});
 
 // Command to create initial prompt markdown document
 export const defaultMarkdown = vscode.commands.registerCommand('deliberation-lab-tools.createDefaultPromptMarkdown', async () => {
@@ -23,8 +23,8 @@ export const defaultMarkdown = vscode.commands.registerCommand('deliberation-lab
     const doc = await vscode.workspace.openTextDocument({
         language: 'markdown',
         content: defaultMarkdownContent
-      });
-    }
+    });
+}
 );
 
 // Inline suggestion for treatments YAML file
@@ -47,20 +47,26 @@ export const inlineSuggestion = vscode.languages.registerInlineCompletionItemPro
 
 // Open Markdown preview
 export const markdownPreview = vscode.commands.registerCommand('deliberation-lab-tools.openPromptPreview', () => {
-    const promptText = vscode.window.activeTextEditor?.document.getText();
     const file = vscode.window.activeTextEditor?.document;
+    const promptText = file?.getText();
+
+    // Get filename without directory or folder names listed
+    const fileName = file?.fileName.split('\\').at(-1);
 
     const panel = vscode.window.createWebviewPanel(
         'openPromptPreview',
-        'Prompt Preview',
-        vscode.ViewColumn.Beside,
+        'Prompt Preview: ' + fileName,
         {
-          enableScripts: true,
-          localResourceRoots: [vscode.Uri.joinPath(getExtensionUri(), "dist", "views")],
+            viewColumn: vscode.ViewColumn.Beside,
+            preserveFocus: true
+        },
+        {
+            enableScripts: true,
+            localResourceRoots: [vscode.Uri.joinPath(getExtensionUri(), "dist", "views")],
         }
     );
 
-      // URIs for CSS files and script file that will be passed into HTML content
+    // URIs for CSS files and script file that will be passed into HTML content
 
     const scriptUri = panel.webview.asWebviewUri(
         vscode.Uri.joinPath(getExtensionUri(), 'dist', 'views', 'index.js')
@@ -80,24 +86,35 @@ export const markdownPreview = vscode.commands.registerCommand('deliberation-lab
 
     panel.webview.html = getWebviewContent(scriptUri, styleUri, playerStylesUri, layoutUri);
 
-      // Passes document information into webview
+    // Passes document information into webview
     panel.webview.onDidReceiveMessage((message) => {
         if (message.type === 'ready') {
 
-          // document text is passed in as "file"
-          // name hardcoded as "example"
-          // TODO: shared hardcoded as either "true" (creates SharedNotepad) or "false" (creates TextArea) - create an option to toggle?
-          panel.webview.postMessage({ type: 'init', promptProps: { file: promptText, name: 'example', shared: false } });
+            // document text is passed in as "file"
+            // name hardcoded as "example"
+            // TODO: shared hardcoded as either "true" (creates SharedNotepad) or "false" (creates TextArea) - create an option to toggle?
+            panel.webview.postMessage({ type: 'init', promptProps: { file: promptText, name: 'example', shared: false } });
         }
     });
 
-      // Passes new document content into webview when document changes
+    // Passes new document content into webview when document changes
     vscode.workspace.onDidChangeTextDocument((event) => {
         const promptText = event.document.getText();
         panel.webview.postMessage({ type: 'init', promptProps: { file: promptText, name: 'example', shared: false } });
     });
-    }
-);
+
+    // Passes new document content into webview when we switch to a new document
+    vscode.window.onDidChangeActiveTextEditor((event) => {
+        const file = event?.document;
+        if (file?.languageId === "markdown") {
+            const promptText = file?.getText();
+            const fileName = file?.fileName.split('\\').at(-1);
+
+            panel.webview.postMessage({ type: 'init', promptProps: { file: promptText, name: 'example', shared: false } });
+            panel.title = 'Prompt Preview: ' + fileName;
+        }
+    });
+});
 
 // Loads HTML content for the webview
 export function getWebviewContent(scriptUri: vscode.Uri, styleUri: vscode.Uri, playerStylesUri: vscode.Uri, layoutUri: vscode.Uri) {
