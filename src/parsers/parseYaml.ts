@@ -129,15 +129,40 @@ export async function parseYaml(document: vscode.TextDocument) {
     }
 
     async function fileExistsInWorkspace(relativePath: string): Promise<boolean> {
-        const fileUri = vscode.Uri.joinPath(vscode.workspace.workspaceFolders![0].uri, relativePath);
-        try {
-            await vscode.workspace.fs.stat(fileUri);
-            return true;
-        } catch (err) {
-            if ((err as any).code === 'FileNotFound' || (err as any).name === 'EntryNotFound') {
-            return false;
+        const fileConfigUri = vscode.Uri.joinPath(vscode.workspace.workspaceFolders![0].uri, 'd1.config.json');
+        // Check if the file exists in the workspace
+        if (!vscode.workspace.workspaceFolders || vscode.workspace.workspaceFolders.length === 0) {
+            const fileUri = vscode.Uri.joinPath(vscode.workspace.workspaceFolders![0].uri, relativePath);
+            try {
+                await vscode.workspace.fs.stat(fileUri);
+                return true;
+            } catch (err) {
+                if ((err as any).code === 'FileNotFound' || (err as any).name === 'EntryNotFound') {
+                return false;
+                }
+                throw err;
             }
-            throw err;
+        } else {
+            const fileData = await vscode.workspace.fs.readFile(fileConfigUri);
+            const fileContent = new TextDecoder('utf-8').decode(fileData);
+            const json = JSON.parse(fileContent);
+            if (json?.experimentRoot) {
+                const fileUri = vscode.Uri.joinPath(
+                    vscode.workspace.workspaceFolders![0].uri,
+                    json.experimentRoot,
+                    relativePath
+                );
+                try {
+                    await vscode.workspace.fs.stat(fileUri);
+                    return true;
+                } catch (err) {
+                    if ((err as any).code === 'FileNotFound' || (err as any).name === 'EntryNotFound') {
+                        return false;
+                    }
+                    throw err;
+                }
+            }
+            return false;
         }
     }
 
@@ -165,7 +190,7 @@ export async function parseYaml(document: vscode.TextDocument) {
                 issues.push({
                   code: z.ZodIssueCode.custom,
                   path: currentPath,
-                  message: `File "${value}" does not exist in the workspace.`,
+                  message: `File "${value}" does not exist in the workspace. If you have a d1.config.json file, ensure the file path is correct relative to the experimentRoot.`,
                 });
               }
             }
