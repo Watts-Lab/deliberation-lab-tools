@@ -48,14 +48,78 @@ export const inlineSuggestion = vscode.languages.registerInlineCompletionItemPro
 // Open Markdown preview
 export const markdownPreview = vscode.commands.registerCommand('deliberation-lab-tools.openPromptPreview', () => {
     const file = vscode.window.activeTextEditor?.document;
-    const promptText = file?.getText();
-
-    // Get filename without directory or folder names listed
-    const fileName = file?.fileName.split('\\').at(-1);
+    const { fileName: fileName, text: promptText } = getFileName(file!!);
 
     const panel = vscode.window.createWebviewPanel(
         'openPromptPreview',
-        'Prompt Preview: ' + fileName,
+        'Preview: ' + fileName,
+        {
+            viewColumn: vscode.ViewColumn.Beside,
+            preserveFocus: true
+        },
+        {
+            enableScripts: true,
+            localResourceRoots: [vscode.Uri.joinPath(getExtensionUri(), "dist", "views")],
+        }
+    );
+
+    // URIs for CSS files and script file that will be passed into HTML content
+
+    const scriptUri = panel.webview.asWebviewUri(
+        vscode.Uri.joinPath(getExtensionUri(), 'dist', 'views', 'index.js')
+    );
+
+    const styleUri = panel.webview.asWebviewUri(
+        vscode.Uri.joinPath(getExtensionUri(), 'dist', 'views', 'styles.css')
+    );
+
+    const playerStylesUri = panel.webview.asWebviewUri(
+        vscode.Uri.joinPath(getExtensionUri(), 'dist', 'views', 'playerStyles.css')
+    );
+
+    const layoutUri = panel.webview.asWebviewUri(
+        vscode.Uri.joinPath(getExtensionUri(), 'dist', 'views', 'layout.css')
+    );
+
+    panel.webview.html = getWebviewContent(scriptUri, styleUri, playerStylesUri, layoutUri);
+
+    // Passes document information into webview
+    panel.webview.onDidReceiveMessage((message) => {
+        if (message.type === 'ready') {
+
+            // document text is passed in as "file"
+            // name hardcoded as "example"
+            // TODO: shared hardcoded as either "true" (creates SharedNotepad) or "false" (creates TextArea) - create an option to toggle?
+            panel.webview.postMessage({ type: 'prompt', promptProps: { file: promptText, name: 'example', shared: false } });
+        }
+    });
+
+    // Passes new document content into webview when document changes
+    vscode.workspace.onDidChangeTextDocument((event) => {
+        const { fileName: fileName, text: promptText } = getFileName(event.document);
+        panel.webview.postMessage({ type: 'prompt', promptProps: { file: promptText, name: 'example', shared: false } });
+    });
+
+    // Passes new document content into webview when we switch to a new document
+    vscode.window.onDidChangeActiveTextEditor((event) => {
+        const file = event?.document;
+        if (file?.languageId === "markdown") {
+            const { fileName: fileName, text: promptText } = getFileName(file);
+
+            panel.webview.postMessage({ type: 'prompt', promptProps: { file: promptText, name: 'example', shared: false } });
+            panel.title = 'Preview: ' + fileName;
+        }
+    });
+});
+
+// Open YAML preview
+export const stagePreview = vscode.commands.registerCommand('deliberation-lab-tools.openStagePreview', () => {
+    const file = vscode.window.activeTextEditor?.document;
+    const { fileName: fileName, text: promptText } = getFileName(file!!);
+
+    const panel = vscode.window.createWebviewPanel(
+        'openStagePreview',
+        'Preview: ' + fileName,
         {
             viewColumn: vscode.ViewColumn.Beside,
             preserveFocus: true
@@ -99,25 +163,39 @@ export const markdownPreview = vscode.commands.registerCommand('deliberation-lab
 
     // Passes new document content into webview when document changes
     vscode.workspace.onDidChangeTextDocument((event) => {
-        const promptText = event.document.getText();
+        const { fileName: fileName, text: promptText } = getFileName(event.document);
         panel.webview.postMessage({ type: 'init', promptProps: { file: promptText, name: 'example', shared: false } });
     });
 
     // Passes new document content into webview when we switch to a new document
     vscode.window.onDidChangeActiveTextEditor((event) => {
         const file = event?.document;
-        if (file?.languageId === "markdown") {
-            const promptText = file?.getText();
-            const fileName = file?.fileName.split('\\').at(-1);
+        if (file?.languageId === "treatmentsYaml") {
+            const { fileName: fileName, text: promptText } = getFileName(file);
 
             panel.webview.postMessage({ type: 'init', promptProps: { file: promptText, name: 'example', shared: false } });
-            panel.title = 'Prompt Preview: ' + fileName;
+            panel.title = 'Preview: ' + fileName;
         }
     });
 });
 
+// Returns object with fileName field and promptText field
+function getFileName(file: vscode.TextDocument) {
+    const text = file.getText();
+
+    // Sets file name to relative path from the workspace folder
+    // Maybe TODO: put into helper method to avoid duplicating code?
+    let fileName = file.uri.toString();
+    const workspaceFolder = vscode.workspace.getWorkspaceFolder(file.uri);
+    if (workspaceFolder) {
+        fileName = vscode.workspace.asRelativePath(file.uri);
+    }
+
+    return { fileName, text };
+}
+
 // Loads HTML content for the webview
-export function getWebviewContent(scriptUri: vscode.Uri, styleUri: vscode.Uri, playerStylesUri: vscode.Uri, layoutUri: vscode.Uri) {
+function getWebviewContent(scriptUri: vscode.Uri, styleUri: vscode.Uri, playerStylesUri: vscode.Uri, layoutUri: vscode.Uri) {
 
     const nonce = getNonce();
 
@@ -165,7 +243,7 @@ export function getWebviewContent(scriptUri: vscode.Uri, styleUri: vscode.Uri, p
 };
 
 // Nonce for security
-export function getNonce(): string {
+function getNonce(): string {
     let text: string = "";
     const possible: string =
         "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";

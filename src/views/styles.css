@@ -148,12 +148,23 @@
   font-size: 0.875rem;
   line-height: 1.25rem;
 }
+.mx-auto {
+  margin-left: auto;
+  margin-right: auto;
+}
 .mb-2 {
   margin-bottom: 0.5rem;
+}
+.max-w-2xl {
+  max-width: 42rem;
 }
 .focus\:outline-none:focus {
   outline: 2px solid transparent;
   outline-offset: 2px;
+}
+.px-4 {
+  padding-left: 1rem;
+  padding-right: 1rem;
 }
 .px-3 {
   padding-left: 0.75rem;
@@ -161,6 +172,12 @@
 }
 .py-2 {
   padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
+}
+.pb-4 {
+  padding-bottom: 1rem;
+}
+.pb-2 {
   padding-bottom: 0.5rem;
 }
 .placeholder-gray-400::-webkit-input-placeholder {
@@ -294,5 +311,34 @@
   .sm\:text-sm {
     font-size: 0.875rem;
     line-height: 1.25rem;
+  }
+}
+@media (min-width: 768px) {
+  .md\:overflow-auto {
+    overflow: auto;
+  }
+  .md\:absolute {
+    position: absolute;
+  }
+  .md\:left-0 {
+    left: 0px;
+  }
+  .md\:top-0 {
+    top: 0px;
+  }
+  .md\:bottom-0 {
+    bottom: 0px;
+  }
+  .md\:right-150 {
+    right: 37.5rem;
+  }
+  .md\:right-0 {
+    right: 0px;
+  }
+  .md\:w-150 {
+    width: 37.5rem;
+  }
+  .md\:scroll-smooth {
+    scroll-behavior: smooth;
   }
 }

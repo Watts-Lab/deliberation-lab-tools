@@ -2,7 +2,7 @@ import * as vscode from "vscode";
 import { detectPromptMarkdown, detectTreatmentsYaml } from "./detectFile";
 import { parseYaml } from "./parsers/parseYaml";
 import { parseMarkdown } from "./parsers/parseMarkdown";
-import { defaultMarkdown, inlineSuggestion, defaultYaml, getWebviewContent, markdownPreview } from "./commands";
+import { defaultMarkdown, inlineSuggestion, defaultYaml, markdownPreview } from "./commands";
 import { setExtensionContext } from "./contextStore";
 
 // should this be named yamlDiagnostics if also using markdown?
@@ -49,6 +49,13 @@ export async function activate(context: vscode.ExtensionContext) {
       if (event?.document !== undefined) {
         parseDocument(event?.document);
       };
+    }),
+
+    // When we switch to a document open in another tab
+    vscode.window.onDidChangeActiveTextEditor(async (event) => {
+      if (event?.document !== undefined) {
+        parseDocument(event?.document);
+      }
     })
   );
 

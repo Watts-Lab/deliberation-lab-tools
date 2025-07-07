@@ -17,7 +17,7 @@ import {
 const StageContext = createContext()
 
 const StageProvider = ({ children }) => {
-  const [currentStageIndex, setCurrentStageIndex] = useState('default')
+  const [currentStageIndex, setCurrentStageIndex] = useState(0) // changed from 'default'
   const [elapsed, setElapsed] = useState(0)
   const [treatment, setTreatment] = useState(null)
   const [templatesMap, setTemplatesMap] = useState(new Map())

@@ -1,27 +1,51 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useContext } from "react";
 import { createRoot } from "react-dom/client";
 
 // This is where the prompt gets imported from
 // import { Prompt } from "./prompt";
 import { Prompt } from "../../deliberation-empirica/client/src/elements/Prompt";
+import { Stage } from "../../deliberation-empirica/client/src/Stage";
+// import { Stage } from "./Stage";
 
-import { StageProvider } from "./stageContext";
+import { StageContext, StageProvider } from "./stageContext";
 
 import "../../deliberation-empirica/client/src/baseStyles.css";
-
 import "./styles.css";
 
-const vscode = acquireVsCodeApi();
+export const vscode = acquireVsCodeApi();
 
 // App only programmed to render Prompt at the moment
 function App() {
   const [props, setProps] = useState(null);
+  const [isStage, setStage] = useState(null);
+
+  // TODO: possibly refactor all of this stage stuff into another index file specifically for the stage
+  const {
+    currentStageIndex,
+    setCurrentStageIndex,
+    elapsed,
+    setElapsed,
+    treatment,
+    setTreatment,
+    templatesMap,
+    setTemplatesMap,
+    refData,
+    setRefData,
+    selectedTreatmentIndex,
+    setSelectedTreatmentIndex
+  } = useContext(StageContext);
 
   useEffect(() => {
     const handler = (event) => {
       const { type, promptProps } = event.data;
-      if (type === "init") {
+
+      // TODO: refactor to switch case?
+      if (type === "prompt") {
         setProps(promptProps);
+      } else if (type === "init") { // TODO: can probably remove this "init"
+        setStage(promptProps);
+      } else if (type === "stage") {
+        setTreatment(promptProps);
       }
     };
 
@@ -29,15 +53,26 @@ function App() {
     return () => window.removeEventListener("message", handler);
   }, []);
 
-  if (!props) {
-    return <p>Error with input. Please check that given document is valid.</p>;
+  if (props) {
+    try {
+      return <Prompt {...props} />;
+    } catch (e) {
+      console.log("Error on rendering prompt");
+      return <p>Error when rendering prompt. Please check that there are no errors in prompt Markdown file</p>;
+    }
+  } else if (isStage) {
+    try {
+      console.log("Rendering stage");
+      return <Stage />;
+    } catch (e) {
+      console.log("Error on rendering stage");
+      return <p>Error when rendering stage.</p>;
+    }
   }
 
-  try {
-    return <Prompt {...props} />;
-  } catch (e) {
-    console.log("Error on rendering prompt");
-    return <p>Error when rendering prompt. Please check that there are no errors in prompt Markdown file</p>;
+  // If no props are yet set
+  if (!props && !isStage) {
+    return <p>Loading...</p>;
   }
 }
 

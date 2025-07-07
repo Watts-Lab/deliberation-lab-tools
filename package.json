@@ -56,12 +56,16 @@
         "title": "Deliberation Lab Tools: Create Default Treatments YAML file"
       },
       {
+        "command": "deliberation-lab-tools.createDefaultPromptMarkdown",
+        "title": "Deliberation Lab Tools: Create Default Prompt Markdown"
+      },
+      {
         "command": "deliberation-lab-tools.openPromptPreview",
         "title": "Deliberation Lab Tools: Open Prompt Preview"
       },
       {
-        "command": "deliberation-lab-tools.createDefaultPromptMarkdown",
-        "title": "Deliberation Lab Tools: Create Default Prompt Markdown"
+        "command": "deliberation-lab-tools.openStagePreview",
+        "title": "Deliberation Lab Tools: Open Stage Preview"
       }
     ],
     "menus": {
@@ -69,6 +73,11 @@
         {
           "command": "deliberation-lab-tools.openPromptPreview",
           "when": "editorLangId == markdown",
+          "group": "deliberation-lab-tools"
+        },
+        {
+          "command": "deliberation-lab-tools.openStagePreview",
+          "when": "editorLangId == treatmentsYaml",
           "group": "deliberation-lab-tools"
         }
       ]
