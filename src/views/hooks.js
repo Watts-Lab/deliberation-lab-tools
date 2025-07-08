@@ -9,6 +9,7 @@ import {
 import { useGlobal } from "@empirica/core/player/react";
 import axios from "axios";
 import { useState, useEffect } from "react";
+import { vscode } from "./index.jsx";
 
 const cdnList = {
   // test: "deliberation-assets",
@@ -40,8 +41,32 @@ export function useFileURL({ file }) {
 // should be passed the text in the active window document already, where file is the text
 // error is null because there should not be an error
 // this could probably be coded better to actually prevent these errors
+// TODO: add handling for errors
 export function useText({ file }) {
-  return { text: file, error: null };
+  const [text, setText] = useState(null);
+
+  console.log("Text in useText", text);
+
+  vscode.postMessage({ type: "file", file: file});
+
+  useEffect(() => {
+      const handler = (event) => {
+        const { type, fileText } = event.data;
+
+        console.log("File text received", fileText);
+
+        if (type === "file") {
+          setText(fileText);
+          console.log("Text after file text received", text);
+        }
+      };
+  
+      window.addEventListener("message", handler);
+      return () => window.removeEventListener("message", handler);
+    }, []);
+
+  // return text once message is received
+  return { text: text, error: null };
 }
 
 export function useConnectionInfo() {
@@ -96,11 +121,11 @@ export function useConnectionInfo() {
 }
 
 export function usePermalink(file) {
-    // how necessary is it to have permalink? Commented out because permalink is just for recordkeeping
-//   const globals = useGlobal();
-//   const resourceLookup = globals?.get("resourceLookup"); // get the permalink for this implementation of the file
-//   const permalink = resourceLookup ? resourceLookup[file] : undefined;
-//   return permalink;
+  // how necessary is it to have permalink? Commented out because permalink is just for recordkeeping
+  //   const globals = useGlobal();
+  //   const resourceLookup = globals?.get("resourceLookup"); // get the permalink for this implementation of the file
+  //   const permalink = resourceLookup ? resourceLookup[file] : undefined;
+  //   return permalink;
   return "permalink";
 }
 

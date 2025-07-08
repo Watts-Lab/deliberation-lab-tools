@@ -1,6 +1,34 @@
 import { get } from "http";
 import * as vscode from "vscode";
 import { getExtensionUri } from "./contextStore";
+import { load as loadYaml } from "js-yaml";
+
+// Could maybe be optional fields?
+type treat = {
+    treatments: [
+        {
+            name: string,
+            playerCount: number,
+            gameStages:
+            [
+                {
+                    name: string,
+                    duration: number,
+                    elements:
+                    [
+                        {
+                            type: string,
+                            file?: string,
+                            shared?: boolean
+                        }
+                    ]
+                }
+            ]
+        }
+    ],
+
+    [key: string]: object | null,
+};
 
 // Command to create default treatments YAML file
 export const defaultYaml = vscode.commands.registerCommand("deliberation-lab-tools.defaultTreatmentsYaml", async () => {
@@ -154,17 +182,34 @@ export const stagePreview = vscode.commands.registerCommand('deliberation-lab-to
     panel.webview.onDidReceiveMessage((message) => {
         if (message.type === 'ready') {
 
+            const treatments = loadYaml(promptText) as treat;
+            console.log("Treatments from load yaml", treatments);
+
+            // TODO: add case for when workspace folder doesn't exist
+            const workspaceFolder = vscode.workspace.getWorkspaceFolder(file!!.uri);
+            console.log("Hopefully workspace folder not null lmao", workspaceFolder);
+            // replaceFileInYAML(treatments, workspaceFolder!!);
+
             // document text is passed in as "file"
             // name hardcoded as "example"
             // TODO: shared hardcoded as either "true" (creates SharedNotepad) or "false" (creates TextArea) - create an option to toggle?
-            panel.webview.postMessage({ type: 'init', promptProps: { file: promptText, name: 'example', shared: false } });
+            panel.webview.postMessage({ type: 'stage', promptProps: { file: treatments, name: 'example', shared: false } });
         }
     });
 
     // Passes new document content into webview when document changes
     vscode.workspace.onDidChangeTextDocument((event) => {
         const { fileName: fileName, text: promptText } = getFileName(event.document);
-        panel.webview.postMessage({ type: 'init', promptProps: { file: promptText, name: 'example', shared: false } });
+        const treatments = loadYaml(promptText) as treat;
+        console.log("Treatments from load yaml", treatments);
+
+        // TODO: add case for when workspace folder doesn't exist
+        const workspaceFolder = vscode.workspace.getWorkspaceFolder(event.document.uri);
+        console.log("Hopefully workspace folder not null lmao", workspaceFolder);
+        // replaceFileInYAML(treatments, workspaceFolder!!);
+
+        // TODO: refactor from promptProps (shouldn't be called promptProps anymore)
+        panel.webview.postMessage({ type: 'stage', promptProps: { file: treatments, name: 'example', shared: false } });
     });
 
     // Passes new document content into webview when we switch to a new document
@@ -173,8 +218,32 @@ export const stagePreview = vscode.commands.registerCommand('deliberation-lab-to
         if (file?.languageId === "treatmentsYaml") {
             const { fileName: fileName, text: promptText } = getFileName(file);
 
-            panel.webview.postMessage({ type: 'init', promptProps: { file: promptText, name: 'example', shared: false } });
+            // only load treatments for now
+            const treatments = loadYaml(promptText) as treat;
+            console.log("Treatments from load yaml", treatments);
+
+            // TODO: add case for when workspace folder doesn't exist
+            const workspaceFolder = vscode.workspace.getWorkspaceFolder(file.uri);
+            console.log("Hopefully workspace folder not null lmao", workspaceFolder);
+            // replaceFileInYAML(treatments, workspaceFolder!!);
+
+            // TODO: refactor from promptProps (shouldn't be called promptProps anymore)
+            panel.webview.postMessage({ type: 'stage', promptProps: { file: treatments, name: 'example', shared: false } });
             panel.title = 'Preview: ' + fileName;
+        }
+    });
+
+    // Passing file text back?
+    panel.webview.onDidReceiveMessage((message) => {
+        if (message.type === 'file') {
+            const workspaceFolder = vscode.workspace.getWorkspaceFolder(file!!.uri);
+            console.log("Workspace folder uri", workspaceFolder, workspaceFolder?.uri);
+            const fileUri = vscode.Uri.joinPath(workspaceFolder!!.uri, message.file);
+            console.log("File URI", fileUri);
+            vscode.workspace.openTextDocument(fileUri).then((doc) => {
+                console.log("Correctly extracted text", doc.getText());
+                panel.webview.postMessage({ type: 'file', fileText: doc.getText() });
+            });
         }
     });
 });
@@ -192,6 +261,35 @@ function getFileName(file: vscode.TextDocument) {
     }
 
     return { fileName, text };
+}
+
+// Function to extract file names from a treatments JSON object and replace with file content
+// This might be async?
+function replaceFileInYAML(treatments: treat, workspaceFolder: vscode.WorkspaceFolder) {
+
+    // iterate over each treatment
+    for (const treatment of treatments.treatments) {
+
+        const gameStages = treatment?.gameStages;
+        // gameStages -> elements
+        for (const gameStage of gameStages) {
+            const elements = gameStage?.elements;
+            for (const element of elements) {
+                if (element.file) {
+                    // Get relative path from workspace folder
+                    console.log("Workspace folder uri", workspaceFolder, workspaceFolder.uri);
+                    const fileUri = vscode.Uri.joinPath(workspaceFolder.uri, element.file);
+                    vscode.workspace.openTextDocument(fileUri).then((doc) => {
+                        element.file = doc.getText();
+                        console.log("Correctly replaced", element.file);
+                    });
+                }
+            }
+        }
+    }
+
+    // This appears
+    console.log("Treatment after replacing file paths", treatments);
 }
 
 // Loads HTML content for the webview

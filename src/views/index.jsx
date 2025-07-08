@@ -45,7 +45,11 @@ function App() {
       } else if (type === "init") { // TODO: can probably remove this "init"
         setStage(promptProps);
       } else if (type === "stage") {
-        setTreatment(promptProps);
+        // need to loadyaml?
+        console.log("Treatment before setting", treatment);
+        console.log("Treatment props", promptProps);
+        setTreatment(promptProps.file);
+        console.log("Treatment after setting", treatment);
       }
     };
 
@@ -60,7 +64,7 @@ function App() {
       console.log("Error on rendering prompt");
       return <p>Error when rendering prompt. Please check that there are no errors in prompt Markdown file</p>;
     }
-  } else if (isStage) {
+  } else if (treatment) {
     try {
       console.log("Rendering stage");
       return <Stage />;
@@ -70,8 +74,8 @@ function App() {
     }
   }
 
-  // If no props are yet set
-  if (!props && !isStage) {
+  // If no props are yet set for either prompt or stage
+  if (!props && !treatment) {
     return <p>Loading...</p>;
   }
 }
