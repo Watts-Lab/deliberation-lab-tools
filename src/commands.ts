@@ -3,33 +3,6 @@ import * as vscode from "vscode";
 import { getExtensionUri } from "./contextStore";
 import { load as loadYaml } from "js-yaml";
 
-// Could maybe be optional fields?
-type treat = {
-    treatments: [
-        {
-            name: string,
-            playerCount: number,
-            gameStages:
-            [
-                {
-                    name: string,
-                    duration: number,
-                    elements:
-                    [
-                        {
-                            type: string,
-                            file?: string,
-                            shared?: boolean
-                        }
-                    ]
-                }
-            ]
-        }
-    ],
-
-    [key: string]: object | null,
-};
-
 // Command to create default treatments YAML file
 export const defaultYaml = vscode.commands.registerCommand("deliberation-lab-tools.defaultTreatmentsYaml", async () => {
     const treatmentsYamlFileUri = vscode.Uri.joinPath(vscode.workspace.workspaceFolders![0].uri, "src", "fixtures", "defaultTreatment.treatments.yaml");
@@ -142,6 +115,7 @@ export const markdownPreview = vscode.commands.registerCommand('deliberation-lab
 
 // Open YAML preview
 export const stagePreview = vscode.commands.registerCommand('deliberation-lab-tools.openStagePreview', () => {
+    // maybe this file changes when we switch to a new document?
     const file = vscode.window.activeTextEditor?.document;
     const { fileName: fileName, text: promptText } = getFileName(file!!);
 
@@ -158,7 +132,7 @@ export const stagePreview = vscode.commands.registerCommand('deliberation-lab-to
         }
     );
 
-    // URIs for CSS files and script file that will be passed into HTML content
+    // URIs for CSS files and script file that will be passed into HTML content - possibly refactor?
 
     const scriptUri = panel.webview.asWebviewUri(
         vscode.Uri.joinPath(getExtensionUri(), 'dist', 'views', 'index.js')
@@ -182,13 +156,8 @@ export const stagePreview = vscode.commands.registerCommand('deliberation-lab-to
     panel.webview.onDidReceiveMessage((message) => {
         if (message.type === 'ready') {
 
-            const treatments = loadYaml(promptText) as treat;
+            const treatments = loadYaml(promptText);
             console.log("Treatments from load yaml", treatments);
-
-            // TODO: add case for when workspace folder doesn't exist
-            const workspaceFolder = vscode.workspace.getWorkspaceFolder(file!!.uri);
-            console.log("Hopefully workspace folder not null lmao", workspaceFolder);
-            // replaceFileInYAML(treatments, workspaceFolder!!);
 
             // document text is passed in as "file"
             // name hardcoded as "example"
@@ -200,13 +169,8 @@ export const stagePreview = vscode.commands.registerCommand('deliberation-lab-to
     // Passes new document content into webview when document changes
     vscode.workspace.onDidChangeTextDocument((event) => {
         const { fileName: fileName, text: promptText } = getFileName(event.document);
-        const treatments = loadYaml(promptText) as treat;
+        const treatments = loadYaml(promptText);
         console.log("Treatments from load yaml", treatments);
-
-        // TODO: add case for when workspace folder doesn't exist
-        const workspaceFolder = vscode.workspace.getWorkspaceFolder(event.document.uri);
-        console.log("Hopefully workspace folder not null lmao", workspaceFolder);
-        // replaceFileInYAML(treatments, workspaceFolder!!);
 
         // TODO: refactor from promptProps (shouldn't be called promptProps anymore)
         panel.webview.postMessage({ type: 'stage', promptProps: { file: treatments, name: 'example', shared: false } });
@@ -219,13 +183,8 @@ export const stagePreview = vscode.commands.registerCommand('deliberation-lab-to
             const { fileName: fileName, text: promptText } = getFileName(file);
 
             // only load treatments for now
-            const treatments = loadYaml(promptText) as treat;
+            const treatments = loadYaml(promptText);
             console.log("Treatments from load yaml", treatments);
-
-            // TODO: add case for when workspace folder doesn't exist
-            const workspaceFolder = vscode.workspace.getWorkspaceFolder(file.uri);
-            console.log("Hopefully workspace folder not null lmao", workspaceFolder);
-            // replaceFileInYAML(treatments, workspaceFolder!!);
 
             // TODO: refactor from promptProps (shouldn't be called promptProps anymore)
             panel.webview.postMessage({ type: 'stage', promptProps: { file: treatments, name: 'example', shared: false } });
@@ -233,18 +192,23 @@ export const stagePreview = vscode.commands.registerCommand('deliberation-lab-to
         }
     });
 
-    // Passing file text back?
-    // How do we control the workspace folder when the document changes
+    // Helper to pass file text back - could possibly refactor into another method?
+    // TODO: add handling for workspace folder
     panel.webview.onDidReceiveMessage((message) => {
         if (message.type === 'file') {
             const workspaceFolder = vscode.workspace.getWorkspaceFolder(file!!.uri);
             console.log("Workspace folder uri", workspaceFolder, workspaceFolder?.uri);
             const fileUri = vscode.Uri.joinPath(workspaceFolder!!.uri, message.file);
             console.log("File URI", fileUri);
-            vscode.workspace.openTextDocument(fileUri).then((doc) => {
-                console.log("Correctly extracted text", doc.getText());
-                panel.webview.postMessage({ type: 'file', fileText: doc.getText() });
-            });
+            try {
+                vscode.workspace.openTextDocument(fileUri).then((doc) => {
+                    console.log("Correctly extracted text", doc.getText());
+                    panel.webview.postMessage({ type: 'file', fileText: doc.getText() });
+                });
+            } catch (e) {
+                console.log("File path could not be read");
+                panel.webview.postMessage({ type: 'file', fileText: null });
+            }
         }
     });
 });
