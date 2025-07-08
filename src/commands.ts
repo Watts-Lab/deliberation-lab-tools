@@ -234,6 +234,7 @@ export const stagePreview = vscode.commands.registerCommand('deliberation-lab-to
     });
 
     // Passing file text back?
+    // How do we control the workspace folder when the document changes
     panel.webview.onDidReceiveMessage((message) => {
         if (message.type === 'file') {
             const workspaceFolder = vscode.workspace.getWorkspaceFolder(file!!.uri);
@@ -261,35 +262,6 @@ function getFileName(file: vscode.TextDocument) {
     }
 
     return { fileName, text };
-}
-
-// Function to extract file names from a treatments JSON object and replace with file content
-// This might be async?
-function replaceFileInYAML(treatments: treat, workspaceFolder: vscode.WorkspaceFolder) {
-
-    // iterate over each treatment
-    for (const treatment of treatments.treatments) {
-
-        const gameStages = treatment?.gameStages;
-        // gameStages -> elements
-        for (const gameStage of gameStages) {
-            const elements = gameStage?.elements;
-            for (const element of elements) {
-                if (element.file) {
-                    // Get relative path from workspace folder
-                    console.log("Workspace folder uri", workspaceFolder, workspaceFolder.uri);
-                    const fileUri = vscode.Uri.joinPath(workspaceFolder.uri, element.file);
-                    vscode.workspace.openTextDocument(fileUri).then((doc) => {
-                        element.file = doc.getText();
-                        console.log("Correctly replaced", element.file);
-                    });
-                }
-            }
-        }
-    }
-
-    // This appears
-    console.log("Treatment after replacing file paths", treatments);
 }
 
 // Loads HTML content for the webview
