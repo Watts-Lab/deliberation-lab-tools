@@ -4,6 +4,7 @@ import { parseYaml } from "./parsers/parseYaml";
 import { parseMarkdown } from "./parsers/parseMarkdown";
 import { defaultMarkdown, inlineSuggestion, defaultYaml, getWebviewContent, markdownPreview } from "./commands";
 import { setExtensionContext } from "./contextStore";
+import { FileFixCodeActionProvider } from "./codeActionProvider";
 
 // should this be named yamlDiagnostics if also using markdown?
 export const diagnosticCollection = vscode.languages.createDiagnosticCollection("yamlDiagnostics");
@@ -51,6 +52,10 @@ export async function activate(context: vscode.ExtensionContext) {
         };
       })
     );
+
+  vscode.languages.registerCodeActionsProvider('treatmentsYaml', new FileFixCodeActionProvider(), {
+    providedCodeActionKinds: [vscode.CodeActionKind.QuickFix]
+  });
 
   // Command to create default treatments YAML file
   context.subscriptions.push(defaultYaml);

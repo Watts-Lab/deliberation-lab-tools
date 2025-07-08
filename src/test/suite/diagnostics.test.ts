@@ -4,6 +4,26 @@ import * as assert from 'assert';
 import { suite, test } from 'mocha';
 
 suite('Diagnostics detection', () => {
+	// teardown(async () => {
+	// 	const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
+	// 	if (!workspaceFolder) return;
+
+	// 	const fileUri = vscode.Uri.joinPath(workspaceFolder.uri, 'dl.config.json');
+	// 	console.log("Attempting to delete:", fileUri.fsPath);
+
+	// 	try {
+	// 	const doc = vscode.workspace.textDocuments.find(d => d.uri.toString() === fileUri.toString());
+	// 	if (doc) {
+	// 		await vscode.commands.executeCommand('workbench.action.closeActiveEditor');
+	// 	}
+
+	// 	await vscode.workspace.fs.delete(fileUri, { useTrash: false });
+	// 	console.log("Deleted dl.config.json");
+	// 	} catch (err) {
+	// 	console.error("Failed to delete dl.config.json in teardown:", err);
+	// 	}
+	// });
+
 	test('Diagnostics are empty on correct markdown file', async () => {
 		// allTalk.md
 
@@ -270,9 +290,53 @@ suite('Diagnostics detection', () => {
 		assert.strictEqual(diagnostics.length, 1);
 		assert.strictEqual(
 			diagnostics[0].message,
-			`Error in item "file": File "shared/yesNo/survey.md" does not exist in the workspace.`
+			`Error in item "file": File "shared/yesNo/survey.md" does not exist in the workspace. Make sure "shared/yesNo/survey.md" is located in and is written relative to "file:///mnt/c/Users/gmo/deliberation-lab-tools"`
 		);
 		assert.strictEqual(diagnostics[0].range.start.line, 4);
 		assert.strictEqual(diagnostics[0].range.end.line, 8);
 	});
+
+	test('dl.config.json does not exist and file path of only file name given', async () => {
+		const filePath = path.resolve('src/test/suite/fixtures/dlConfig.treatments.yaml');
+		const document = await vscode.workspace.openTextDocument(filePath);
+		await new Promise(resolve => setTimeout(resolve, 1000));
+		const diagnostics = vscode.languages.getDiagnostics(document.uri);
+		assert.strictEqual(diagnostics.length, 1);
+		assert.strictEqual(
+			diagnostics[0].message,
+			`Error in item "file": File "ex.md" does not exist in the workspace. Make sure "ex.md" is located in and is written relative to "file:///mnt/c/Users/gmo/deliberation-lab-tools"`
+		);
+		assert.strictEqual(diagnostics[0].range.start.line, 4);
+		assert.strictEqual(diagnostics[0].range.end.line, 8);
+	});
+
+	// test('dl.config.json exists, experiment root matches test fixtures, and only file name given in path', async () => {
+	// 	const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
+	// 	if (!workspaceFolder) {
+	// 		assert.fail('No workspace folder found');
+	// 	}
+	// 	console.log('Workspace folder found:', workspaceFolder.name);
+	// 	const fileUri = vscode.Uri.joinPath(workspaceFolder.uri, 'dl.config.json');
+	// 	console.log(`Made file URI: ${fileUri.toString()}`);
+	// 	const encoder = new TextEncoder();
+  	// 	const encodedContent = encoder.encode('{"experimentRoot": "src/test/suite/fixtures"}');
+	// 	console.log(`Encoded content: ${encodedContent}`);
+	// 	await vscode.workspace.fs.writeFile(fileUri, encodedContent);
+	// 	for (let i = 0; i < 40; i++) {
+	// 		try {
+	// 			await vscode.workspace.fs.stat(fileUri);
+	// 			break; // Success
+	// 		} catch {
+	// 			await new Promise((res) => setTimeout(res, 100));
+	// 		}
+	// 	}
+	// 	console.log(`Wrote dl.config.json to ${fileUri.toString()}`);
+	// 	const filePath = path.resolve('src/test/suite/fixtures/dlConfig.treatments.yaml');
+	// 	const document = await vscode.workspace.openTextDocument(filePath);
+	// 	await new Promise(resolve => setTimeout(resolve, 3000));
+	// 	const diagnostics = vscode.languages.getDiagnostics(document.uri);
+	// 	console.log(`Diagnostics found: ${diagnostics.length}`);
+	// 	console.log(`Diagnostics: ${JSON.stringify(diagnostics, null, 2)}`);
+	// 	assert.strictEqual(diagnostics.length, 0);
+	// });
 });

@@ -4,7 +4,7 @@ templates:
     templateContent:
       type: prompt
       name: "${topicName}_presurvey"
-      file: "defaultPromptMarkdown.md"
+      file: "ex.md"
       tags: ["predictor"]
 introSequences:
   - name: "exampleIntro"
@@ -21,4 +21,3 @@ treatments:
         duration: 60
         elements:
           - type: "prompt"
-            
