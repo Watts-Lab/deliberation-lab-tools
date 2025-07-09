@@ -1,11 +1,12 @@
 import * as vscode from 'vscode';
 import { distance, closest } from 'fastest-levenshtein';
+import { relative } from 'path';
 
 export class FileFixCodeActionProvider implements vscode.CodeActionProvider {
     async provideCodeActions(document: vscode.TextDocument, range: vscode.Range | vscode.Selection, context: vscode.CodeActionContext, token: vscode.CancellationToken): Promise<(vscode.CodeAction | vscode.Command)[] | null | undefined> {
         console.log('FileFixCodeActionProvider: provideCodeActions called');
         const codeActions: vscode.CodeAction[] = [];
-        
+
         // Check if the document is a YAML file
         if (document.languageId === 'treatmentsYaml') {
             console.log('FileFixCodeActionProvider: Document is a treatmentsYaml file');
@@ -17,10 +18,38 @@ export class FileFixCodeActionProvider implements vscode.CodeActionProvider {
                     console.log(`FileFixCodeActionProvider: Found file missing pattern in diagnostic: ${diagnostic.message}`);
                     const fileName = match[1];
                     console.log(`FileFixCodeActionProvider: File name extracted: ${fileName}`);
-                    const closestExistingFile = await this.iterateFilesInWorkspace(
-                        vscode.workspace.getWorkspaceFolder(document.uri)!,
-                        fileName
-                    );
+                    let closestExistingFile: string | undefined;
+                    try {
+                        const fileConfigUri = vscode.Uri.joinPath(vscode.workspace.workspaceFolders![0].uri, 'dl.config.json');
+                        console.log("Checking if dl.config.json exists in workspace");
+                        await vscode.workspace.fs.stat(fileConfigUri);
+                        const fileData = await vscode.workspace.fs.readFile(fileConfigUri);
+                        const fileContent = new TextDecoder('utf-8').decode(fileData);
+                        const json = JSON.parse(fileContent);
+                        if (json?.experimentRoot) {
+                            const fileParentUri = vscode.Uri.joinPath(
+                                vscode.workspace.workspaceFolders![0].uri,
+                                json.experimentRoot
+                            );
+                            closestExistingFile = await this.iterateFilesInWorkspace(
+                                vscode.workspace.getWorkspaceFolder(document.uri)!,
+                                fileParentUri,
+                                fileName
+                            );
+                        } else {
+                            closestExistingFile = await this.iterateFilesInWorkspace(
+                                vscode.workspace.getWorkspaceFolder(document.uri)!,
+                                vscode.workspace.workspaceFolders![0].uri,
+                                fileName
+                            );
+                        }
+                    } catch (err) {
+                        closestExistingFile = await this.iterateFilesInWorkspace(
+                            vscode.workspace.getWorkspaceFolder(document.uri)!,
+                            vscode.workspace.workspaceFolders![0].uri,
+                            fileName
+                        );
+                    }
                     console.log(`FileFixCodeActionProvider: Closest existing file found: ${closestExistingFile}`);
                     const fullText = document.getText();
                     const escapedFileName = fileName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -31,7 +60,7 @@ export class FileFixCodeActionProvider implements vscode.CodeActionProvider {
                         const fileNameOffset = matchTwo[0].indexOf(matchTwo[1]);
                         const startOffset = fullMatchIndex + fileNameOffset;
                         const endOffset = startOffset + matchTwo[1].length;
-                        const startPos = document.positionAt(startOffset); 
+                        const startPos = document.positionAt(startOffset);
                         const endPos = document.positionAt(endOffset);
 
                         const range = new vscode.Range(startPos, endPos);
@@ -63,10 +92,11 @@ export class FileFixCodeActionProvider implements vscode.CodeActionProvider {
 
     async iterateFilesInWorkspace(
         workspaceFolder: vscode.WorkspaceFolder,
+        folder: vscode.Uri,
         fileName: string
     ): Promise<string | undefined> {
         const files = await vscode.workspace.findFiles(
-            new vscode.RelativePattern(workspaceFolder, '**/*'),
+            new vscode.RelativePattern(folder, '**/*'),
             null
         );
 
@@ -74,8 +104,8 @@ export class FileFixCodeActionProvider implements vscode.CodeActionProvider {
         let closestDistance = 5;
 
         for (const uri of files) {
-            const relativePath = uri.path.replace(workspaceFolder.uri.path + '/', '');
-            const currentDistance = distance(fileName, relativePath);
+            const relativePath = uri.path.replace(folder.path + '/', '');
+            const currentDistance = distance(relativePath, fileName);
             if (currentDistance < closestDistance) {
                 closestDistance = currentDistance;
                 closestFilePath = relativePath;
