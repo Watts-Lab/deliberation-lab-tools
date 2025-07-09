@@ -105,46 +105,6 @@ export function useStage() {
       //const treatmentString = localStorage.getItem("treatment");
       //const treatment = JSON.parse(treatmentString);
       var tempStage = null; // for template stages
-//       const tempTreatment = {
-//         "treatments":
-//         [
-//           {
-//             gameStages:
-//             [
-//               {
-//                 name: "exampleStage",
-//                 duration: 60,
-//                 elements:
-//                 [
-//                   {
-//                     type: "prompt",
-//                     file: `---
-// name: src/test/suite/fixtures/allTalk.md
-// type: openResponse
-// ---
-
-// Please describe the chair you are sitting in.
-
-// Everybody talk at once. Sometimes take pauses.
-
-// ---
-
-// > hfhfhfhhf
-// > dhdhdhd`
-//                   },
-//                   {
-//                     type: "submitButton"
-//                   }
-//                 ]
-//               }
-//             ],
-//             name: "TestA",
-//             playerCount: 1
-//           }
-//         ]
-//       };
-
-//       setTreatment(tempTreatment);
 
       console.log("Treatment in mocks", treatment);
 

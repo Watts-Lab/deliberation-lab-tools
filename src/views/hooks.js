@@ -42,12 +42,14 @@ export function useFileURL({ file }) {
 // error is null because there should not be an error
 // this could probably be coded better to actually prevent these errors
 // TODO: add handling for errors
+// TODO: make work with prompt
 export function useText({ file }) {
   const [text, setText] = useState(null);
 
   console.log("Text in useText", text);
+  console.log("File in useText", file);
 
-  vscode.postMessage({ type: "file", file: file});
+  vscode.postMessage({ type: "file", file: file });
 
   useEffect(() => {
       const handler = (event) => {

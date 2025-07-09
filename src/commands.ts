@@ -89,16 +89,17 @@ export const markdownPreview = vscode.commands.registerCommand('deliberation-lab
         if (message.type === 'ready') {
 
             // document text is passed in as "file"
+            // Now passing in file as fileName to make compatible with a stage
             // name hardcoded as "example"
             // TODO: shared hardcoded as either "true" (creates SharedNotepad) or "false" (creates TextArea) - create an option to toggle?
-            panel.webview.postMessage({ type: 'prompt', promptProps: { file: promptText, name: 'example', shared: false } });
+            panel.webview.postMessage({ type: 'prompt', promptProps: { file: fileName, name: 'example', shared: false } });
         }
     });
 
     // Passes new document content into webview when document changes
     vscode.workspace.onDidChangeTextDocument((event) => {
         const { fileName: fileName, text: promptText } = getFileName(event.document);
-        panel.webview.postMessage({ type: 'prompt', promptProps: { file: promptText, name: 'example', shared: false } });
+        panel.webview.postMessage({ type: 'prompt', promptProps: { file: fileName, name: 'example', shared: false } });
     });
 
     // Passes new document content into webview when we switch to a new document
@@ -107,8 +108,30 @@ export const markdownPreview = vscode.commands.registerCommand('deliberation-lab
         if (file?.languageId === "markdown") {
             const { fileName: fileName, text: promptText } = getFileName(file);
 
-            panel.webview.postMessage({ type: 'prompt', promptProps: { file: promptText, name: 'example', shared: false } });
+            panel.webview.postMessage({ type: 'prompt', promptProps: { file: fileName, name: 'example', shared: false } });
             panel.title = 'Preview: ' + fileName;
+        }
+    });
+
+    // Helper function in Prompt
+    // TODO: refactor so we don't duplicate this code in Prompt preview and Stage preview
+    panel.webview.onDidReceiveMessage((message) => {
+        if (message.type === 'file') {
+            const workspaceFolder = vscode.workspace.getWorkspaceFolder(file!!.uri);
+            console.log("Workspace folder uri", workspaceFolder, workspaceFolder?.uri);
+            const fileUri = vscode.Uri.joinPath(workspaceFolder!!.uri, message.file);
+            console.log("File URI", fileUri);
+
+            // Look into try-catching a Thenable
+            try {
+                vscode.workspace.openTextDocument(fileUri).then((doc) => {
+                    console.log("Correctly extracted text", doc.getText());
+                    panel.webview.postMessage({ type: 'file', fileText: doc.getText() });
+                });
+            } catch (e) {
+                console.log("File path could not be read");
+                panel.webview.postMessage({ type: 'file', fileText: null });
+            }
         }
     });
 });
@@ -196,10 +219,14 @@ export const stagePreview = vscode.commands.registerCommand('deliberation-lab-to
     // TODO: add handling for workspace folder
     panel.webview.onDidReceiveMessage((message) => {
         if (message.type === 'file') {
+            console.log("In helper to process file text");
+            console.log("Is file passing?", file, file!!.uri);
             const workspaceFolder = vscode.workspace.getWorkspaceFolder(file!!.uri);
             console.log("Workspace folder uri", workspaceFolder, workspaceFolder?.uri);
             const fileUri = vscode.Uri.joinPath(workspaceFolder!!.uri, message.file);
             console.log("File URI", fileUri);
+
+            // Look into try-catching a Thenable
             try {
                 vscode.workspace.openTextDocument(fileUri).then((doc) => {
                     console.log("Correctly extracted text", doc.getText());
@@ -214,6 +241,7 @@ export const stagePreview = vscode.commands.registerCommand('deliberation-lab-to
 });
 
 // Returns object with fileName field and promptText field
+// Refactor to remove promptText field? No longer matters
 function getFileName(file: vscode.TextDocument) {
     const text = file.getText();
 
@@ -224,6 +252,8 @@ function getFileName(file: vscode.TextDocument) {
     if (workspaceFolder) {
         fileName = vscode.workspace.asRelativePath(file.uri);
     }
+
+    console.log("File name", fileName);
 
     return { fileName, text };
 }
