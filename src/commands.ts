@@ -92,14 +92,17 @@ export const markdownPreview = vscode.commands.registerCommand('deliberation-lab
             // Now passing in file as fileName to make compatible with a stage
             // name hardcoded as "example"
             // TODO: shared hardcoded as either "true" (creates SharedNotepad) or "false" (creates TextArea) - create an option to toggle?
-            panel.webview.postMessage({ type: 'prompt', promptProps: { file: fileName, name: 'example', shared: false } });
+            console.log("Webview sending prompt props to index.jsx", fileName);
+            const props = { file: fileName, name: 'example', shared: false };
+            console.log("Props in prompt from command", props);
+            panel.webview.postMessage({ type: 'prompt', props: props });
         }
     });
 
     // Passes new document content into webview when document changes
     vscode.workspace.onDidChangeTextDocument((event) => {
         const { fileName: fileName, text: promptText } = getFileName(event.document);
-        panel.webview.postMessage({ type: 'prompt', promptProps: { file: fileName, name: 'example', shared: false } });
+        panel.webview.postMessage({ type: 'prompt', props: { file: fileName, name: 'example', shared: false } });
     });
 
     // Passes new document content into webview when we switch to a new document
@@ -108,7 +111,7 @@ export const markdownPreview = vscode.commands.registerCommand('deliberation-lab
         if (file?.languageId === "markdown") {
             const { fileName: fileName, text: promptText } = getFileName(file);
 
-            panel.webview.postMessage({ type: 'prompt', promptProps: { file: fileName, name: 'example', shared: false } });
+            panel.webview.postMessage({ type: 'prompt', props: { file: fileName, name: 'example', shared: false } });
             panel.title = 'Preview: ' + fileName;
         }
     });
@@ -185,7 +188,7 @@ export const stagePreview = vscode.commands.registerCommand('deliberation-lab-to
             // document text is passed in as "file"
             // name hardcoded as "example"
             // TODO: shared hardcoded as either "true" (creates SharedNotepad) or "false" (creates TextArea) - create an option to toggle?
-            panel.webview.postMessage({ type: 'stage', promptProps: { file: treatments, name: 'example', shared: false } });
+            panel.webview.postMessage({ type: 'stage', props: treatments });
         }
     });
 
@@ -196,7 +199,7 @@ export const stagePreview = vscode.commands.registerCommand('deliberation-lab-to
         console.log("Treatments from load yaml", treatments);
 
         // TODO: refactor from promptProps (shouldn't be called promptProps anymore)
-        panel.webview.postMessage({ type: 'stage', promptProps: { file: treatments, name: 'example', shared: false } });
+        panel.webview.postMessage({ type: 'stage', props: treatments });
     });
 
     // Passes new document content into webview when we switch to a new document
@@ -210,7 +213,7 @@ export const stagePreview = vscode.commands.registerCommand('deliberation-lab-to
             console.log("Treatments from load yaml", treatments);
 
             // TODO: refactor from promptProps (shouldn't be called promptProps anymore)
-            panel.webview.postMessage({ type: 'stage', promptProps: { file: treatments, name: 'example', shared: false } });
+            panel.webview.postMessage({ type: 'stage', props: treatments });
             panel.title = 'Preview: ' + fileName;
         }
     });
@@ -241,7 +244,6 @@ export const stagePreview = vscode.commands.registerCommand('deliberation-lab-to
 });
 
 // Returns object with fileName field and promptText field
-// Refactor to remove promptText field? No longer matters
 function getFileName(file: vscode.TextDocument) {
     const text = file.getText();
 
@@ -256,6 +258,10 @@ function getFileName(file: vscode.TextDocument) {
     console.log("File name", fileName);
 
     return { fileName, text };
+}
+
+function openFile() {
+
 }
 
 // Loads HTML content for the webview

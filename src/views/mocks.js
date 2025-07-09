@@ -54,7 +54,6 @@ export function useGame() {
   return game;
 }
 
-// Commented out since this function uses StageContext, and we don't need it yet for prompt
 export function useStageTimer() {
     // stage is undefined
   console.log("Stage context", StageContext);
@@ -93,6 +92,7 @@ export function useStage() {
   // const stage1 = useContext(StageContext);
   // console.log("useStageMock", stage1)
 
+  // If treatment has not yet been set, do not render
   if (!treatment) {
     return null;
   }
@@ -283,6 +283,7 @@ export function Loading() {
 }
 
 // Mock function for useRound: is there a specific type for Round?
+// Only one round in deliberation-empirica
 export function useRound() {
   return "Round";
 }

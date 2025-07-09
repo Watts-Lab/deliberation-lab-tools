@@ -1,8 +1,7 @@
 import React, { useEffect, useState, useContext } from "react";
 import { createRoot } from "react-dom/client";
 
-// This is where the prompt gets imported from
-// import { Prompt } from "./prompt";
+// Importing React components from deliberation-empirica
 import { Prompt } from "../../deliberation-empirica/client/src/elements/Prompt";
 import { Stage } from "../../deliberation-empirica/client/src/Stage";
 // import { Stage } from "./Stage";
@@ -14,10 +13,8 @@ import "./styles.css";
 
 export const vscode = acquireVsCodeApi();
 
-// App only programmed to render Prompt at the moment
 function App() {
-  const [props, setProps] = useState(null);
-  const [isStage, setStage] = useState(null);
+  const [prompt, setPrompt] = useState(null);
 
   // TODO: possibly refactor all of this stage stuff into another index file specifically for the stage
   const {
@@ -37,18 +34,17 @@ function App() {
 
   useEffect(() => {
     const handler = (event) => {
-      const { type, promptProps } = event.data;
+      const { type, props } = event.data;
 
       // TODO: refactor to switch case?
       if (type === "prompt") {
-        setProps(promptProps);
-      } else if (type === "init") { // TODO: can probably remove this "init"
-        setStage(promptProps);
+        console.log("Prompt props", props);
+        setPrompt(props);
+        console.log("Prompt props after setting", prompt);
       } else if (type === "stage") {
-        // need to loadyaml?
         console.log("Treatment before setting", treatment);
-        console.log("Treatment props", promptProps);
-        setTreatment(promptProps.file);
+        console.log("Treatment props", props);
+        setTreatment(props);
         console.log("Treatment after setting", treatment);
       }
     };
@@ -57,9 +53,10 @@ function App() {
     return () => window.removeEventListener("message", handler);
   }, []);
 
-  if (props) {
+  if (prompt) {
     try {
-      return <Prompt {...props} />;
+      console.log("Rendering prompt");
+      return <Prompt {...prompt} />;
     } catch (e) {
       console.log("Error on rendering prompt");
       return <p>Error when rendering prompt. Please check that there are no errors in prompt Markdown file</p>;
@@ -75,7 +72,7 @@ function App() {
   }
 
   // If no props are yet set for either prompt or stage
-  if (!props && !treatment) {
+  if (!prompt && !treatment) {
     return <p>Loading...</p>;
   }
 }
