@@ -114,30 +114,29 @@ export async function parseYaml(document: vscode.TextDocument) {
     }
     async function fileExistsInWorkspace(relativePath: string): Promise<{ uri: vscode.Uri; exists: boolean }> {
         try {
-            const fileConfigUri = vscode.Uri.joinPath(vscode.workspace.workspaceFolders![0].uri, 'dl.config.json');
-            console.log("Checking if dl.config.json exists in workspace");
+            const fileConfigUri = vscode.Uri.joinPath(vscode.workspace.workspaceFolders![0].uri, 'dlconfig.json');
+            console.log("Checking if dlconfig.json exists in workspace");
             await vscode.workspace.fs.stat(fileConfigUri);
             const fileData = await vscode.workspace.fs.readFile(fileConfigUri);
             const fileContent = new TextDecoder('utf-8').decode(fileData);
             const json = JSON.parse(fileContent);
-            if (json?.experimentRoot) {
+            let fileUri: vscode.Uri;
+            if (json?.experimentRoot && json.experimentRoot !== "") {
                 const fileParentUri = vscode.Uri.joinPath(
                     vscode.workspace.workspaceFolders![0].uri,
                     json.experimentRoot
                 );
-                const fileUri = vscode.Uri.joinPath(
+                fileUri = vscode.Uri.joinPath(
                     vscode.workspace.workspaceFolders![0].uri,
                     json.experimentRoot,
                     relativePath
                 );
                 return await existence(fileParentUri, fileUri);
             }
-            return {
-                uri: vscode.workspace.workspaceFolders![0].uri,
-                exists: false
-            };
+            fileUri = vscode.Uri.joinPath(vscode.workspace.workspaceFolders![0].uri, relativePath);
+            return await existence(vscode.workspace.workspaceFolders![0].uri, fileUri);
         } catch (err) {
-            console.error("dl.config.json does not exist", err);
+            console.error("dlconfig.json does not exist", err);
             const fileUri = vscode.Uri.joinPath(vscode.workspace.workspaceFolders![0].uri, relativePath);
             console.log("Checking if file exists in workspace:", fileUri.toString());
             return await existence(vscode.workspace.workspaceFolders![0].uri, fileUri);

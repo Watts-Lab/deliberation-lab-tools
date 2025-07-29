@@ -296,7 +296,7 @@ suite('Diagnostics detection', () => {
 		assert.strictEqual(diagnostics[0].range.end.line, 8);
 	});
 
-	test('dl.config.json does not exist and file path of only file name given', async () => {
+	test('dlconfig.json does not exist and file path of only file name given', async () => {
 		const filePath = path.resolve('src/test/suite/fixtures/dlConfig.treatments.yaml');
 		const document = await vscode.workspace.openTextDocument(filePath);
 		await new Promise(resolve => setTimeout(resolve, 1000));

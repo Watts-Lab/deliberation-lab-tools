@@ -1,7 +1,8 @@
 import * as vscode from "vscode";
-import { detectPromptMarkdown, detectTreatmentsYaml } from "./detectFile";
+import { detectPromptMarkdown, detectTreatmentsYaml, detectdlConfig, detectBatchConfig } from "./detectFile";
 import { parseYaml } from "./parsers/parseYaml";
 import { parseMarkdown } from "./parsers/parseMarkdown";
+import { parseDlConfig } from "./parsers/parseDlConfig";
 import { defaultMarkdown, inlineSuggestion, defaultYaml, getWebviewContent, markdownPreview } from "./commands";
 import { setExtensionContext } from "./contextStore";
 import { FileFixCodeActionProvider } from "./codeActionProvider";
@@ -16,6 +17,12 @@ async function parseDocument(document: vscode.TextDocument) {
     await parseYaml(document);
   } else if (detectPromptMarkdown(document)) {
     parseMarkdown(document);
+  } else if (detectdlConfig(document)) {
+    await parseDlConfig(document);
+  } else if (await detectBatchConfig(document)) {
+    // Batch config is detected, but no parsing is done here
+    console.log("Batch config detected, but no parsing implemented yet.");
+
   } else {
     // If file is not recognized as treatmentsYaml or promptMarkdown, clear diagnostics
     diagnosticCollection.set(document.uri, []);

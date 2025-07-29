@@ -20,8 +20,8 @@ export class FileFixCodeActionProvider implements vscode.CodeActionProvider {
                     console.log(`FileFixCodeActionProvider: File name extracted: ${fileName}`);
                     let closestExistingFile: string | undefined;
                     try {
-                        const fileConfigUri = vscode.Uri.joinPath(vscode.workspace.workspaceFolders![0].uri, 'dl.config.json');
-                        console.log("Checking if dl.config.json exists in workspace");
+                        const fileConfigUri = vscode.Uri.joinPath(vscode.workspace.workspaceFolders![0].uri, 'dlconfig.json');
+                        console.log("Checking if dlconfig.json exists in workspace");
                         await vscode.workspace.fs.stat(fileConfigUri);
                         const fileData = await vscode.workspace.fs.readFile(fileConfigUri);
                         const fileContent = new TextDecoder('utf-8').decode(fileData);

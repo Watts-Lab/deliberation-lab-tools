@@ -1,5 +1,6 @@
 import * as vscode from "vscode";
 import { load as loadYaml } from "js-yaml";
+import * as path from "path";
 
 // Helper file containing detection algorithms for file formats (.treatments.yaml and markdown)
 
@@ -39,4 +40,34 @@ export function detectPromptMarkdown(document: vscode.TextDocument) {
 export function detectTreatmentsYaml(document: vscode.TextDocument) {
   console.log("Document languageId:", document.languageId);
   return document.languageId === "treatmentsYaml";
+}
+
+export function detectdlConfig(document: vscode.TextDocument) {
+  console.log("Document languageId:", document.fileName);
+  return document.fileName === "dlconfig.json";
+}
+
+export async function detectBatchConfig(document: vscode.TextDocument) {
+  try {
+    const fileConfigUri = vscode.Uri.joinPath(vscode.workspace.workspaceFolders![0].uri, 'dlconfig.json');
+    console.log("Checking if dlconfig.json exists in workspace");
+    await vscode.workspace.fs.stat(fileConfigUri);
+    const fileData = await vscode.workspace.fs.readFile(fileConfigUri);
+    const fileContent = new TextDecoder('utf-8').decode(fileData);
+    const json = JSON.parse(fileContent);
+    const fileParentUri = vscode.Uri.joinPath(
+      vscode.workspace.workspaceFolders![0].uri,
+      json.experimentRoot
+    );
+    const dlconfigPath = fileParentUri.fsPath;
+    const batchConfigPath = document.fileName;
+    const relative = path.relative(dlconfigPath, batchConfigPath);
+    if (!!relative && !relative.startsWith("..") && !path.isAbsolute(relative)) {
+      return document.fileName.endsWith(".config.json");
+    } else {
+      return false;
+    }
+  } catch (err) {
+    return false;
+  }
 }
