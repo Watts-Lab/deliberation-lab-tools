@@ -43,8 +43,8 @@ export function detectTreatmentsYaml(document: vscode.TextDocument) {
 }
 
 export function detectdlConfig(document: vscode.TextDocument) {
-  console.log("Document languageId:", document.fileName);
-  return document.fileName === "dlconfig.json";
+  console.log("Document name:", document.fileName);
+  return vscode.workspace.asRelativePath(document.uri, false) === "dlconfig.json";
 }
 
 export async function detectBatchConfig(document: vscode.TextDocument) {
