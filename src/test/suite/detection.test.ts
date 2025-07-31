@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import * as path from 'path';
 import * as assert from 'assert';
 // changed from extension to detectFile
-import { detectPromptMarkdown, detectTreatmentsYaml } from '../../detectFile';
+import { detectdlConfig, detectPromptMarkdown, detectTreatmentsYaml, detectBatchConfig } from '../../detectFile';
 import { suite, test } from 'mocha';
 
 // You can import and use all API from the 'vscode' module
@@ -124,4 +124,47 @@ suite('Markdown and .treatments.yaml file detection', () => {
 
 		assert.strictEqual(detectPromptMarkdown(document), true);
 	});
+
+	//dlconfig.json
+	test('Detecting dlconfig.json', async () => {
+		const filePath = path.resolve('dlconfig.json');
+		const document = await vscode.workspace.openTextDocument(filePath);
+
+		assert.strictEqual(detectdlConfig(document), true);
+	});
+
+	//package.json
+	test('Detecting file that is not named dlconfig.json', async () => {
+		const filePath = path.resolve('package.json');
+		const document = await vscode.workspace.openTextDocument(filePath);
+
+		assert.strictEqual(detectdlConfig(document), false);
+	})
+
+	//test.config.json
+	test('Detecting batch config file in experimentRoot file path', async () => {
+		const filePath = path.resolve('src/test/suite/fixtures/test.config.json');
+		const document = await vscode.workspace.openTextDocument(filePath);
+		const result = await detectBatchConfig(document);
+
+		assert.strictEqual(result, true);
+	})
+
+	//wrongPath.config.json
+	test('Detecting batch config file not in experimentRoot file path', async () => {
+		const filePath = path.resolve('src/fixtures/wrongPath.config.json');
+		const document = await vscode.workspace.openTextDocument(filePath);
+		const result = await detectBatchConfig(document);
+
+		assert.strictEqual(result, false);
+	})
+
+	//allTalk.md
+	test('Trying to detect batch config file in experimentRoot file path that doesnt end with .config.json', async () => {
+		const filePath = path.resolve('src/test/suite/fixtures/allTalk.md');
+		const document = await vscode.workspace.openTextDocument(filePath);
+		const result = await detectBatchConfig(document);
+
+		assert.strictEqual(result, false);
+	})
 });

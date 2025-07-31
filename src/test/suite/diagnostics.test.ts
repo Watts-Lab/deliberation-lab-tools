@@ -296,7 +296,7 @@ suite('Diagnostics detection', () => {
 		assert.strictEqual(diagnostics[0].range.end.line, 8);
 	});
 
-	test('dlconfig.json does not exist and file path of only file name given', async () => {
+	test('dlconfig.json exists and whole file path given', async () => {
 		const filePath = path.resolve('src/test/suite/fixtures/dlConfig.treatments.yaml');
 		const document = await vscode.workspace.openTextDocument(filePath);
 		await new Promise(resolve => setTimeout(resolve, 1000));
@@ -304,39 +304,21 @@ suite('Diagnostics detection', () => {
 		assert.strictEqual(diagnostics.length, 1);
 		assert.strictEqual(
 			diagnostics[0].message,
-			`Error in item "file": File "ex.md" does not exist in the workspace. Make sure "ex.md" is located in and is written relative to "file:///mnt/c/Users/gmo/deliberation-lab-tools"`
+			`Error in item "file": File "src/test/suite/fixtures/dlConfig.treatments.yaml" does not exist in the workspace. Make sure "src/test/suite/fixtures/dlConfig.treatments.yaml" is located in and is written relative to "file:///c%3A/Users/gmo/deliberation-lab-tools/src/test/suite/fixtures"`
 		);
 		assert.strictEqual(diagnostics[0].range.start.line, 4);
 		assert.strictEqual(diagnostics[0].range.end.line, 8);
 	});
 
-	// test('dl.config.json exists, experiment root matches test fixtures, and only file name given in path', async () => {
-	// 	const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
-	// 	if (!workspaceFolder) {
-	// 		assert.fail('No workspace folder found');
-	// 	}
-	// 	console.log('Workspace folder found:', workspaceFolder.name);
-	// 	const fileUri = vscode.Uri.joinPath(workspaceFolder.uri, 'dl.config.json');
-	// 	console.log(`Made file URI: ${fileUri.toString()}`);
-	// 	const encoder = new TextEncoder();
-  	// 	const encodedContent = encoder.encode('{"experimentRoot": "src/test/suite/fixtures"}');
-	// 	console.log(`Encoded content: ${encodedContent}`);
-	// 	await vscode.workspace.fs.writeFile(fileUri, encodedContent);
-	// 	for (let i = 0; i < 40; i++) {
-	// 		try {
-	// 			await vscode.workspace.fs.stat(fileUri);
-	// 			break; // Success
-	// 		} catch {
-	// 			await new Promise((res) => setTimeout(res, 100));
-	// 		}
-	// 	}
-	// 	console.log(`Wrote dl.config.json to ${fileUri.toString()}`);
-	// 	const filePath = path.resolve('src/test/suite/fixtures/dlConfig.treatments.yaml');
-	// 	const document = await vscode.workspace.openTextDocument(filePath);
-	// 	await new Promise(resolve => setTimeout(resolve, 3000));
-	// 	const diagnostics = vscode.languages.getDiagnostics(document.uri);
-	// 	console.log(`Diagnostics found: ${diagnostics.length}`);
-	// 	console.log(`Diagnostics: ${JSON.stringify(diagnostics, null, 2)}`);
-	// 	assert.strictEqual(diagnostics.length, 0);
-	// });
+	//wrongFieldName.config.json
+	//wrongValue.config.json
+	//invalidValueSyntax.config.json
+	// payoffsNegativeNumber.config.json
+	// invalidEnum.config.json
+	// payoffsLengthNotEqual.config.json
+	//knockdownsLengthNotEqual.config.json
+	//videoAudioCheck.config.json
+	// exitCodesObj.config.json
+	// pastDate.config.json
+	// badRegex.config.json
 });
