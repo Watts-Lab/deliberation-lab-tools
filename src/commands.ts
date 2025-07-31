@@ -21,7 +21,7 @@ export const defaultMarkdown = vscode.commands.registerCommand('deliberation-lab
     const promptMarkdownFileUri = vscode.Uri.joinPath(vscode.workspace.workspaceFolders![0].uri, "src", "fixtures", "defaultPromptMarkdown.md");
     const fileBytes = await vscode.workspace.fs.readFile(promptMarkdownFileUri);
     const defaultMarkdownContent = new TextDecoder("utf-8").decode(fileBytes);
-    const doc = await vscode.workspace.openTextDocument({
+    await vscode.workspace.openTextDocument({
         language: 'markdown',
         content: defaultMarkdownContent
     });
@@ -47,6 +47,7 @@ export const inlineSuggestion = vscode.languages.registerInlineCompletionItemPro
 );
 
 // Open Markdown preview
+// TODO: refactor all the URIs?
 export const markdownPreview = vscode.commands.registerCommand('deliberation-lab-tools.openPromptPreview', () => {
     const file = vscode.window.activeTextEditor?.document;
     const { fileName: fileName, text: promptText } = getFileName(file!!);
@@ -70,8 +71,9 @@ export const markdownPreview = vscode.commands.registerCommand('deliberation-lab
         vscode.Uri.joinPath(getExtensionUri(), 'dist', 'views', 'index.js')
     );
 
+    // changed to baseStyles for now: seeing if there's any difference
     const styleUri = panel.webview.asWebviewUri(
-        vscode.Uri.joinPath(getExtensionUri(), 'dist', 'views', 'styles.css')
+        vscode.Uri.joinPath(getExtensionUri(), 'dist', 'views', 'baseStyles.css')
     );
 
     const playerStylesUri = panel.webview.asWebviewUri(
@@ -102,6 +104,7 @@ export const markdownPreview = vscode.commands.registerCommand('deliberation-lab
     // Passes new document content into webview when document changes
     vscode.workspace.onDidChangeTextDocument((event) => {
         const { fileName: fileName, text: promptText } = getFileName(event.document);
+        console.log("Webview sending prompt props after change to index.jsx");
         panel.webview.postMessage({ type: 'prompt', props: { file: fileName, name: 'example', shared: false } });
     });
 
@@ -165,7 +168,7 @@ export const stagePreview = vscode.commands.registerCommand('deliberation-lab-to
     );
 
     const styleUri = panel.webview.asWebviewUri(
-        vscode.Uri.joinPath(getExtensionUri(), 'dist', 'views', 'styles.css')
+        vscode.Uri.joinPath(getExtensionUri(), 'dist', 'views', 'baseStyles.css')
     );
 
     const playerStylesUri = panel.webview.asWebviewUri(
@@ -182,24 +185,29 @@ export const stagePreview = vscode.commands.registerCommand('deliberation-lab-to
     panel.webview.onDidReceiveMessage((message) => {
         if (message.type === 'ready') {
 
-            const treatments = loadYaml(promptText);
-            console.log("Treatments from load yaml", treatments);
+            try {
+                const treatments = loadYaml(promptText);
+                console.log("Treatments from load yaml", treatments);
+                panel.webview.postMessage({ type: 'stage', props: treatments });
+            } catch (e) {
+                console.error("Error occurred in YAML", e);
+                panel.webview.postMessage({ type: 'error', props: e });
+            }
 
-            // document text is passed in as "file"
-            // name hardcoded as "example"
-            // TODO: shared hardcoded as either "true" (creates SharedNotepad) or "false" (creates TextArea) - create an option to toggle?
-            panel.webview.postMessage({ type: 'stage', props: treatments });
         }
     });
 
     // Passes new document content into webview when document changes
     vscode.workspace.onDidChangeTextDocument((event) => {
         const { fileName: fileName, text: promptText } = getFileName(event.document);
-        const treatments = loadYaml(promptText);
-        console.log("Treatments from load yaml", treatments);
-
-        // TODO: refactor from promptProps (shouldn't be called promptProps anymore)
-        panel.webview.postMessage({ type: 'stage', props: treatments });
+        try {
+            const treatments = loadYaml(promptText);
+            console.log("Treatments from load yaml", treatments);
+            panel.webview.postMessage({ type: 'stage', props: treatments });
+        } catch (e) {
+            console.error("Error occurred in YAML", e);
+            panel.webview.postMessage({ type: 'error', props: e });
+        }
     });
 
     // Passes new document content into webview when we switch to a new document
@@ -208,22 +216,21 @@ export const stagePreview = vscode.commands.registerCommand('deliberation-lab-to
         if (file?.languageId === "treatmentsYaml") {
             const { fileName: fileName, text: promptText } = getFileName(file);
 
-            // only load treatments for now
-            const treatments = loadYaml(promptText);
-            console.log("Treatments from load yaml", treatments);
-
-            // TODO: refactor from promptProps (shouldn't be called promptProps anymore)
-            panel.webview.postMessage({ type: 'stage', props: treatments });
-            panel.title = 'Preview: ' + fileName;
+            try {
+                const treatments = loadYaml(promptText);
+                console.log("Treatments from load yaml", treatments);
+                panel.webview.postMessage({ type: 'stage', props: treatments });
+            } catch (e) {
+                console.error("Error occurred in YAML", e);
+                panel.webview.postMessage({ type: 'error', props: e });
+            }
         }
     });
 
     // Helper to pass file text back - could possibly refactor into another method?
-    // TODO: add handling for workspace folder
+    // TODO: add handling for workspace folder. Should probably also be compatible with dl.config.json
     panel.webview.onDidReceiveMessage((message) => {
         if (message.type === 'file') {
-            console.log("In helper to process file text");
-            console.log("Is file passing?", file, file!!.uri);
             const workspaceFolder = vscode.workspace.getWorkspaceFolder(file!!.uri);
             console.log("Workspace folder uri", workspaceFolder, workspaceFolder?.uri);
             const fileUri = vscode.Uri.joinPath(workspaceFolder!!.uri, message.file);
@@ -236,7 +243,7 @@ export const stagePreview = vscode.commands.registerCommand('deliberation-lab-to
                     panel.webview.postMessage({ type: 'file', fileText: doc.getText() });
                 });
             } catch (e) {
-                console.log("File path could not be read");
+                console.error("File path could not be read");
                 panel.webview.postMessage({ type: 'file', fileText: null });
             }
         }
@@ -260,8 +267,22 @@ function getFileName(file: vscode.TextDocument) {
     return { fileName, text };
 }
 
-function openFile() {
+function openFile(panel: vscode.WebviewPanel, workspaceFolder: vscode.WorkspaceFolder, file: string) {
+    // const workspaceFolder = vscode.workspace.getWorkspaceFolder(file!!.uri);
+    console.log("Workspace folder uri", workspaceFolder, workspaceFolder?.uri);
+    const fileUri = vscode.Uri.joinPath(workspaceFolder!!.uri, file);
+    console.log("File URI", fileUri);
 
+    // Look into try-catching a Thenable
+    try {
+        vscode.workspace.openTextDocument(fileUri).then((doc) => {
+            console.log("Correctly extracted text", doc.getText());
+            panel.webview.postMessage({ type: 'file', fileText: doc.getText() });
+        });
+    } catch (e) {
+        console.log("File path could not be read");
+        panel.webview.postMessage({ type: 'file', fileText: null });
+    }
 }
 
 // Loads HTML content for the webview

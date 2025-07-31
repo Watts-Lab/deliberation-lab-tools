@@ -1,10 +1,12 @@
 import React, { useEffect, useState, useContext } from "react";
 import { createRoot } from "react-dom/client";
+import { ErrorBoundary } from "react-error-boundary";
 
 // Importing React components from deliberation-empirica
 import { Prompt } from "../../deliberation-empirica/client/src/elements/Prompt";
+import { Button } from "../../deliberation-empirica/client/src/components/Button";
 import { Stage } from "../../deliberation-empirica/client/src/Stage";
-// import { Stage } from "./Stage";
+import { StageFrame } from "./StageFrame";
 
 import { StageContext, StageProvider } from "./stageContext";
 
@@ -12,6 +14,34 @@ import "../../deliberation-empirica/client/src/baseStyles.css";
 import "./styles.css";
 
 export const vscode = acquireVsCodeApi();
+
+// I'd maybe consider making a new file just for different error messaging?
+function fallbackRender({ error, resetErrorBoundary }) {
+  // Call resetErrorBoundary() to reset the error boundary and retry the render.
+  console.log("Error in fallback render", error.message);
+  const errorMetadataFormat = `
+  ---
+  name:
+  type: [openResponse, multipleChoice, noResponse, listSorter]
+  ---
+
+  Prompt text
+
+  ---
+
+  Response text`;
+
+  return (
+    <div role="alert">
+      <p>Something went wrong:</p>
+      <pre style={{ color: "red" }}>{error.name}</pre>
+      <pre style={{ color: "red" }}>{error.message}</pre>
+      <p>Please check that formatting of prompt document is as follows:</p>
+      <pre>{errorMetadataFormat}</pre>
+      <Button handleClick={resetErrorBoundary}>Try again</Button>
+    </div>
+  );
+}
 
 function App() {
   const [prompt, setPrompt] = useState(null);
@@ -37,6 +67,7 @@ function App() {
       const { type, props } = event.data;
 
       // TODO: refactor to switch case?
+      // Check if this is called when there's an error on-screen
       if (type === "prompt") {
         console.log("Prompt props", props);
         setPrompt(props);
@@ -63,11 +94,15 @@ function App() {
     }
   } else if (treatment) {
     try {
-      console.log("Rendering stage");
-      return <Stage />;
+      console.log("Rendering stage with index", currentStageIndex);
+      return <StageFrame />;
     } catch (e) {
       console.log("Error on rendering stage");
-      return <p>Error when rendering stage.</p>;
+      return (<>
+        <p>{e.name}</p>
+        <p>{e.message}</p>
+        <p>Error when rendering stage.</p>
+      </>);
     }
   }
 
@@ -90,9 +125,16 @@ if (rootElement) {
   // Need StageProvider for stageContext and other mocks
   try {
     root.render(
-      <StageProvider>
-        <App />
-      </StageProvider>
+      <ErrorBoundary fallbackRender={fallbackRender} resetKeys={[prompt]}>
+        {/* fallback={<p>Something went wrong</p>}
+        fallbackRender={fallbackRender}
+ onReset={(details) => {
+    // Reset the state of your app so the error doesn't happen again
+  }} */}
+        <StageProvider>
+          <App />
+        </StageProvider>
+      </ErrorBoundary>
     );
   } catch (e) {
     console.log(e);
