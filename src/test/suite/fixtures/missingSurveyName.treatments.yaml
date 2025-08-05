@@ -1,4 +1,4 @@
-templates:
+templates: 
   - templateName: recallTask
     # an individual recall and feedback stage
     contentType: stages
