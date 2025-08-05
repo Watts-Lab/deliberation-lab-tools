@@ -1,0 +1,205 @@
+templates:
+  - templateName: disagreeing_dyads
+    templateDesc: Main experiment template
+    contentType: treatment
+    templateContent:
+      name: ${treatmentName}
+      playerCount: 2
+
+      groupComposition:
+        - position: 2
+          conditions:
+            - reference: "prompt.${topic}"
+              comparator: includes
+              value: ${p0}
+        - position: 1
+          conditions:
+            - reference: "prompt.${topic}"
+              comparator: includes
+              value: ${p1}
+
+      gameStages:
+        - name: Strategies and Filler
+          duration: 180
+          elements:
+            - type: prompt
+              file: "ex.md"
+              showToPositions: [0]
+            - type: prompt
+              file: "ex.md"
+              showToPositions: [1]
+            - type: prompt
+              file: "ex.md"
+              showToPositions: [1]
+            - type: prompt
+              file: "ex.md"
+              name: LG_PG_why
+              showToPositions: [1]
+            - type: submitButton
+              displayTime: 120
+              buttonText: Continue
+
+        - name: Opinion Notes
+          duration: 180
+          elements:
+            - type: prompt
+              file: "ex.md"
+              showToPositions: [0]
+            - type: prompt
+              file: "ex.md"
+              showToPositions: [1]
+            - type: prompt
+              file: "ex.md"
+            - type: prompt
+              file: "ex.md"
+              showToPositions: [0]
+              name: GA
+            - type: prompt
+              file: "ex.md"
+              showToPositions: [1]
+              name: LG_PG_write
+            - type: submitButton
+              displayTime: 120
+              buttonText: Continue
+
+        - name: Attitude Attributes
+          duration: 90
+          elements:
+            - type: prompt
+              file: "ex.md"
+            - type: prompt
+              file: "ex.md"
+            - type: prompt
+              file: "ex.md"
+              name: PIA_1
+            - type: prompt
+              file: "ex.md"
+              name: PIA_2
+            - type: prompt
+              file: "ex.md"
+              name: PIA_3
+            - type: prompt
+              file: "ex.md"
+            - type: submitButton
+              buttonText: Continue
+
+        - name: Conversation Expectations
+          duration: 120
+          elements:
+            - type: prompt
+              file: "ex.md"
+            - type: prompt
+              file: "ex.md"
+              name: PIQ_1
+            - type: prompt
+              file: "ex.md"
+              name: PIQ_2
+            - type: prompt
+              file: "ex.md"
+              name: PIQ_3
+            - type: prompt
+              file: "ex.md"
+              name: PIQ_4
+            - type: prompt
+              file: "ex.md"
+              name: PIQ_5
+            - type: prompt
+              file: "ex.md"
+              name: PIQ_6
+            - type: submitButton
+              buttonText: Continue
+
+        - name: Pre-discussion Reminder
+          duration: 60
+          elements:
+            - type: prompt
+              file: "ex.md"
+              showToPositions: [0]
+            - type: prompt
+              file: "ex.md"
+              showToPositions: [1]
+            - type: prompt
+              file: "ex.md"
+            - type: prompt
+              file: "ex.md"
+              showToPositions: [0]
+            - type: prompt
+              file: "ex.md"
+              showToPositions: [1]
+            - type: display
+              reference: prompt.GA
+              showToPositions: [0]
+            - type: display
+              reference: prompt.LG_PG_write
+              showToPositions: [1]
+            - type: submitButton
+              buttonText: Continue
+
+        - name: Discussion
+          duration: 600
+          discussion:
+            chatType: video
+            showNickname: true
+            showTitle: false
+          elements:
+            - type: prompt
+              file: "ex.md"
+              displayTime: 300
+              hideTime: 330
+            - type: prompt
+              file: "ex.md"
+              displayTime: 480
+              hideTime: 510
+            - type: prompt
+              file: "ex.md"
+              showToPositions: [1]
+            - type: prompt
+              file: "ex.md"
+            - type: prompt
+              file: "ex.md"
+            - type: prompt
+              file: "ex.md"
+            - type: display
+              reference: prompt.GA
+              showToPositions: [0]
+            - type: display
+              reference: prompt.LG_PG_write
+              showToPositions: [1]
+
+      exitSequence:
+        - name: PostDiscussionInstructions
+          elements:
+            - type: prompt
+              file: "ex.md"
+            - type: submitButton
+              buttonText: Proceed to Survey
+        - name: Qualtrics_Escape_Hatch
+          elements:
+            - type: qualtrics
+              url: https://upenn.co1.qualtrics.com/jfe/form/SV_2bfMgUw37Y2AUZg
+
+introSequences:
+  - name: default
+    introSteps:
+      - name: self_construal
+        elements:
+          - type: prompt
+            file: "ex.md"
+      - name: topic_survey
+        elements:
+          - type: prompt
+            file: "ex.md"
+
+treatments:
+  - template: disagreeing_dyads
+    fields:
+      treatmentName: "${learningOrPersuasion}_condition_${topic}_${p0}_${p1}"
+    broadcast:
+      d0:  
+        - learningOrPersuasion: LG
+        - learningOrPersuasion: PG
+      d1:
+        - topic: bathroom_choice
+        - topic: censoring_extremism
+
+# broadcast field dx is wrong, needs to be d followed by int

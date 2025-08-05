@@ -310,6 +310,40 @@ suite('Diagnostics detection', () => {
 		assert.strictEqual(diagnostics[0].range.end.line, 8);
 	});
 
+	test('position is higher than player count', async () => {
+		const filePath = path.resolve('src/test/suite/fixtures/highPosition.treatments.yaml');
+		const document = await vscode.workspace.openTextDocument(filePath);
+		await new Promise(resolve => setTimeout(resolve, 1000));
+		const diagnostics = vscode.languages.getDiagnostics(document.uri);
+		assert.strictEqual(diagnostics.length, 1);
+		assert.strictEqual(
+			diagnostics[0].message,
+			`Error in item "position": Invalid template content for content type 'treatment': Player position index 2 in groupComposition exceeds playerCount of 2.`
+		);
+		assert.strictEqual(diagnostics[0].range.start.line, 9);
+		assert.strictEqual(diagnostics[0].range.end.line, 14);
+	});
+
+	test('array of positions has elements higher than playerCount', async () => {
+		const filePath = path.resolve('src/test/suite/fixtures/arrayOfPositions.treatments.yaml');
+		const document = await vscode.workspace.openTextDocument(filePath);
+		await new Promise(resolve => setTimeout(resolve, 1000));
+		const diagnostics = vscode.languages.getDiagnostics(document.uri);
+		assert.strictEqual(diagnostics.length, 2);
+		assert.strictEqual(
+			diagnostics[0].message,
+			`Error in item "1": Invalid template content for content type 'treatment': showToPositions index 2 in stage "Strategies and Filler" exceeds playerCount of 2.`
+		);
+		assert.strictEqual(
+			diagnostics[1].message,
+			`Error in item "1": Invalid template content for content type 'treatment': hideFromPositions index 3 in stage "Strategies and Filler" exceeds playerCount of 2.`
+		);
+		assert.strictEqual(diagnostics[0].range.start.line, 26);
+		assert.strictEqual(diagnostics[0].range.end.line, 26);
+		assert.strictEqual(diagnostics[1].range.start.line, 29);
+		assert.strictEqual(diagnostics[1].range.end.line, 29);
+	});
+
 	//wrongFieldName.config.json
 	test('wrong field name in batch config', async () => {
 		const filePath = path.resolve('src/test/suite/fixtures/wrongFieldName.config.json');

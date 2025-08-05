@@ -250,7 +250,6 @@ class ValidationError extends Error {
   }
 }
 
-//changed line 260 errors type so it would throw no errors in deliberation-lab-tools, if it breaks something then revert this change
 export function validateBatchConfig(config: unknown) {
   const result = batchConfigSchema.safeParse(config);
   if (!result.success) {
