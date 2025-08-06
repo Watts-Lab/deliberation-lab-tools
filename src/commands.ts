@@ -94,9 +94,7 @@ export const markdownPreview = vscode.commands.registerCommand('deliberation-lab
             // Now passing in file as fileName to make compatible with a stage
             // name hardcoded as "example"
             // TODO: shared hardcoded as either "true" (creates SharedNotepad) or "false" (creates TextArea) - create an option to toggle?
-            console.log("Webview sending prompt props to index.jsx", fileName);
             const props = { file: fileName, name: 'example', shared: false };
-            console.log("Props in prompt from command", props);
             panel.webview.postMessage({ type: 'prompt', props: props });
         }
     });
@@ -104,7 +102,6 @@ export const markdownPreview = vscode.commands.registerCommand('deliberation-lab
     // Passes new document content into webview when document changes
     vscode.workspace.onDidChangeTextDocument((event) => {
         const { fileName: fileName, text: promptText } = getFileName(event.document);
-        console.log("Webview sending prompt props after change to index.jsx");
         panel.webview.postMessage({ type: 'prompt', props: { file: fileName, name: 'example', shared: false } });
     });
 
@@ -124,9 +121,7 @@ export const markdownPreview = vscode.commands.registerCommand('deliberation-lab
     panel.webview.onDidReceiveMessage((message) => {
         if (message.type === 'file') {
             const workspaceFolder = vscode.workspace.getWorkspaceFolder(file!!.uri);
-            console.log("Workspace folder uri", workspaceFolder, workspaceFolder?.uri);
             const fileUri = vscode.Uri.joinPath(workspaceFolder!!.uri, message.file);
-            console.log("File URI", fileUri);
 
             // Look into try-catching a Thenable
             try {
@@ -187,7 +182,6 @@ export const stagePreview = vscode.commands.registerCommand('deliberation-lab-to
 
             try {
                 const treatments = loadYaml(promptText);
-                console.log("Treatments from load yaml", treatments);
                 panel.webview.postMessage({ type: 'stage', props: treatments });
             } catch (e) {
                 console.error("Error occurred in YAML", e);
@@ -202,7 +196,6 @@ export const stagePreview = vscode.commands.registerCommand('deliberation-lab-to
         const { fileName: fileName, text: promptText } = getFileName(event.document);
         try {
             const treatments = loadYaml(promptText);
-            console.log("Treatments from load yaml", treatments);
             panel.webview.postMessage({ type: 'stage', props: treatments });
         } catch (e) {
             console.error("Error occurred in YAML", e);
@@ -218,7 +211,6 @@ export const stagePreview = vscode.commands.registerCommand('deliberation-lab-to
 
             try {
                 const treatments = loadYaml(promptText);
-                console.log("Treatments from load yaml", treatments);
                 panel.webview.postMessage({ type: 'stage', props: treatments });
             } catch (e) {
                 console.error("Error occurred in YAML", e);
@@ -228,18 +220,15 @@ export const stagePreview = vscode.commands.registerCommand('deliberation-lab-to
     });
 
     // Helper to pass file text back - could possibly refactor into another method?
-    // TODO: add handling for workspace folder. Should probably also be compatible with dl.config.json
+    // TODO: add error handling for workspace folder
     panel.webview.onDidReceiveMessage((message) => {
         if (message.type === 'file') {
             const workspaceFolder = vscode.workspace.getWorkspaceFolder(file!!.uri);
-            console.log("Workspace folder uri", workspaceFolder, workspaceFolder?.uri);
             const fileUri = vscode.Uri.joinPath(workspaceFolder!!.uri, message.file);
-            console.log("File URI", fileUri);
 
             // Look into try-catching a Thenable
             try {
                 vscode.workspace.openTextDocument(fileUri).then((doc) => {
-                    console.log("Correctly extracted text", doc.getText());
                     panel.webview.postMessage({ type: 'file', fileText: doc.getText() });
                 });
             } catch (e) {
@@ -262,30 +251,11 @@ function getFileName(file: vscode.TextDocument) {
         fileName = vscode.workspace.asRelativePath(file.uri);
     }
 
-    console.log("File name", fileName);
-
     return { fileName, text };
 }
 
-function openFile(panel: vscode.WebviewPanel, workspaceFolder: vscode.WorkspaceFolder, file: string) {
-    // const workspaceFolder = vscode.workspace.getWorkspaceFolder(file!!.uri);
-    console.log("Workspace folder uri", workspaceFolder, workspaceFolder?.uri);
-    const fileUri = vscode.Uri.joinPath(workspaceFolder!!.uri, file);
-    console.log("File URI", fileUri);
-
-    // Look into try-catching a Thenable
-    try {
-        vscode.workspace.openTextDocument(fileUri).then((doc) => {
-            console.log("Correctly extracted text", doc.getText());
-            panel.webview.postMessage({ type: 'file', fileText: doc.getText() });
-        });
-    } catch (e) {
-        console.log("File path could not be read");
-        panel.webview.postMessage({ type: 'file', fileText: null });
-    }
-}
-
 // Loads HTML content for the webview
+// TODO: refactor uri variables and refactor index into two files
 function getWebviewContent(scriptUri: vscode.Uri, styleUri: vscode.Uri, playerStylesUri: vscode.Uri, layoutUri: vscode.Uri) {
 
     const nonce = getNonce();

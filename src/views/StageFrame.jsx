@@ -44,7 +44,7 @@ export function StageFrame() {
 
     // Stage properties/navigation listed at the top
     return (<>
-        <div style={{
+        <div class="stage-frame" style={{
             borderBottom: "2px solid black",
             width: "100%",
             paddingTop: "5px",

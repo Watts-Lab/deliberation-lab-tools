@@ -1,5 +1,5 @@
 ---
-name: projects/example/instructions.md
+name: src/test/suite/fixtures/instructions.md
 type: noResponse
 ---
 

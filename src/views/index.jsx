@@ -15,7 +15,9 @@ import "./styles.css";
 
 export const vscode = acquireVsCodeApi();
 
-// I'd maybe consider making a new file just for different error messaging?
+// TODO: possibly split index.jsx into two files for different error messages?
+
+// fallbackRender specified for ErrorBoundary
 function fallbackRender({ error, resetErrorBoundary }) {
   // Call resetErrorBoundary() to reset the error boundary and retry the render.
   console.log("Error in fallback render", error.message);
@@ -69,14 +71,9 @@ function App() {
       // TODO: refactor to switch case?
       // Check if this is called when there's an error on-screen
       if (type === "prompt") {
-        console.log("Prompt props", props);
         setPrompt(props);
-        console.log("Prompt props after setting", prompt);
       } else if (type === "stage") {
-        console.log("Treatment before setting", treatment);
-        console.log("Treatment props", props);
         setTreatment(props);
-        console.log("Treatment after setting", treatment);
       }
     };
 
@@ -86,18 +83,16 @@ function App() {
 
   if (prompt) {
     try {
-      console.log("Rendering prompt");
       return <Prompt {...prompt} />;
     } catch (e) {
-      console.log("Error on rendering prompt");
+      console.error("Error on rendering prompt");
       return <p>Error when rendering prompt. Please check that there are no errors in prompt Markdown file</p>;
     }
   } else if (treatment) {
     try {
-      console.log("Rendering stage with index", currentStageIndex);
       return <StageFrame />;
     } catch (e) {
-      console.log("Error on rendering stage");
+      console.error("Error on rendering stage");
       return (<>
         <p>{e.name}</p>
         <p>{e.message}</p>
@@ -112,7 +107,7 @@ function App() {
   }
 }
 
-// Mount Prompt component
+// Mount component
 const rootElement = document.getElementById("root");
 if (rootElement) {
   const root = createRoot(rootElement);
@@ -121,16 +116,11 @@ if (rootElement) {
     console.error("No #root element found in DOM!");
   }
 
-  // Rendering prompt
+  // Rendering
   // Need StageProvider for stageContext and other mocks
   try {
     root.render(
       <ErrorBoundary fallbackRender={fallbackRender} resetKeys={[prompt]}>
-        {/* fallback={<p>Something went wrong</p>}
-        fallbackRender={fallbackRender}
- onReset={(details) => {
-    // Reset the state of your app so the error doesn't happen again
-  }} */}
         <StageProvider>
           <App />
         </StageProvider>

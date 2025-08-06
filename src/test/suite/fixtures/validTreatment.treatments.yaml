@@ -1,0 +1,22 @@
+introSequences:
+  - name: "exampleIntro"
+    introSteps:
+      - name: "exampleStep1"
+        elements:
+          - type: "prompt"
+            
+treatments:
+  - name: "exampleTreatment"
+    playerCount: 1
+    gameStages:
+      - name: "exampleStage1"
+        duration: 60
+        elements:
+          - type: "prompt"
+            file: src/test/suite/fixtures/icebreaker.md
+          - type: "submitButton"
+      - name: "exampleStage2"
+        duration: 60
+        elements:
+          - type: "prompt"
+            file: src/test/suite/fixtures/prompt_listSorter_example.md

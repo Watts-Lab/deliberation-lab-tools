@@ -156,7 +156,9 @@ async function buildPrompt() {
       "src/views/styles.css",
       "src/views/playerStyles.css",
       "src/views/layout.css",
-      "src/views/baseStyles.css"
+      "src/views/baseStyles.css",
+      "src/views/progressStyle.css",
+      "src/views/style.css"
     ],
     bundle: true,
     format: "esm",
