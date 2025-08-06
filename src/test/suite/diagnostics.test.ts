@@ -4,25 +4,6 @@ import * as assert from 'assert';
 import { suite, test } from 'mocha';
 
 suite('Diagnostics detection', () => {
-	// teardown(async () => {
-	// 	const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
-	// 	if (!workspaceFolder) return;
-
-	// 	const fileUri = vscode.Uri.joinPath(workspaceFolder.uri, 'dl.config.json');
-	// 	console.log("Attempting to delete:", fileUri.fsPath);
-
-	// 	try {
-	// 	const doc = vscode.workspace.textDocuments.find(d => d.uri.toString() === fileUri.toString());
-	// 	if (doc) {
-	// 		await vscode.commands.executeCommand('workbench.action.closeActiveEditor');
-	// 	}
-
-	// 	await vscode.workspace.fs.delete(fileUri, { useTrash: false });
-	// 	console.log("Deleted dl.config.json");
-	// 	} catch (err) {
-	// 	console.error("Failed to delete dl.config.json in teardown:", err);
-	// 	}
-	// });
 
 	test('Diagnostics are empty on correct markdown file', async () => {
 		// allTalk.md

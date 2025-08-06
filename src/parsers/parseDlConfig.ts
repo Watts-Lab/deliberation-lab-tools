@@ -13,7 +13,7 @@ const settings = {
 
 
 export async function parseDlConfig(document: vscode.TextDocument) {
-    console.log("Processing dlconfig.json file...");
+    // console.log("Processing dlconfig.json file...");
     const diagnostics: vscode.Diagnostic[] = [];
 
     try {
@@ -31,12 +31,12 @@ export async function parseDlConfig(document: vscode.TextDocument) {
         } else {
            const result =  await dlConfigSchema.safeParseAsync(json as DlConfigType);
             if (!result.success) {
-                console.error("Validation failed for dlconfig.json:", result);
+                // console.error("Validation failed for dlconfig.json:", result);
                 result.error.issues.forEach((issue: ZodIssue) => {
                     handleError(issue, parsedData, document, diagnostics);
                 });
             } else {
-                console.log("dlconfig.json validated successfully.");
+                // console.log("dlconfig.json validated successfully.");
             }
         }
 

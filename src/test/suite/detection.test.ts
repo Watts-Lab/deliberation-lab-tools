@@ -12,7 +12,6 @@ import { diagnosticCollection } from '../../extension';
 
 suite('Markdown and .treatments.yaml file detection', () => {
 	vscode.window.showInformationMessage('Start all tests.');
-	console.log("Workspace folder: " + vscode.workspace.workspaceFolders?.at(0));
 
 	// extension activates after first test case: try awaiting?
 

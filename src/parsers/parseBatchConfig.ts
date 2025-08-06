@@ -12,7 +12,7 @@ const settings = {
 };
 
 export function parseBatchConfig(document: vscode.TextDocument) {
-    console.log("Processing batchconfig.json file...");
+    // console.log("Processing batchconfig.json file...");
     const diagnostics: vscode.Diagnostic[] = [];
 
     try {
@@ -21,12 +21,12 @@ export function parseBatchConfig(document: vscode.TextDocument) {
         const parsedData = parseAST(fileContent, settings);
         const result = batchConfigSchema.safeParse(json as BatchConfigType);
         if (!result.success) {
-            console.error("Validation failed for batchconfig.json:", result);
+            // console.error("Validation failed for batchconfig.json:", result);
             result.error.issues.forEach((issue: ZodIssue) => {
                 handleError(issue, parsedData, document, diagnostics);
             });
         } else {
-            console.log("batchconfig.json validated successfully.");
+            // console.log("batchconfig.json validated successfully.");
         }
 
         // Additional validation can be added here as needed
