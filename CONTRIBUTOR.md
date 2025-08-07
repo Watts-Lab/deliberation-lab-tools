@@ -29,16 +29,15 @@
 ## Packaging the extension for demoing
 
 * Uninstall the existing version of your extension:
-* ![alt text](\images\image.png)
-* ![alt text](\images\image-1.png)
-
+  * ![alt text](images/image.png)
+  * ![alt text](images/image-1.png)
 * Run `vsce package`
 * Install newly packaged extension in one of two ways:
-* Run `code --install-extension [.vsix file generated above]`
-* Or go to extensions sidebar and press three dots on top right corner
-* Click on 'Install from VSIX...' and select your newly packaged extension (found in deliberation-lab-tools folder):
-* ![alt text](\images\image-2.png)
-* ![alt text](\images\image-3.png)
+  * Run `code --install-extension [.vsix file generated above]`
+  * Or go to extensions sidebar and press three dots on top right corner
+  * Click on 'Install from VSIX...' and select your newly packaged extension (found in deliberation-lab-tools folder):
+    * ![alt text](images/image-2.png)
+    * ![alt text](images/image-3.png)
 * Restart VSCode and observe new functionality
 
 ## Run tests
