@@ -7,7 +7,7 @@ templates:
       playerCount: 2
 
       groupComposition:
-        - position: 0
+        - position: 2
           conditions:
             - reference: "prompt.${topic}"
               comparator: includes
@@ -195,7 +195,7 @@ treatments:
     fields:
       treatmentName: "${learningOrPersuasion}_condition_${topic}_${p0}_${p1}"
     broadcast:
-      dx:  
+      d0:  
         - learningOrPersuasion: LG
         - learningOrPersuasion: PG
       d1:

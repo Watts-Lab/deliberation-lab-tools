@@ -19,7 +19,7 @@ treatments:
           showTitle: false
         elements:
           - type: prompt 
-            file: "src/test/suite/fixtures/ex.md"
+            file: "ex.md"
 
     exitSequence:
       - name: postsurvey

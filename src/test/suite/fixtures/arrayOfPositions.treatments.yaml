@@ -24,10 +24,10 @@ templates:
           elements:
             - type: prompt
               file: "ex.md"
-              showToPositions: [0]
+              showToPositions: [0, 2]
             - type: prompt
               file: "ex.md"
-              showToPositions: [1]
+              hideFromPositions: [1, 3]
             - type: prompt
               file: "ex.md"
               showToPositions: [1]
@@ -195,7 +195,7 @@ treatments:
     fields:
       treatmentName: "${learningOrPersuasion}_condition_${topic}_${p0}_${p1}"
     broadcast:
-      dx:  
+      d0:  
         - learningOrPersuasion: LG
         - learningOrPersuasion: PG
       d1:

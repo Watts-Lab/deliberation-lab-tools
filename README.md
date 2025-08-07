@@ -50,6 +50,8 @@ The file ```src/runExtensionTests.js``` runs a test script that calls the file `
 
 If you want to test only one or a few test files, then run ```npm test --TEST_FILES {test_file_name} {test_file_name} ...```, making sure to separate specific test file names by spaces. For example, ```npm test --TEST_FILES detection.test.js``` runs only detection algorithm tests, and ```npm test --TEST_FILES diagnostics.test.js``` runs only diagnostic tests. ```npm test --TEST_FILES detection.test.js diagnostics.test.js``` runs both files in the specified order.
 
+MAKE SURE dlconfig.json has experimentRoot field set to src/test/suite/fixtures before running tests!!!
+
 ## Publishing extension on VSCode Marketplace
 
 - Access our [Azure DevOps organization](https://dev.azure.com/deliberationlab/) -- permission required
