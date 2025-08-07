@@ -37,7 +37,7 @@
   * Or go to extensions sidebar and press three dots on top right corner
   * Click on 'Install from VSIX...' and select your newly packaged extension (found in deliberation-lab-tools folder):
     * ![alt text](images/image-2.png)
-    * ![alt text](images/image-3.png)
+    * ![alt text](images/image3.png)
 * Restart VSCode and observe new functionality
 
 ## Run tests
