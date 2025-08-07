@@ -14,52 +14,19 @@ import { off } from 'process';
 // YAML validator for treatments
 
 export async function parseYaml(document: vscode.TextDocument) {
-    console.log("Processing .treatments.yaml file...");
+    // console.log("Processing .treatments.yaml file...");
     const diagnostics: vscode.Diagnostic[] = [];
 
-    // try {
-    //     // Load YAML content using js-yaml
-    //     const yamlContent = loadYaml(document.getText());
-    //     console.log("YAML content loaded successfully.");
-    //     console.log("YAML content:", yamlContent);
-    // } catch (error) {
-    //     if (error instanceof YAMLException) {
-    //         console.error("YAML parsing error:", error.message);
-    //         const lineText = document.lineAt(error.mark.line).text;;
-    //         const range = new vscode.Range(
-    //             new vscode.Position(error.mark.line, error.mark.column),
-    //             new vscode.Position(error.mark.line, lineText.length)
-    //         );
-    //         let errorMessage = `YAML syntax error: ${error.message}`;
-    //         const errorDesc = 'Check for proper indentation and formatting at line or nearby lines. Ensure array elements start with dashes (-).';
-
-    //         const errorText = error.message.toLowerCase();
-    //         if (errorText.includes('bad indentation')) {
-    //             errorMessage += `\n ${errorDesc}`;
-    //         }
-    //         diagnostics.push(
-    //             new vscode.Diagnostic(
-    //                 range,
-    //                 errorMessage,
-    //                 vscode.DiagnosticSeverity.Error
-    //             )
-    //         );
-    //         diagnosticCollection.set(document.uri, diagnostics);
-    //         console.log("Length of diagnostics for yaml: " + diagnostics.length);
-    //         console.log("Length of diagnostic collection for yaml: " + diagnosticCollection.get(document.uri)!!.length);
-    //     }
-    //     return;
-    // }
     //Parse YAML content into AST
     let parsedData = YAML.parseDocument(document.getText(), {
         keepCstNodes: true,
         keepNodeTypes: true,
     } as any) || null;
-    console.log("YAML parsed successfully.");
-    console.log(parsedData.errors);
+    // console.log("YAML parsed successfully.");
+    // console.log(parsedData.errors);
 
     if (parsedData.errors.length > 0) {
-        console.log("YAML parsing errors found:", parsedData.errors);
+        // console.log("YAML parsing errors found:", parsedData.errors);
         parsedData.errors.forEach((error: any) => {
             const range = new vscode.Range(
                 new vscode.Position(error.linePos[0].line - 2, 0),
@@ -77,11 +44,11 @@ export async function parseYaml(document: vscode.TextDocument) {
             }
         });
         diagnosticCollection.set(document.uri, diagnostics);
-        console.log("Length of diagnostics for yaml: " + diagnostics.length);
-        console.log("Length of diagnostic collection for yaml: " + diagnosticCollection.get(document.uri)!!.length);
+        // console.log("Length of diagnostics for yaml: " + diagnostics.length);
+        // console.log("Length of diagnostic collection for yaml: " + diagnosticCollection.get(document.uri)!!.length);
         return;
     } else if (parsedData.warnings) {
-        console.log("YAML parsing warnings found:", parsedData.warnings);
+        // console.log("YAML parsing warnings found:", parsedData.warnings);
         parsedData.warnings.forEach((warning: any) => {
             const range = new vscode.Range(
                 offsetToPosition(warning.pos?.[0], document),
@@ -103,41 +70,76 @@ export async function parseYaml(document: vscode.TextDocument) {
         (Array.isArray(parsedData.contents) &&
             parsedData.contents.length === 0)
     ) {
-        console.log("YAML document is empty. Skipping validation.");
+        // console.log("YAML document is empty. Skipping validation.");
         diagnosticCollection.set(document.uri, diagnostics); // Clear any existing diagnostics
         return;
     }
 
     // Validate YAML content using Zod and TreatmentFileType
-    console.log("Running Zod validation...");
+    // console.log("Running Zod validation...");
     const validationResult = treatmentFileSchema.safeParse(
         parsedData.toJS() as TreatmentFileType
     );
 
 
     if (!validationResult.success) {
-        console.log("Zod validation failed:", validationResult.error.issues);
+        // console.log("Zod validation failed:", validationResult.error.issues);
         (validationResult.error as ZodError).issues.forEach(
             (issue: ZodIssue) => {
                 handleError(issue, parsedData, document, diagnostics);
             }
         );
     } else {
-        console.log(
-            "Zod validation passed. Types are consistent with TreatmentFileType."
-        );
-    }
+    //     console.log(
+    //         "Zod validation passed. Types are consistent with TreatmentFileType."
+    //     );
+     }
 
-    async function fileExistsInWorkspace(relativePath: string): Promise<boolean> {
-        const fileUri = vscode.Uri.joinPath(vscode.workspace.workspaceFolders![0].uri, relativePath);
+    async function existence(parentUri: vscode.Uri, uri: vscode.Uri): Promise<{ uri: vscode.Uri; exists: boolean }> {
         try {
-            await vscode.workspace.fs.stat(fileUri);
-            return true;
+            await vscode.workspace.fs.stat(uri);
+            return {
+                uri: uri,
+                exists: true
+            };
         } catch (err) {
             if ((err as any).code === 'FileNotFound' || (err as any).name === 'EntryNotFound') {
-            return false;
+                return {
+                    uri: parentUri,
+                    exists: false
+                };
             }
             throw err;
+        }
+    }
+    async function fileExistsInWorkspace(relativePath: string): Promise<{ uri: vscode.Uri; exists: boolean }> {
+        try {
+            const fileConfigUri = vscode.Uri.joinPath(vscode.workspace.workspaceFolders![0].uri, 'dlconfig.json');
+            // console.log("Checking if dlconfig.json exists in workspace");
+            await vscode.workspace.fs.stat(fileConfigUri);
+            const fileData = await vscode.workspace.fs.readFile(fileConfigUri);
+            const fileContent = new TextDecoder('utf-8').decode(fileData);
+            const json = JSON.parse(fileContent);
+            let fileUri: vscode.Uri;
+            if (json?.experimentRoot && json.experimentRoot !== "") {
+                const fileParentUri = vscode.Uri.joinPath(
+                    vscode.workspace.workspaceFolders![0].uri,
+                    json.experimentRoot
+                );
+                fileUri = vscode.Uri.joinPath(
+                    vscode.workspace.workspaceFolders![0].uri,
+                    json.experimentRoot,
+                    relativePath
+                );
+                return await existence(fileParentUri, fileUri);
+            }
+            fileUri = vscode.Uri.joinPath(vscode.workspace.workspaceFolders![0].uri, relativePath);
+            return await existence(vscode.workspace.workspaceFolders![0].uri, fileUri);
+        } catch (err) {
+            console.error("dlconfig.json does not exist", err);
+            const fileUri = vscode.Uri.joinPath(vscode.workspace.workspaceFolders![0].uri, relativePath);
+            // console.log("Checking if file exists in workspace:", fileUri.toString());
+            return await existence(vscode.workspace.workspaceFolders![0].uri, fileUri);
         }
     }
 
@@ -160,12 +162,12 @@ export async function parseYaml(document: vscode.TextDocument) {
             const currentPath = [...path, key];
     
             if (key === "file" && typeof value === "string") {
-              const exists = await fileExistsInWorkspace(value);
-              if (!exists) {
+              const data = await fileExistsInWorkspace(value);
+              if (!data.exists) {
                 issues.push({
                   code: z.ZodIssueCode.custom,
                   path: currentPath,
-                  message: `File "${value}" does not exist in the workspace.`,
+                  message: `File "${value}" does not exist in the workspace. Make sure "${value}" is located in and is written relative to "${data.uri}"`,
                 });
               }
             }
@@ -177,20 +179,21 @@ export async function parseYaml(document: vscode.TextDocument) {
     
       await recurse(data);
     
-      console.log("Validation issues found:", issues);
+    //   console.log("Validation issues found:", issues);
       return issues;
     }
 
     const missingFiles = asyncValidateFilesToIssues(
         parsedData.toJS() as TreatmentFileType
     ).then((issues: ZodIssue[]) => {
-        console.log("Missing files validation issues:", issues);
+        // console.log("Missing files validation issues:", issues);
         issues.forEach((issue: ZodIssue) => {
             handleError(issue, parsedData, document, diagnostics);
         });
         // Update diagnostics in VS Code
         diagnosticCollection.set(document.uri, diagnostics);
-        console.log("Length of diagnostics for yaml: " + diagnostics.length);
-        console.log("Length of diagnostic collection for yaml: " + diagnosticCollection.get(document.uri)!!.length);
+        // console.log("Length of diagnostics for yaml: " + diagnostics.length);
+        // console.log("Length of diagnostic collection for yaml: " + diagnosticCollection.get(document.uri)!!.length);
     });
+    
 }

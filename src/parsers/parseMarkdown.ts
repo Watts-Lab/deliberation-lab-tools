@@ -11,11 +11,11 @@ import { handleError, getIndex, offsetToPosition } from '../errorPosition';
 // Markdown validator
 
 export function parseMarkdown(document: vscode.TextDocument) {
-    console.log("Processing .md file...");
+    // console.log("Processing .md file...");
     const diagnostics: vscode.Diagnostic[] = [];
 
     // getting the separators from the document
-    console.log("Document URI:", document.uri.toString());
+    // console.log("Document URI:", document.uri.toString());
     const separators = document.getText().match(/^-{3,}$/gm);
 
     //getting the three sections of the document
@@ -56,7 +56,7 @@ export function parseMarkdown(document: vscode.TextDocument) {
             throw new Error("No YAML frontmatter found");
         }
         yamlText = yamlText.trimEnd();
-        console.log("YAML frontmatter:", yamlText);
+        // console.log("YAML frontmatter:", yamlText);
     } catch (error) {
         console.log("Error retrieving YAML frontmatter:", error);
     }
@@ -67,9 +67,9 @@ export function parseMarkdown(document: vscode.TextDocument) {
             keepCstNodes: true,
             keepNodeTypes: true,
         } as any);
-        console.log("YAML parsed successfully.", parsedData);
+        // console.log("YAML parsed successfully.", parsedData);
     
-    console.log("Relative path before passing into schema: " + relativePath);
+    // console.log("Relative path before passing into schema: " + relativePath);
 
     //Metadata validation
     const result = metadataLogicalSchema(relativePath).safeParse(
@@ -77,7 +77,7 @@ export function parseMarkdown(document: vscode.TextDocument) {
     );
 
     if (!result.success) {
-        console.log("Zod validation failed:", result.error.issues);
+        // console.log("Zod validation failed:", result.error.issues);
 
         (result.error as ZodError).issues.forEach(
             (issue: ZodIssue) => {
@@ -85,15 +85,15 @@ export function parseMarkdown(document: vscode.TextDocument) {
             }
         );
     } else {
-        console.log("Zod validation passed. Types are consistent with MetadataType.");
+        // console.log("Zod validation passed. Types are consistent with MetadataType.");
     }
 
     const resultTwo = metadataTypeSchema.safeParse(
         parsedData.toJS() as MetadataType
     );
-    console.log("resultTwo obtained from metadataBaseSchema:", resultTwo);
+    // console.log("resultTwo obtained from metadataBaseSchema:", resultTwo);
     if (!resultTwo.success) {
-        console.log("Zod validation failed:", resultTwo.error.issues);
+        // console.log("Zod validation failed:", resultTwo.error.issues);
 
         (resultTwo.error as ZodError).issues.forEach(
             (issue: ZodIssue) => {
@@ -101,7 +101,7 @@ export function parseMarkdown(document: vscode.TextDocument) {
             }
         );
     } else {
-        console.log("Zod validation passed. Types are consistent with MetadataType.");
+        // console.log("Zod validation passed. Types are consistent with MetadataType.");
     }
 
 
@@ -132,7 +132,7 @@ export function parseMarkdown(document: vscode.TextDocument) {
 
             // no response warning position handling
             case "noResponse": {
-                console.log("Entering no response case");
+                // console.log("Entering no response case");
                 if (response && !(/^\s*$/.test(response))) {
                     let { text, index } = getIndex(document, 3);
                     const lastPos = document.positionAt(text.length - 1);
@@ -158,7 +158,7 @@ export function parseMarkdown(document: vscode.TextDocument) {
                 const lineNum = (document.positionAt(index).line) + 1;
                 for (let i = lineNum; i < document.lineCount; i++) {
                     const str = document.lineAt(i).text;
-                    console.log(str);
+                    // console.log(str);
                     if (!(/^\s*$/.test(str)) && str.substring(0, 2) !== "- ") {
                         const diagnosticRange = new vscode.Range(
                             new vscode.Position(i, 0),
@@ -201,7 +201,7 @@ export function parseMarkdown(document: vscode.TextDocument) {
                 break;
             }
             default: {
-                console.log("Type: " + type);
+                // console.log("Type: " + type);
                 break;
             }
 

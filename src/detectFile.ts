@@ -1,12 +1,13 @@
 import * as vscode from "vscode";
 import { load as loadYaml } from "js-yaml";
+import * as path from "path";
 
 // Helper file containing detection algorithms for file formats (.treatments.yaml and markdown)
 
 // Detects if file is prompt Markdown format by parsing metadata with YAML
 export function detectPromptMarkdown(document: vscode.TextDocument) {
   if (document.languageId === "markdown") {
-    console.log("Markdown file");
+    // console.log("Markdown file");
 
     // define interface for metadata
     interface Metadata {
@@ -37,6 +38,36 @@ export function detectPromptMarkdown(document: vscode.TextDocument) {
 
 // Function to detect if document is treatmentsYaml format - mostly for unit tests
 export function detectTreatmentsYaml(document: vscode.TextDocument) {
-  console.log("Document languageId:", document.languageId);
+  // console.log("Document languageId:", document.languageId);
   return document.languageId === "treatmentsYaml";
+}
+
+export function detectdlConfig(document: vscode.TextDocument) {
+  // console.log("Document name:", document.fileName);
+  return vscode.workspace.asRelativePath(document.uri, false) === "dlconfig.json";
+}
+
+export async function detectBatchConfig(document: vscode.TextDocument) {
+  try {
+    const fileConfigUri = vscode.Uri.joinPath(vscode.workspace.workspaceFolders![0].uri, 'dlconfig.json');
+    // console.log("Checking if dlconfig.json exists in workspace");
+    await vscode.workspace.fs.stat(fileConfigUri);
+    const fileData = await vscode.workspace.fs.readFile(fileConfigUri);
+    const fileContent = new TextDecoder('utf-8').decode(fileData);
+    const json = JSON.parse(fileContent);
+    const fileParentUri = vscode.Uri.joinPath(
+      vscode.workspace.workspaceFolders![0].uri,
+      json.experimentRoot
+    );
+    const dlconfigPath = fileParentUri.fsPath;
+    const batchConfigPath = document.fileName;
+    const relative = path.relative(dlconfigPath, batchConfigPath);
+    if (!!relative && !relative.startsWith("..") && !path.isAbsolute(relative)) {
+      return document.fileName.endsWith(".config.json");
+    } else {
+      return false;
+    }
+  } catch (err) {
+    return false;
+  }
 }

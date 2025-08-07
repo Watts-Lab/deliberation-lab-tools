@@ -1,3 +1,11 @@
+templates:
+  - templateName: topicPrompt
+    contentType: element
+    templateContent:
+      type: prompt
+      name: "${topicName}_presurvey"
+      file: "src/test/suite/fixtures/dlConfig.treatments.yaml"
+      tags: ["predictor"]
 introSequences:
   - name: "exampleIntro"
     introSteps:

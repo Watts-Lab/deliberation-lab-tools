@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
 import * as YAML from "yaml";
+import type { ASTNode, ObjectNode, PropertyNode, ArrayNode } from 'json-to-ast';
 import { ZodIssue } from "zod";
 
 // Helper file for functions to index and find positions in documents
@@ -44,16 +45,34 @@ export function getIndex(document: vscode.TextDocument, i: number) {
     return { text, index };
 }
 
+function isAstNode(node: unknown): node is ASTNode {
+  return typeof node === "object" &&
+    node !== null &&
+    typeof (node as any).type === "string" &&
+    ("loc" in node || "children" in node || "key" in node);
+}
+
 // helper function to handle errors as diagnostic warnings if yaml doesn't match a schema
-export function handleError(issue: ZodIssue, parsedData: YAML.Document.Parsed, document: vscode.TextDocument, diagnostics: vscode.Diagnostic[]) {
-    console.log(
-        `Processing Zod issue with path: ${JSON.stringify(issue.path)}`
-    );
-    const range = findPositionFromPath(
-        issue.path,
-        parsedData,
-        document
-    );
+export function handleError(issue: ZodIssue, parsedData: YAML.Document.Parsed | ASTNode, document: vscode.TextDocument, diagnostics: vscode.Diagnostic[]) {
+    // console.log(
+    //     `Processing Zod issue with path: ${JSON.stringify(issue.path)}`
+    // );
+    let range: vscode.Range | null = null;
+    if (isAstNode(parsedData)) {
+        // console.log("Parsed data is an AST node.");
+        range = findPositionFromPathJson(
+            issue.path,
+            parsedData,
+            document
+        ); 
+        // console.log("Found range:", range);
+    } else {
+        range = findPositionFromPath(
+            issue.path,
+            parsedData,
+            document
+        );
+    }
     const diagnosticRange =
         range ||
         new vscode.Range(
@@ -68,6 +87,45 @@ export function handleError(issue: ZodIssue, parsedData: YAML.Document.Parsed, d
             vscode.DiagnosticSeverity.Warning
         )
     );
+}
+
+export function findPositionFromPathJson(
+  path: (string | number)[],
+  ast: ASTNode,
+  document: vscode.TextDocument
+): vscode.Range | null {
+  let currentNode: ASTNode | undefined = ast;
+
+  for (const segment of path) {
+    if (!currentNode) return null;
+
+    if (currentNode.type === "Object" && typeof segment === "string") {
+      const prop: PropertyNode | undefined = (currentNode as ObjectNode).children.find(
+        (p) => p.key.value === segment
+      );
+      if (!prop) return null;
+      currentNode = prop.value;
+    } else if (currentNode.type === "Array" && typeof segment === "number") {
+      const elements: ASTNode[] = (currentNode as ArrayNode).children;
+      currentNode = elements[segment];
+      if (!currentNode) return null;
+    } else {
+      return null;
+    }
+  }
+
+  if (!currentNode?.loc) return null;
+
+  const startPos = new vscode.Position(
+    currentNode.loc.start.line - 1,
+    currentNode.loc.start.column - 1
+  );
+  const endPos = new vscode.Position(
+    currentNode.loc.end.line - 1,
+    currentNode.loc.end.column - 1
+  );
+
+  return new vscode.Range(startPos, endPos);
 }
 
 // Helper function to find the position of a node in the AST based on the path  
@@ -103,7 +161,7 @@ function findPositionFromPath(
         if (currentNode && currentNode.range) {
             currentRange = currentNode.range;
         } else {
-            console.log("No range found for node:", currentNode, segment);
+            // console.log("No range found for node:", currentNode, segment);
         }
     }
 
@@ -120,12 +178,12 @@ function findPositionFromPath(
 
         const startPos = offsetToPosition(startOffset, document);
         const endPos = offsetToPosition(endOffset, document);
-        console.log(
-            `Located range: start ${startPos.line}:${startPos.character}, end ${endPos.line}:${endPos.character}`
-        );
+        // console.log(
+        //     `Located range: start ${startPos.line}:${startPos.character}, end ${endPos.line}:${endPos.character}`
+        // );
         return new vscode.Range(startPos, endPos);
     }
 
-    console.log("No range identified for the provided path.");
+    // console.log("No range identified for the provided path.");
     return null;
 }

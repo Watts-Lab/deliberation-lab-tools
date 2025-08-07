@@ -4,6 +4,7 @@ import * as assert from 'assert';
 import { suite, test } from 'mocha';
 
 suite('Diagnostics detection', () => {
+
 	test('Diagnostics are empty on correct markdown file', async () => {
 		// allTalk.md
 
@@ -93,7 +94,7 @@ suite('Diagnostics detection', () => {
 		const filePath = path.resolve('src/test/suite/fixtures/badStage.treatments.yaml');
 		const document = await vscode.workspace.openTextDocument(filePath);
 		await vscode.window.showTextDocument(document);
-		await new Promise(resolve => setTimeout(resolve, 3000)); // wait 300ms
+		await new Promise(resolve => setTimeout(resolve, 3000));
 		const diagnostics = vscode.languages.getDiagnostics(document.uri);
 
 		assert.strictEqual(diagnostics.length, 1);
@@ -124,7 +125,7 @@ suite('Diagnostics detection', () => {
 	test('Invalid Broadcast Key', async () => {
 		const filePath = path.resolve('src/test/suite/fixtures/invalidBroadcastKey.treatments.yaml')
 		const document = await vscode.workspace.openTextDocument(filePath);
-		await new Promise(resolve => setTimeout(resolve, 1000));
+		await new Promise(resolve => setTimeout(resolve, 2000));
 		const diagnostics = vscode.languages.getDiagnostics(document.uri);
 		assert.strictEqual(diagnostics.length, 1);
 		assert.strictEqual(
@@ -270,9 +271,234 @@ suite('Diagnostics detection', () => {
 		assert.strictEqual(diagnostics.length, 1);
 		assert.strictEqual(
 			diagnostics[0].message,
-			`Error in item "file": File "shared/yesNo/survey.md" does not exist in the workspace.`
+			`Error in item "file": File "shared/yesNo/survey.md" does not exist in the workspace. Make sure "shared/yesNo/survey.md" is located in and is written relative to "file:///home/runner/work/deliberation-lab-tools/deliberation-lab-tools/src/test/suite/fixtures"`
 		);
 		assert.strictEqual(diagnostics[0].range.start.line, 4);
 		assert.strictEqual(diagnostics[0].range.end.line, 8);
+	});
+
+	test('dlconfig.json exists and whole file path given', async () => {
+		const filePath = path.resolve('src/test/suite/fixtures/dlConfig.treatments.yaml');
+		const document = await vscode.workspace.openTextDocument(filePath);
+		await new Promise(resolve => setTimeout(resolve, 1000));
+		const diagnostics = vscode.languages.getDiagnostics(document.uri);
+		assert.strictEqual(diagnostics.length, 1);
+		assert.strictEqual(
+			diagnostics[0].message,
+			`Error in item "file": File "src/test/suite/fixtures/dlConfig.treatments.yaml" does not exist in the workspace. Make sure "src/test/suite/fixtures/dlConfig.treatments.yaml" is located in and is written relative to "file:///home/runner/work/deliberation-lab-tools/deliberation-lab-tools/src/test/suite/fixtures"`
+		);
+		assert.strictEqual(diagnostics[0].range.start.line, 4);
+		assert.strictEqual(diagnostics[0].range.end.line, 8);
+	});
+
+	test('position is higher than player count', async () => {
+		const filePath = path.resolve('src/test/suite/fixtures/highPosition.treatments.yaml');
+		const document = await vscode.workspace.openTextDocument(filePath);
+		await new Promise(resolve => setTimeout(resolve, 1000));
+		const diagnostics = vscode.languages.getDiagnostics(document.uri);
+		assert.strictEqual(diagnostics.length, 1);
+		assert.strictEqual(
+			diagnostics[0].message,
+			`Error in item "position": Invalid template content for content type 'treatment': Player position index 2 in groupComposition exceeds playerCount of 2.`
+		);
+		assert.strictEqual(diagnostics[0].range.start.line, 9);
+		assert.strictEqual(diagnostics[0].range.end.line, 14);
+	});
+
+	test('array of positions has elements higher than playerCount', async () => {
+		const filePath = path.resolve('src/test/suite/fixtures/arrayOfPositions.treatments.yaml');
+		const document = await vscode.workspace.openTextDocument(filePath);
+		await new Promise(resolve => setTimeout(resolve, 1000));
+		const diagnostics = vscode.languages.getDiagnostics(document.uri);
+		assert.strictEqual(diagnostics.length, 2);
+		assert.strictEqual(
+			diagnostics[0].message,
+			`Error in item "1": Invalid template content for content type 'treatment': showToPositions index 2 in stage "Strategies and Filler" exceeds playerCount of 2.`
+		);
+		assert.strictEqual(
+			diagnostics[1].message,
+			`Error in item "1": Invalid template content for content type 'treatment': hideFromPositions index 3 in stage "Strategies and Filler" exceeds playerCount of 2.`
+		);
+		assert.strictEqual(diagnostics[0].range.start.line, 26);
+		assert.strictEqual(diagnostics[0].range.end.line, 26);
+		assert.strictEqual(diagnostics[1].range.start.line, 29);
+		assert.strictEqual(diagnostics[1].range.end.line, 29);
+	});
+
+	//wrongFieldName.config.json
+	test('wrong field name in batch config', async () => {
+		const filePath = path.resolve('src/test/suite/fixtures/wrongFieldName.config.json');
+		const document = await vscode.workspace.openTextDocument(filePath);
+		await new Promise(resolve => setTimeout(resolve, 1000));
+		const diagnostics = vscode.languages.getDiagnostics(document.uri);
+		assert.strictEqual(diagnostics.length, 2);
+		assert.strictEqual(
+			diagnostics[0].message,
+			`Error in item "batchName": Required`
+		);
+		assert.strictEqual(
+			diagnostics[1].message,
+			`Error in item "undefined": Unrecognized key(s) in object: 'batchNam'`
+		);
+		assert.strictEqual(diagnostics[0].range.start.line, 0);
+		assert.strictEqual(diagnostics[0].range.end.line, 0);
+		assert.strictEqual(diagnostics[1].range.start.line, 0);
+		assert.strictEqual(diagnostics[1].range.end.line, 42);
+	});
+
+	//wrongValue.config.json
+	test('wrong value in batch config', async () => {
+		const filePath = path.resolve('src/test/suite/fixtures/wrongValue.config.json');
+		const document = await vscode.workspace.openTextDocument(filePath);
+		await new Promise(resolve => setTimeout(resolve, 1000));
+		const diagnostics = vscode.languages.getDiagnostics(document.uri);
+		assert.strictEqual(diagnostics.length, 1);
+		assert.strictEqual(
+			diagnostics[0].message,
+			`Error in item "batchName": Expected string, received number`
+		);
+		assert.strictEqual(diagnostics[0].range.start.line, 1);
+		assert.strictEqual(diagnostics[0].range.end.line, 1);
+	});
+
+	//invalidValueSyntax.config.json
+	test('invalid treatment yaml fileName syntax in batch config', async () => {
+		const filePath = path.resolve('src/test/suite/fixtures/invalidValueSyntax.config.json');
+		const document = await vscode.workspace.openTextDocument(filePath);
+		await new Promise(resolve => setTimeout(resolve, 1000));
+		const diagnostics = vscode.languages.getDiagnostics(document.uri);
+		assert.strictEqual(diagnostics.length, 1);
+		assert.strictEqual(
+			diagnostics[0].message,
+			`Error in item "treatmentFile": Invalid`
+		);
+		assert.strictEqual(diagnostics[0].range.start.line, 3);
+		assert.strictEqual(diagnostics[0].range.end.line, 3);
+	});
+
+	// payoffsNegativeNumber.config.json
+	test('negative number in payoffs array', async () => {
+		const filePath = path.resolve('src/test/suite/fixtures/payoffsNegativeNumber.config.json');
+		const document = await vscode.workspace.openTextDocument(filePath);
+		await new Promise(resolve => setTimeout(resolve, 1000));
+		const diagnostics = vscode.languages.getDiagnostics(document.uri);
+		assert.strictEqual(diagnostics.length, 1);
+		assert.strictEqual(
+			diagnostics[0].message,
+			`Error in item "0": Number must be greater than 0`
+		);
+		assert.strictEqual(diagnostics[0].range.start.line, 6);
+		assert.strictEqual(diagnostics[0].range.end.line, 6);
+	});
+
+	// invalidEnum.config.json
+	test('invalid enum value in batch config', async () => {
+		const filePath = path.resolve('src/test/suite/fixtures/invalidEnum.config.json');
+		const document = await vscode.workspace.openTextDocument(filePath);
+		await new Promise(resolve => setTimeout(resolve, 1000));
+		const diagnostics = vscode.languages.getDiagnostics(document.uri);
+		assert.strictEqual(diagnostics.length, 1);
+		assert.strictEqual(
+			diagnostics[0].message,
+			`Error in item "cdn": Invalid enum value. Expected 'test' | 'prod' | 'local', received 'poo'`
+		);
+		assert.strictEqual(diagnostics[0].range.start.line, 2);
+		assert.strictEqual(diagnostics[0].range.end.line, 2);
+	});
+
+	// payoffsLengthNotEqual.config.json
+	test('payoffs length not equal to treatments length in batch config', async () => {
+		const filePath = path.resolve('src/test/suite/fixtures/payoffsLengthNotEqual.config.json');
+		const document = await vscode.workspace.openTextDocument(filePath);
+		await new Promise(resolve => setTimeout(resolve, 1000));
+		const diagnostics = vscode.languages.getDiagnostics(document.uri);
+		assert.strictEqual(diagnostics.length, 1);
+		assert.strictEqual(
+			diagnostics[0].message,
+			`Error in item "payoffs": Number of payoffs must match number of treatments, or be set to "equal"`
+		);
+		assert.strictEqual(diagnostics[0].range.start.line, 6);
+		assert.strictEqual(diagnostics[0].range.end.line, 6);
+	});
+
+	//knockdownsLengthNotEqual.config.json
+	test('knockdowns length not equal to treatments length in batch config', async () => {
+		const filePath = path.resolve('src/test/suite/fixtures/knockdownsNotSameTreatments.config.json');
+		const document = await vscode.workspace.openTextDocument(filePath);
+		await new Promise(resolve => setTimeout(resolve, 1000));
+		const diagnostics = vscode.languages.getDiagnostics(document.uri);
+		assert.strictEqual(diagnostics.length, 2);
+		assert.strictEqual(
+			diagnostics[0].message,
+			`Error in item "knockdowns": Number of rows in knockdown matrix must match number of treatments`
+		);
+		assert.strictEqual(diagnostics[1].message,
+			'Error in item "knockdowns": Knockdown matrix row 1 must match number of treatments'
+		);
+		assert.strictEqual(diagnostics[0].range.start.line, 7);
+		assert.strictEqual(diagnostics[0].range.end.line, 10);
+		assert.strictEqual(diagnostics[1].range.start.line, 7);
+		assert.strictEqual(diagnostics[1].range.end.line, 10);
+
+	});
+
+	//videoAudioCheck.config.json
+	test('audio false while video true in batch config', async () => {
+		const filePath = path.resolve('src/test/suite/fixtures/videoAudioDifferent.config.json');
+		const document = await vscode.workspace.openTextDocument(filePath);
+		await new Promise(resolve => setTimeout(resolve, 1000));
+		const diagnostics = vscode.languages.getDiagnostics(document.uri);
+		assert.strictEqual(diagnostics.length, 1);
+		assert.strictEqual(
+			diagnostics[0].message,
+			`Error in item "checkAudio": Cannot check video without also checking audio`
+		);
+		assert.strictEqual(diagnostics[0].range.start.line, 40);
+		assert.strictEqual(diagnostics[0].range.end.line, 40);
+	});
+
+	// exitCodesObj.config.json
+	test('exitCodes has invalid subfield in batch config', async () => {
+		const filePath = path.resolve('src/test/suite/fixtures/exitCodesObj.config.json');
+		const document = await vscode.workspace.openTextDocument(filePath);
+		await new Promise(resolve => setTimeout(resolve, 1000));
+		const diagnostics = vscode.languages.getDiagnostics(document.uri);
+		assert.strictEqual(diagnostics.length, 1);
+		assert.strictEqual(
+			diagnostics[0].message,
+			`Error in item "exitCodes": Invalid input`
+		);
+		assert.strictEqual(diagnostics[0].range.start.line, 12);
+		assert.strictEqual(diagnostics[0].range.end.line, 17);
+	});
+
+	// pastDate.config.json
+	test('past date in batch config', async () => {
+		const filePath = path.resolve('src/test/suite/fixtures/pastDate.config.json');
+		const document = await vscode.workspace.openTextDocument(filePath);
+		await new Promise(resolve => setTimeout(resolve, 1000));
+		const diagnostics = vscode.languages.getDiagnostics(document.uri);
+		assert.strictEqual(diagnostics.length, 1);
+		assert.strictEqual(
+			diagnostics[0].message,
+			`Error in item "launchDate": Launch date must be in the future. If you do not wish to use a launch date, enter value "immediate"`
+		);
+		assert.strictEqual(diagnostics[0].range.start.line, 18);
+		assert.strictEqual(diagnostics[0].range.end.line, 18);
+	});
+
+	// badRegex.config.json
+	test('bad regex in batch config', async () => {
+		const filePath = path.resolve('src/test/suite/fixtures/badRegex.config.json');
+		const document = await vscode.workspace.openTextDocument(filePath);
+		await new Promise(resolve => setTimeout(resolve, 1000));
+		const diagnostics = vscode.languages.getDiagnostics(document.uri);
+		assert.strictEqual(diagnostics.length, 1);
+		assert.strictEqual(
+			diagnostics[0].message,
+			`Error in item "customIdInstructions": Keys must be valid URL parameters (alphanumeric, underscores, or hyphens) or "default"`
+		);
+		assert.strictEqual(diagnostics[0].range.start.line, 19);
+		assert.strictEqual(diagnostics[0].range.end.line, 22);
 	});
 });

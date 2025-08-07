@@ -54,7 +54,6 @@ export function useGame() {
   return game;
 }
 
-// Commented out since this function uses StageContext, and we don't need it yet for prompt
 export function useStageTimer() {
     // stage is undefined
   console.log("Stage context", StageContext);
@@ -93,6 +92,11 @@ export function useStage() {
   // const stage1 = useContext(StageContext);
   // console.log("useStageMock", stage1)
 
+  // If treatment has not yet been set, do not render
+  if (!treatment) {
+    return null;
+  }
+
   const stage = {
     isMock: true,
     get: function (varName) {
@@ -101,12 +105,12 @@ export function useStage() {
       //const treatmentString = localStorage.getItem("treatment");
       //const treatment = JSON.parse(treatmentString);
       var tempStage = null; // for template stages
+
       const stageTemplateName = treatment.treatments[selectedTreatmentIndex]?.gameStages[currentStageIndex]?.template || "";
       var fields = treatment.treatments[selectedTreatmentIndex]?.gameStages[currentStageIndex]?.fields || [];
       if (stageTemplateName !== "") {
         tempStage = templatesMap.get(stageTemplateName)[0];
       }
-      console.log("tempStage", tempStage);
 
       //logic to fill in ${} props
       // move logic outside get()
@@ -276,6 +280,7 @@ export function Loading() {
 }
 
 // Mock function for useRound: is there a specific type for Round?
+// Only one round in deliberation-empirica
 export function useRound() {
   return "Round";
 }
