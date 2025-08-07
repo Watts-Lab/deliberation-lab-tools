@@ -46,20 +46,14 @@ export function useFileURL({ file }) {
 export function useText({ file }) {
   const [text, setText] = useState(null);
 
-  console.log("Text in useText", text);
-  console.log("File in useText", file);
-
   vscode.postMessage({ type: "file", file: file });
 
   useEffect(() => {
       const handler = (event) => {
         const { type, fileText } = event.data;
 
-        console.log("File text received", fileText);
-
         if (type === "file") {
           setText(fileText);
-          console.log("Text after file text received", text);
         }
       };
   

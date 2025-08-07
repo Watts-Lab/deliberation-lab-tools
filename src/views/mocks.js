@@ -106,14 +106,11 @@ export function useStage() {
       //const treatment = JSON.parse(treatmentString);
       var tempStage = null; // for template stages
 
-      console.log("Treatment in mocks", treatment);
-
       const stageTemplateName = treatment.treatments[selectedTreatmentIndex]?.gameStages[currentStageIndex]?.template || "";
       var fields = treatment.treatments[selectedTreatmentIndex]?.gameStages[currentStageIndex]?.fields || [];
       if (stageTemplateName !== "") {
         tempStage = templatesMap.get(stageTemplateName)[0];
       }
-      console.log("tempStage", tempStage);
 
       //logic to fill in ${} props
       // move logic outside get()
