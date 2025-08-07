@@ -13,3 +13,10 @@ treatments:
         duration: 60
         elements:
           - type: "prompt"
+            file: src/test/suite/fixtures/icebreaker.md
+          - type: "submitButton"
+      - name: "exampleStage2"
+        duration: 60
+        elements:
+          - type: "prompt"
+            file: src/test/suite/fixtures/prompt_listSorter_example.md

@@ -4,7 +4,7 @@ import { parseYaml } from "./parsers/parseYaml";
 import { parseMarkdown } from "./parsers/parseMarkdown";
 import { parseDlConfig } from "./parsers/parseDlConfig";
 import { parseBatchConfig } from "./parsers/parseBatchConfig";
-import { defaultMarkdown, inlineSuggestion, defaultYaml, getWebviewContent, markdownPreview } from "./commands";
+import { defaultMarkdown, inlineSuggestion, defaultYaml, markdownPreview } from "./commands";
 import { setExtensionContext } from "./contextStore";
 import { FileFixCodeActionProvider } from "./codeActionProvider";
 
@@ -53,11 +53,18 @@ export async function activate(context: vscode.ExtensionContext) {
 
     // for changing document
     vscode.workspace.onDidChangeTextDocument(async (event) => {
-        if (event?.document !== undefined) {
-          parseDocument(event?.document);
-        };
-      })
-    );
+      if (event?.document !== undefined) {
+        parseDocument(event?.document);
+      };
+    }),
+
+    // When we switch to a document open in another tab
+    vscode.window.onDidChangeActiveTextEditor(async (event) => {
+      if (event?.document !== undefined) {
+        parseDocument(event?.document);
+      }
+    })
+  );
 
   vscode.languages.registerCodeActionsProvider('treatmentsYaml', new FileFixCodeActionProvider(), {
     providedCodeActionKinds: [vscode.CodeActionKind.QuickFix]
@@ -79,7 +86,7 @@ export async function activate(context: vscode.ExtensionContext) {
         await vscode.commands.executeCommand("editor.action.inlineSuggest.trigger");
       }
     })
-  )
+  );
 
   // Open Markdown preview
   context.subscriptions.push(markdownPreview);

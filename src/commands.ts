@@ -1,6 +1,7 @@
 import { get } from "http";
 import * as vscode from "vscode";
 import { getExtensionUri } from "./contextStore";
+import { load as loadYaml } from "js-yaml";
 
 // Command to create default treatments YAML file
 export const defaultYaml = vscode.commands.registerCommand("deliberation-lab-tools.defaultTreatmentsYaml", async () => {
@@ -8,11 +9,11 @@ export const defaultYaml = vscode.commands.registerCommand("deliberation-lab-too
     const fileBytes = await vscode.workspace.fs.readFile(treatmentsYamlFileUri);
     const defaultYamlContent = new TextDecoder("utf-8").decode(fileBytes);
     await vscode.workspace.openTextDocument({
-      language: 'treatmentsYaml',
-      content: defaultYamlContent
+        language: 'treatmentsYaml',
+        content: defaultYamlContent
     });
     vscode.window.showInformationMessage("Default .treatments.yaml file created");
-  });
+});
 
 // Command to create initial prompt markdown document
 export const defaultMarkdown = vscode.commands.registerCommand('deliberation-lab-tools.createDefaultPromptMarkdown', async () => {
@@ -20,11 +21,11 @@ export const defaultMarkdown = vscode.commands.registerCommand('deliberation-lab
     const promptMarkdownFileUri = vscode.Uri.joinPath(vscode.workspace.workspaceFolders![0].uri, "src", "fixtures", "defaultPromptMarkdown.md");
     const fileBytes = await vscode.workspace.fs.readFile(promptMarkdownFileUri);
     const defaultMarkdownContent = new TextDecoder("utf-8").decode(fileBytes);
-    const doc = await vscode.workspace.openTextDocument({
+    await vscode.workspace.openTextDocument({
         language: 'markdown',
         content: defaultMarkdownContent
-      });
-    }
+    });
+}
 );
 
 // Inline suggestion for treatments YAML file
@@ -46,28 +47,33 @@ export const inlineSuggestion = vscode.languages.registerInlineCompletionItemPro
 );
 
 // Open Markdown preview
+// TODO: refactor all the URIs?
 export const markdownPreview = vscode.commands.registerCommand('deliberation-lab-tools.openPromptPreview', () => {
-    const promptText = vscode.window.activeTextEditor?.document.getText();
     const file = vscode.window.activeTextEditor?.document;
+    const { fileName: fileName, text: promptText } = getFileName(file!!);
 
     const panel = vscode.window.createWebviewPanel(
         'openPromptPreview',
-        'Prompt Preview',
-        vscode.ViewColumn.Beside,
+        'Preview: ' + fileName,
         {
-          enableScripts: true,
-          localResourceRoots: [vscode.Uri.joinPath(getExtensionUri(), "dist", "views")],
+            viewColumn: vscode.ViewColumn.Beside,
+            preserveFocus: true
+        },
+        {
+            enableScripts: true,
+            localResourceRoots: [vscode.Uri.joinPath(getExtensionUri(), "dist", "views")],
         }
     );
 
-      // URIs for CSS files and script file that will be passed into HTML content
+    // URIs for CSS files and script file that will be passed into HTML content
 
     const scriptUri = panel.webview.asWebviewUri(
         vscode.Uri.joinPath(getExtensionUri(), 'dist', 'views', 'index.js')
     );
 
+    // changed to baseStyles for now: seeing if there's any difference
     const styleUri = panel.webview.asWebviewUri(
-        vscode.Uri.joinPath(getExtensionUri(), 'dist', 'views', 'styles.css')
+        vscode.Uri.joinPath(getExtensionUri(), 'dist', 'views', 'baseStyles.css')
     );
 
     const playerStylesUri = panel.webview.asWebviewUri(
@@ -80,27 +86,177 @@ export const markdownPreview = vscode.commands.registerCommand('deliberation-lab
 
     panel.webview.html = getWebviewContent(scriptUri, styleUri, playerStylesUri, layoutUri);
 
-      // Passes document information into webview
+    // Passes document information into webview
     panel.webview.onDidReceiveMessage((message) => {
         if (message.type === 'ready') {
 
-          // document text is passed in as "file"
-          // name hardcoded as "example"
-          // TODO: shared hardcoded as either "true" (creates SharedNotepad) or "false" (creates TextArea) - create an option to toggle?
-          panel.webview.postMessage({ type: 'init', promptProps: { file: promptText, name: 'example', shared: false } });
+            // document text is passed in as "file"
+            // Now passing in file as fileName to make compatible with a stage
+            // name hardcoded as "example"
+            // TODO: shared hardcoded as either "true" (creates SharedNotepad) or "false" (creates TextArea) - create an option to toggle?
+            const props = { file: fileName, name: 'example', shared: false };
+            panel.webview.postMessage({ type: 'prompt', props: props });
         }
     });
 
-      // Passes new document content into webview when document changes
+    // Passes new document content into webview when document changes
     vscode.workspace.onDidChangeTextDocument((event) => {
-        const promptText = event.document.getText();
-        panel.webview.postMessage({ type: 'init', promptProps: { file: promptText, name: 'example', shared: false } });
+        const { fileName: fileName, text: promptText } = getFileName(event.document);
+        panel.webview.postMessage({ type: 'prompt', props: { file: fileName, name: 'example', shared: false } });
     });
+
+    // Passes new document content into webview when we switch to a new document
+    vscode.window.onDidChangeActiveTextEditor((event) => {
+        const file = event?.document;
+        if (file?.languageId === "markdown") {
+            const { fileName: fileName, text: promptText } = getFileName(file);
+
+            panel.webview.postMessage({ type: 'prompt', props: { file: fileName, name: 'example', shared: false } });
+            panel.title = 'Preview: ' + fileName;
+        }
+    });
+
+    // Helper function in Prompt
+    // TODO: refactor so we don't duplicate this code in Prompt preview and Stage preview
+    panel.webview.onDidReceiveMessage((message) => {
+        if (message.type === 'file') {
+            const workspaceFolder = vscode.workspace.getWorkspaceFolder(file!!.uri);
+            const fileUri = vscode.Uri.joinPath(workspaceFolder!!.uri, message.file);
+
+            // Look into try-catching a Thenable
+            try {
+                vscode.workspace.openTextDocument(fileUri).then((doc) => {
+                    console.log("Correctly extracted text", doc.getText());
+                    panel.webview.postMessage({ type: 'file', fileText: doc.getText() });
+                });
+            } catch (e) {
+                console.log("File path could not be read");
+                panel.webview.postMessage({ type: 'file', fileText: null });
+            }
+        }
+    });
+});
+
+// Open YAML preview
+export const stagePreview = vscode.commands.registerCommand('deliberation-lab-tools.openStagePreview', () => {
+    // maybe this file changes when we switch to a new document?
+    const file = vscode.window.activeTextEditor?.document;
+    const { fileName: fileName, text: promptText } = getFileName(file!!);
+
+    const panel = vscode.window.createWebviewPanel(
+        'openStagePreview',
+        'Preview: ' + fileName,
+        {
+            viewColumn: vscode.ViewColumn.Beside,
+            preserveFocus: true
+        },
+        {
+            enableScripts: true,
+            localResourceRoots: [vscode.Uri.joinPath(getExtensionUri(), "dist", "views")],
+        }
+    );
+
+    // URIs for CSS files and script file that will be passed into HTML content - possibly refactor?
+
+    const scriptUri = panel.webview.asWebviewUri(
+        vscode.Uri.joinPath(getExtensionUri(), 'dist', 'views', 'index.js')
+    );
+
+    const styleUri = panel.webview.asWebviewUri(
+        vscode.Uri.joinPath(getExtensionUri(), 'dist', 'views', 'baseStyles.css')
+    );
+
+    const playerStylesUri = panel.webview.asWebviewUri(
+        vscode.Uri.joinPath(getExtensionUri(), 'dist', 'views', 'playerStyles.css')
+    );
+
+    const layoutUri = panel.webview.asWebviewUri(
+        vscode.Uri.joinPath(getExtensionUri(), 'dist', 'views', 'layout.css')
+    );
+
+    panel.webview.html = getWebviewContent(scriptUri, styleUri, playerStylesUri, layoutUri);
+
+    // Passes document information into webview
+    panel.webview.onDidReceiveMessage((message) => {
+        if (message.type === 'ready') {
+
+            try {
+                const treatments = loadYaml(promptText);
+                panel.webview.postMessage({ type: 'stage', props: treatments });
+            } catch (e) {
+                console.error("Error occurred in YAML", e);
+                panel.webview.postMessage({ type: 'error', props: e });
+            }
+
+        }
+    });
+
+    // Passes new document content into webview when document changes
+    vscode.workspace.onDidChangeTextDocument((event) => {
+        const { fileName: fileName, text: promptText } = getFileName(event.document);
+        try {
+            const treatments = loadYaml(promptText);
+            panel.webview.postMessage({ type: 'stage', props: treatments });
+        } catch (e) {
+            console.error("Error occurred in YAML", e);
+            panel.webview.postMessage({ type: 'error', props: e });
+        }
+    });
+
+    // Passes new document content into webview when we switch to a new document
+    vscode.window.onDidChangeActiveTextEditor((event) => {
+        const file = event?.document;
+        if (file?.languageId === "treatmentsYaml") {
+            const { fileName: fileName, text: promptText } = getFileName(file);
+
+            try {
+                const treatments = loadYaml(promptText);
+                panel.webview.postMessage({ type: 'stage', props: treatments });
+            } catch (e) {
+                console.error("Error occurred in YAML", e);
+                panel.webview.postMessage({ type: 'error', props: e });
+            }
+        }
+    });
+
+    // Helper to pass file text back - could possibly refactor into another method?
+    // TODO: add error handling for workspace folder
+    panel.webview.onDidReceiveMessage((message) => {
+        if (message.type === 'file') {
+            const workspaceFolder = vscode.workspace.getWorkspaceFolder(file!!.uri);
+            const fileUri = vscode.Uri.joinPath(workspaceFolder!!.uri, message.file);
+
+            // Look into try-catching a Thenable
+            try {
+                vscode.workspace.openTextDocument(fileUri).then((doc) => {
+                    panel.webview.postMessage({ type: 'file', fileText: doc.getText() });
+                });
+            } catch (e) {
+                console.error("File path could not be read");
+                panel.webview.postMessage({ type: 'file', fileText: null });
+            }
+        }
+    });
+});
+
+// Returns object with fileName field and promptText field
+function getFileName(file: vscode.TextDocument) {
+    const text = file.getText();
+
+    // Sets file name to relative path from the workspace folder
+    // Maybe TODO: put into helper method to avoid duplicating code?
+    let fileName = file.uri.toString();
+    const workspaceFolder = vscode.workspace.getWorkspaceFolder(file.uri);
+    if (workspaceFolder) {
+        fileName = vscode.workspace.asRelativePath(file.uri);
     }
-);
+
+    return { fileName, text };
+}
 
 // Loads HTML content for the webview
-export function getWebviewContent(scriptUri: vscode.Uri, styleUri: vscode.Uri, playerStylesUri: vscode.Uri, layoutUri: vscode.Uri) {
+// TODO: refactor uri variables and refactor index into two files
+function getWebviewContent(scriptUri: vscode.Uri, styleUri: vscode.Uri, playerStylesUri: vscode.Uri, layoutUri: vscode.Uri) {
 
     const nonce = getNonce();
 
@@ -148,7 +304,7 @@ export function getWebviewContent(scriptUri: vscode.Uri, styleUri: vscode.Uri, p
 };
 
 // Nonce for security
-export function getNonce(): string {
+function getNonce(): string {
     let text: string = "";
     const possible: string =
         "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";

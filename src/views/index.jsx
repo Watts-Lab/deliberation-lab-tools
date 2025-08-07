@@ -1,27 +1,79 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useContext } from "react";
 import { createRoot } from "react-dom/client";
+import { ErrorBoundary } from "react-error-boundary";
 
-// This is where the prompt gets imported from
-// import { Prompt } from "./prompt";
+// Importing React components from deliberation-empirica
 import { Prompt } from "../../deliberation-empirica/client/src/elements/Prompt";
+import { Button } from "../../deliberation-empirica/client/src/components/Button";
+import { Stage } from "../../deliberation-empirica/client/src/Stage";
+import { StageFrame } from "./StageFrame";
 
-import { StageProvider } from "./stageContext";
+import { StageContext, StageProvider } from "./stageContext";
 
 import "../../deliberation-empirica/client/src/baseStyles.css";
-
 import "./styles.css";
 
-const vscode = acquireVsCodeApi();
+export const vscode = acquireVsCodeApi();
 
-// App only programmed to render Prompt at the moment
+// TODO: possibly split index.jsx into two files for different error messages?
+
+// fallbackRender specified for ErrorBoundary
+function fallbackRender({ error, resetErrorBoundary }) {
+  // Call resetErrorBoundary() to reset the error boundary and retry the render.
+  console.log("Error in fallback render", error.message);
+  const errorMetadataFormat = `
+  ---
+  name:
+  type: [openResponse, multipleChoice, noResponse, listSorter]
+  ---
+
+  Prompt text
+
+  ---
+
+  Response text`;
+
+  return (
+    <div role="alert">
+      <p>Something went wrong:</p>
+      <pre style={{ color: "red" }}>{error.name}</pre>
+      <pre style={{ color: "red" }}>{error.message}</pre>
+      <p>Please check that formatting of prompt document is as follows:</p>
+      <pre>{errorMetadataFormat}</pre>
+      <Button handleClick={resetErrorBoundary}>Try again</Button>
+    </div>
+  );
+}
+
 function App() {
-  const [props, setProps] = useState(null);
+  const [prompt, setPrompt] = useState(null);
+
+  // TODO: possibly refactor all of this stage stuff into another index file specifically for the stage
+  const {
+    currentStageIndex,
+    setCurrentStageIndex,
+    elapsed,
+    setElapsed,
+    treatment,
+    setTreatment,
+    templatesMap,
+    setTemplatesMap,
+    refData,
+    setRefData,
+    selectedTreatmentIndex,
+    setSelectedTreatmentIndex
+  } = useContext(StageContext);
 
   useEffect(() => {
     const handler = (event) => {
-      const { type, promptProps } = event.data;
-      if (type === "init") {
-        setProps(promptProps);
+      const { type, props } = event.data;
+
+      // TODO: refactor to switch case?
+      // Check if this is called when there's an error on-screen
+      if (type === "prompt") {
+        setPrompt(props);
+      } else if (type === "stage") {
+        setTreatment(props);
       }
     };
 
@@ -29,19 +81,33 @@ function App() {
     return () => window.removeEventListener("message", handler);
   }, []);
 
-  if (!props) {
-    return <p>Error with input. Please check that given document is valid.</p>;
+  if (prompt) {
+    try {
+      return <Prompt {...prompt} />;
+    } catch (e) {
+      console.error("Error on rendering prompt");
+      return <p>Error when rendering prompt. Please check that there are no errors in prompt Markdown file</p>;
+    }
+  } else if (treatment) {
+    try {
+      return <StageFrame />;
+    } catch (e) {
+      console.error("Error on rendering stage");
+      return (<>
+        <p>{e.name}</p>
+        <p>{e.message}</p>
+        <p>Error when rendering stage.</p>
+      </>);
+    }
   }
 
-  try {
-    return <Prompt {...props} />;
-  } catch (e) {
-    console.log("Error on rendering prompt");
-    return <p>Error when rendering prompt. Please check that there are no errors in prompt Markdown file</p>;
+  // If no props are yet set for either prompt or stage
+  if (!prompt && !treatment) {
+    return <p>Loading...</p>;
   }
 }
 
-// Mount Prompt component
+// Mount component
 const rootElement = document.getElementById("root");
 if (rootElement) {
   const root = createRoot(rootElement);
@@ -50,13 +116,15 @@ if (rootElement) {
     console.error("No #root element found in DOM!");
   }
 
-  // Rendering prompt
+  // Rendering
   // Need StageProvider for stageContext and other mocks
   try {
     root.render(
-      <StageProvider>
-        <App />
-      </StageProvider>
+      <ErrorBoundary fallbackRender={fallbackRender} resetKeys={[prompt]}>
+        <StageProvider>
+          <App />
+        </StageProvider>
+      </ErrorBoundary>
     );
   } catch (e) {
     console.log(e);

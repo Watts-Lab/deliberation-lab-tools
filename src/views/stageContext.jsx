@@ -9,15 +9,11 @@ import {
   useStageTimer,
 } from '@empirica/core/player/classic/react'
 
-// export const StageContext = createContext({
-//     currentStageIndex: "default",
-//     elapsed: "default"
-// });
-
 const StageContext = createContext()
 
 const StageProvider = ({ children }) => {
-  const [currentStageIndex, setCurrentStageIndex] = useState('default')
+  // currentStageIndex can control whatever stage we are at
+  const [currentStageIndex, setCurrentStageIndex] = useState(0) // changed from 'default'
   const [elapsed, setElapsed] = useState(0)
   const [treatment, setTreatment] = useState(null)
   const [templatesMap, setTemplatesMap] = useState(new Map())
@@ -89,41 +85,3 @@ const StageProvider = ({ children }) => {
 }
 
 export { StageContext, StageProvider }
-
-// import React, { createContext, useState, useContext } from 'react';
-
-// // Create the context
-// const StageContext = createContext();
-
-// // Create a custom hook for easy access to the context
-// const useStageContext = () => useContext(StageContext);
-
-// // Create the provider component
-// const StageProvider = ({ children }) => {
-//   const [state, setState] = useState({
-//     currentStageIndex: 'default',
-//     elapsed: 'default'
-//   });
-
-//   const setCurrentStageIndex = (value) => {
-//     setState((prevState) => ({
-//       ...prevState,
-//       currentStageIndex: value
-//     }));
-//   };
-
-//   const setElapsed = (value) => {
-//     setState((prevState) => ({
-//       ...prevState,
-//       elapsed: value
-//     }));
-//   };
-
-//   return (
-//     <StageContext.Provider value={{ ...state, setCurrentStageIndex, setElapsed }}>
-//       {children}
-//     </StageContext.Provider>
-//   );
-// };
-
-// export { StageProvider, useStageContext };
