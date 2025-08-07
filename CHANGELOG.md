@@ -4,6 +4,15 @@ All notable changes to the "deliberation-lab-tools" extension will be documented
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+## [0.0.4]
+
+### Added
+
+- **Render StageFrame**: Command to render stages from .treatments.yaml file with StageFrame to toggle between different frames
+- **Display Render Errors**: ErrorBoundary wrapper around rendering to catch and display errors
+- **Introduce experimentRoot in dlconfig.json**: Users must now specify the `experimentRoot` in their `dlconfig.json` file. This must be a path where all experiment files will be kept. This is required.
+- **Validate batch config**: The extension will run validations on `.config.json` file (on files within the experimentRoot defined in dlconfig.json), ensuring that the configuration is correct and providing feedback through error diagnostics if it is not.
+
 ## [0.0.3]
 
 ### Added
