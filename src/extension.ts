@@ -17,6 +17,7 @@ async function parseDocument(document: vscode.TextDocument) {
   if (detectTreatmentsYaml(document)) {
     await parseYaml(document);
   } else if (detectPromptMarkdown(document)) {
+    await vscode.languages.setTextDocumentLanguage(document, 'promptMarkdown');
     parseMarkdown(document);
   } else if (detectdlConfig(document)) {
     await parseDlConfig(document);
@@ -50,13 +51,12 @@ export async function activate(context: vscode.ExtensionContext) {
         await parseDocument(event);
       }
     }),
-
-    // for changing document
-    vscode.workspace.onDidChangeTextDocument(async (event) => {
-      if (event?.document !== undefined) {
-        parseDocument(event?.document);
-      };
-    }),
+  // for changing document
+  vscode.workspace.onDidChangeTextDocument(async (event) => {
+    if (event?.document !== undefined) {
+      parseDocument(event?.document);
+    };
+  }),
 
     // When we switch to a document open in another tab
     vscode.window.onDidChangeActiveTextEditor(async (event) => {

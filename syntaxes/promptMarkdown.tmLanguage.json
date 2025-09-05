@@ -1,0 +1,29 @@
+{
+  "name": "Prompt Markdown",
+  "scopeName": "text.promptMarkdown",
+  "patterns": [
+    {
+      "begin": "^---\\s*$",
+      "end": "^---\\s*$",
+      "name": "meta.frontmatter.header.promptMarkdown",
+      "patterns": [
+        {
+          "match": "^name:\\s*(.*)$",
+          "captures": {
+            "1": {
+              "name": "variable.parameter.name.promptMarkdown"
+            }
+          }
+        },
+        {
+          "match": "^type:\\s*(.*)$",
+          "captures": {
+            "1": {
+              "name": "variable.parameter.type.promptMarkdown"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
