@@ -8,22 +8,21 @@
       "name": "meta.frontmatter.header.promptMarkdown",
       "patterns": [
         {
-          "match": "^name:\\s*(.*)$",
+          "match": "^([a-zA-Z0-9_]+)(:)",
           "captures": {
-            "1": {
-              "name": "variable.parameter.name.promptMarkdown"
-            }
-          }
-        },
-        {
-          "match": "^type:\\s*(.*)$",
-          "captures": {
-            "1": {
-              "name": "variable.parameter.type.promptMarkdown"
-            }
+            "1": { "name": "keyword" }, 
+            "2": { "name": "punctuation.separator.key-value.promptMarkdown" }
           }
         }
       ]
+    },
+    {
+      "match": "^---\\s*$",
+      "name": "entity.other.document.begin.promptMarkdown"
+    },
+    {
+      "match": "^---\\s*$",
+      "name": "entity.other.document.end.promptMarkdown"
     }
   ]
 }
