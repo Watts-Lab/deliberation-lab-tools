@@ -4,10 +4,10 @@ import * as YAML from 'yaml';
 import { diagnosticCollection } from '../extension';
 import { z, ZodError, ZodIssue } from "zod";
 import {
-  treatmentFileSchema,
-  TreatmentFileType,
+    treatmentFileSchema,
+    TreatmentFileType,
 } from "../zod-validators/validateTreatmentFile";
-import { handleError, offsetToPosition } from "../errorPosition";
+import { handleError, offsetToPosition, findPositionFromPath } from "../errorPosition";
 import { parse } from 'path';
 import { off } from 'process';
 
@@ -32,7 +32,7 @@ export async function parseYaml(document: vscode.TextDocument) {
                 new vscode.Position(error.linePos[0].line - 2, 0),
                 new vscode.Position(error.linePos[0].line + 2, 10)
             );
-            if (error.code === 'BAD_INDENT' || error.code === 'MISSING_CHAR' || 
+            if (error.code === 'BAD_INDENT' || error.code === 'MISSING_CHAR' ||
                 error.code === 'BLOCK_AS_IMPLICIT_KEY' || error.code === 'MULTILINE_IMPLICIT_KEY') {
                 diagnostics.push(
                     new vscode.Diagnostic(
@@ -62,7 +62,7 @@ export async function parseYaml(document: vscode.TextDocument) {
                 )
             );
         });
-    } 
+    }
 
     // Check if the YAML document is empty
     if (
@@ -90,10 +90,10 @@ export async function parseYaml(document: vscode.TextDocument) {
             }
         );
     } else {
-    //     console.log(
-    //         "Zod validation passed. Types are consistent with TreatmentFileType."
-    //     );
-     }
+        //     console.log(
+        //         "Zod validation passed. Types are consistent with TreatmentFileType."
+        //     );
+    }
 
     async function existence(parentUri: vscode.Uri, uri: vscode.Uri): Promise<{ uri: vscode.Uri; exists: boolean }> {
         try {
@@ -144,43 +144,43 @@ export async function parseYaml(document: vscode.TextDocument) {
     }
 
     async function asyncValidateFilesToIssues(
-      data: unknown
+        data: unknown
     ): Promise<ZodIssue[]> {
-      const issues: ZodIssue[] = [];
-    
-      async function recurse(
-        node: unknown,
-        path: (string | number)[] = []
-      ): Promise<void> {
-        if (Array.isArray(node)) {
-          for (let i = 0; i < node.length; i++) {
-            await recurse(node[i], [...path, i]);
-          }
-        } else if (typeof node === "object" && node !== null) {
-          for (const key of Object.keys(node)) {
-            const value = (node as any)[key];
-            const currentPath = [...path, key];
-    
-            if (key === "file" && typeof value === "string") {
-              const data = await fileExistsInWorkspace(value);
-              if (!data.exists) {
-                issues.push({
-                  code: z.ZodIssueCode.custom,
-                  path: currentPath,
-                  message: `File "${value}" does not exist in the workspace. Make sure "${value}" is located in and is written relative to "${data.uri}"`,
-                });
-              }
+        const issues: ZodIssue[] = [];
+
+        async function recurse(
+            node: unknown,
+            path: (string | number)[] = []
+        ): Promise<void> {
+            if (Array.isArray(node)) {
+                for (let i = 0; i < node.length; i++) {
+                    await recurse(node[i], [...path, i]);
+                }
+            } else if (typeof node === "object" && node !== null) {
+                for (const key of Object.keys(node)) {
+                    const value = (node as any)[key];
+                    const currentPath = [...path, key];
+
+                    if (key === "file" && typeof value === "string") {
+                        const data = await fileExistsInWorkspace(value);
+                        if (!data.exists) {
+                            issues.push({
+                                code: z.ZodIssueCode.custom,
+                                path: currentPath,
+                                message: `File "${value}" does not exist in the workspace. Make sure "${value}" is located in and is written relative to "${data.uri}"`,
+                            });
+                        }
+                    }
+
+                    await recurse(value, currentPath);
+                }
             }
-    
-            await recurse(value, currentPath);
-          }
         }
-      }
-    
-      await recurse(data);
-    
-    //   console.log("Validation issues found:", issues);
-      return issues;
+
+        await recurse(data);
+
+        //   console.log("Validation issues found:", issues);
+        return issues;
     }
 
     const missingFiles = asyncValidateFilesToIssues(
@@ -195,5 +195,116 @@ export async function parseYaml(document: vscode.TextDocument) {
         // console.log("Length of diagnostics for yaml: " + diagnostics.length);
         // console.log("Length of diagnostic collection for yaml: " + diagnosticCollection.get(document.uri)!!.length);
     });
-    
+
+
+    const referenceTypeMap: Record<string, { name: string; line: number }[]> = {};
+    const referenceChecks: { type: string; line: number; fullRef: string }[] = [];
+
+    referenceTypeMap['discussion'] = [
+        { name: "text", line: 0 },
+        { name: "audio", line: 0 },
+        { name: "video", line: 0 }
+    ];
+
+    referenceTypeMap['connectionInfo'] = [
+        { name: "country", line: 0 },
+        { name: "timezone", line: 0 },
+        { name: "isKnownVpn", line: 0 },
+        { name: "timezoneOffset", line: 0 },
+        { name: "isLikelyVpn", line: 0 },
+        { name: "effectiveType", line: 0 },
+        { name: "saveData", line: 0 },
+        { name: "downlink", line: 0 },
+        { name: "rtt", line: 0 }
+    ];
+
+    function walkYaml(node: any, path: (string | number)[] = []) {
+        if (!node) return;
+        if (Array.isArray(node)) {
+            node.forEach((item, idx) => walkYaml(item, [...path, idx]));
+        } else if (typeof node === 'object') {
+            // Only track elements of type "survey" for now
+            if (node.type === 'survey' && typeof node.name === 'string') {
+                // Find the path to the 'name' property
+                const namePath = [...path, 'name'];
+                const range = findPositionFromPath(namePath, parsedData, document);
+                // Default to line 1 if range is not found
+                const line = range ? range.start.line + 1 : 1;
+                if (!referenceTypeMap['survey']) {
+                    referenceTypeMap['survey'] = [];
+                }
+                referenceTypeMap['survey'].push({ name: node.name, line });
+            }
+            // Track references for any type (future extensibility)
+            if (typeof node.reference === 'string' && node.reference.includes('.')) {
+                const refPath = [...path, 'reference'];
+                const range = findPositionFromPath(refPath, parsedData, document);
+                const line = range ? range.start.line + 1 : 1;
+                const [type] = node.reference.split('.', 1);
+                referenceChecks.push({ type, line, fullRef: node.reference});
+            }
+            Object.entries(node).forEach(([key, value]) => {
+                walkYaml(value, [...path, key]);
+            });
+        }
+    }
+
+    // Walk the parsed YAML
+    walkYaml(parsedData.toJS({ keepCstNodes: true }));
+
+    // Now check references for each type
+    referenceChecks.forEach(({ type, line, fullRef }) => {
+        if (type === 'survey') {
+            // Only 'survey' type is currently supported
+            const name = fullRef.split('.', 2)[1];
+            if (!(referenceTypeMap[type]?.some(entry => entry.name === name && entry.line < line))) {
+                diagnostics.push(
+                    new vscode.Diagnostic(
+                        new vscode.Range(
+                            new vscode.Position(line, 0),
+                            new vscode.Position(line, 100)
+                        ),
+                        `Reference "${fullRef}" does not match any previously defined ${type} element name.`,
+                        vscode.DiagnosticSeverity.Warning
+                    )
+                );
+            }
+        }
+        if (type === 'discussion') {
+            // Only 'discussion' type is currently supported
+            const name = fullRef.split('.', 2)[1];
+            if (!(referenceTypeMap[type]?.some(entry => entry.name === name && entry.line < line))) {
+                diagnostics.push(
+                    new vscode.Diagnostic(
+                        new vscode.Range(
+                            new vscode.Position(line, 0),
+                            new vscode.Position(line, 100)
+                        ),
+                        `Reference "${fullRef}" does not match audio, type, or video for defined ${type} element name.`,
+                        vscode.DiagnosticSeverity.Warning
+                    )
+                );
+            }
+        }
+        if (type === 'connectionInfo') {
+            // Only 'connectionInfo' type is currently supported
+            const name = fullRef.split('.', 2)[1];
+            if (!(referenceTypeMap[type]?.some(entry => entry.name === name && entry.line < line))) {
+                diagnostics.push(
+                    new vscode.Diagnostic(
+                        new vscode.Range(
+                            new vscode.Position(line, 0),
+                            new vscode.Position(line, 100)
+                        ),
+                        `Reference "${fullRef}" does not match any defined ${type} element name.`,
+                        vscode.DiagnosticSeverity.Warning
+                    )
+                );
+            }
+        }
+    });
+
+
+
+
 }

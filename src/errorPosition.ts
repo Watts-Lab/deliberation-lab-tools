@@ -129,7 +129,7 @@ export function findPositionFromPathJson(
 }
 
 // Helper function to find the position of a node in the AST based on the path  
-function findPositionFromPath(
+export function findPositionFromPath(
     path: (string | number)[],
     astNode: any,
     document: vscode.TextDocument // Pass the document as an additional parameter

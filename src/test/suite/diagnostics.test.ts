@@ -501,4 +501,88 @@ suite('Diagnostics detection', () => {
 		assert.strictEqual(diagnostics[0].range.start.line, 19);
 		assert.strictEqual(diagnostics[0].range.end.line, 22);
 	});
+
+	//sharedNotIntro.treatments.yaml
+	test('sharedNotIntro treatment with shared field in intro element', async () => {
+		const filePath = path.resolve('src/test/suite/fixtures/sharedNotIntro.treatments.yaml');
+		const document = await vscode.workspace.openTextDocument(filePath);
+		await new Promise(resolve => setTimeout(resolve, 1000));
+		const diagnostics = vscode.languages.getDiagnostics(document.uri);
+		assert.strictEqual(diagnostics.length, 1);
+		assert.strictEqual(
+			diagnostics[0].message,
+			`Error in item "shared": Prompt element in intro/exit steps cannot be shared.`
+		);
+		assert.strictEqual(diagnostics[0].range.start.line, 186);
+		assert.strictEqual(diagnostics[0].range.end.line, 199);
+	});
+
+	//positionNotIntro.treatments.yaml
+	test('positionNotIntro treatment with position field in intro element', async () => {
+		const filePath = path.resolve('src/test/suite/fixtures/positionNotIntro.treatments.yaml');
+		const document = await vscode.workspace.openTextDocument(filePath);
+		await new Promise(resolve => setTimeout(resolve, 1000));
+		const diagnostics = vscode.languages.getDiagnostics(document.uri);
+		assert.strictEqual(diagnostics.length, 3);
+		assert.strictEqual(
+			diagnostics[0].message,
+			`Error in item "showToPositions": Elements in intro/exit steps cannot have a 'showToPositions' field.`
+		);
+		assert.strictEqual(
+			diagnostics[1].message,
+			`Error in item "hideFromPositions": Elements in intro/exit steps cannot have a 'hideFromPositions' field.`
+		);
+		assert.strictEqual(
+			diagnostics[2].message,
+			`Error in item "position": Elements in intro/exit steps cannot have a 'position' field.`
+		);
+		assert.strictEqual(diagnostics[0].range.start.line, 188);
+		assert.strictEqual(diagnostics[0].range.end.line, 188);
+		assert.strictEqual(diagnostics[1].range.start.line, 189);
+		assert.strictEqual(diagnostics[1].range.end.line, 189);
+		assert.strictEqual(diagnostics[2].range.start.line, 190);
+		assert.strictEqual(diagnostics[2].range.end.line, 193);
+	});
+
+	//groupCompositionLength.treatments.yaml
+	test('groupCompositionLength treatment with groupComposition length not equal to playerCount', async () => {
+		const filePath = path.resolve('src/test/suite/fixtures/groupCompositionLength.treatments.yaml');
+		const document = await vscode.workspace.openTextDocument(filePath);
+		await new Promise(resolve => setTimeout(resolve, 1000));
+		const diagnostics = vscode.languages.getDiagnostics(document.uri);
+		assert.strictEqual(diagnostics.length, 3);
+		assert.strictEqual(
+			diagnostics[0].message,
+			`Error in item "groupComposition": Invalid template content for content type 'treatment': groupComposition length 3 exceeds playerCount of 2.`
+		);
+		assert.strictEqual(
+			diagnostics[1].message,
+			`Error in item "groupComposition": Invalid template content for content type 'treatment': Player positions in groupComposition must be unique.`
+		);
+		assert.strictEqual(
+			diagnostics[2].message,
+			`Error in item "groupComposition": Invalid template content for content type 'treatment': Player positions in groupComposition must include all nonnegative integers below playerCount (2). Missing: 1.`
+		);
+	});
+
+	//referenceChecks.treatments.yaml
+	test('referenceChecks treatment with various invalid references', async () => {
+		const filePath = path.resolve('src/test/suite/fixtures/referenceChecks.treatments.yaml');
+		const document = await vscode.workspace.openTextDocument(filePath);
+		await new Promise(resolve => setTimeout(resolve, 1000));
+		const diagnostics = vscode.languages.getDiagnostics(document.uri);
+		assert.strictEqual(diagnostics.length, 2);
+		assert.strictEqual(
+			diagnostics[0].message,
+			`Reference "connectionInfo.fake" does not match any defined connectionInfo element name.`
+		);
+		assert.strictEqual(
+			diagnostics[1].message,
+			`Reference "survey.real.done" does not match any previously defined survey element name.`
+		);
+		assert.strictEqual(diagnostics[0].range.start.line, 130);
+		assert.strictEqual(diagnostics[0].range.end.line, 130);
+		assert.strictEqual(diagnostics[1].range.start.line, 133);
+		assert.strictEqual(diagnostics[1].range.end.line, 133);
+	});
 });

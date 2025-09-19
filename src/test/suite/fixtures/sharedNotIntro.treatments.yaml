@@ -24,10 +24,10 @@ templates:
           elements:
             - type: prompt
               file: "ex.md"
-              showToPositions: [0, 2]
+              showToPositions: [0]
             - type: prompt
               file: "ex.md"
-              hideFromPositions: [1, 3]
+              hideFromPositions: [1]
             - type: prompt
               file: "ex.md"
               showToPositions: [1]
@@ -186,6 +186,7 @@ introSequences:
         elements:
           - type: prompt
             file: "ex.md"
+            shared: true
       - name: topic_survey
         elements:
           - type: prompt
@@ -202,5 +203,3 @@ treatments:
       d1:
         - topic: bathroom_choice
         - topic: censoring_extremism
-
-# broadcast field dx is wrong, needs to be d followed by int
