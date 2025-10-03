@@ -235,6 +235,28 @@ export async function parseYaml(document: vscode.TextDocument) {
                 }
                 referenceTypeMap['survey'].push({ name: node.name, line });
             }
+            if (node.type === 'prompt' && typeof node.name === 'string') {
+                // Find the path to the 'name' property
+                const namePath = [...path, 'name'];
+                const range = findPositionFromPath(namePath, parsedData, document);
+                // Default to line 1 if range is not found
+                const line = range ? range.start.line + 1 : 1;
+                if (!referenceTypeMap['prompt']) {
+                    referenceTypeMap['prompt'] = [];
+                }
+                referenceTypeMap['prompt'].push({ name: node.name, line });
+            }
+            if (node.type === 'submitButton' && typeof node.name === 'string') {
+                // Find the path to the 'name' property
+                const namePath = [...path, 'name'];
+                const range = findPositionFromPath(namePath, parsedData, document);
+                // Default to line 1 if range is not found
+                const line = range ? range.start.line + 1 : 1;
+                if (!referenceTypeMap['submitButton']) {
+                    referenceTypeMap['submitButton'] = [];
+                }
+                referenceTypeMap['submitButton'].push({ name: node.name, line });
+            }
             // Track references for any type (future extensibility)
             if (typeof node.reference === 'string' && node.reference.includes('.')) {
                 const refPath = [...path, 'reference'];
@@ -297,6 +319,39 @@ export async function parseYaml(document: vscode.TextDocument) {
                             new vscode.Position(line, 100)
                         ),
                         `Reference "${fullRef}" does not match any defined ${type} element name.`,
+                        vscode.DiagnosticSeverity.Warning
+                    )
+                );
+            }
+        }
+        if (type === 'prompt') {
+            // Only 'prompt' type is currently supported
+            const name = fullRef.split('.', 2)[1];
+            if (!(referenceTypeMap[type]?.some(entry => entry.name === name && entry.line < line))) {
+                diagnostics.push(
+                    new vscode.Diagnostic(
+                        new vscode.Range(
+                            new vscode.Position(line, 0),
+                            new vscode.Position(line, 100)
+                        ),
+                        `Reference "${fullRef}" does not match any previously defined ${type} element name.`,
+                        vscode.DiagnosticSeverity.Warning
+                    )
+                );
+            }
+        }
+        if (type === 'submitButton') {
+            // Only 'submitButton' type is currently supported
+            const name = fullRef.split('.', 2)[1];
+            if (!(referenceTypeMap[type]?.some(entry => entry.name === name && entry.line < line))) {
+                diagnostics.push(
+                    new vscode.Diagnostic(
+                        new vscode.Range(
+                            new vscode.Position(line, 0),
+                            new vscode
+                                .Position(line, 100)
+                        ),
+                        `Reference "${fullRef}" does not match any previously defined ${type} element name.`,
                         vscode.DiagnosticSeverity.Warning
                     )
                 );

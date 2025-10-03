@@ -4,10 +4,11 @@ import { parseYaml } from "./parsers/parseYaml";
 import { parseMarkdown } from "./parsers/parseMarkdown";
 import { parseDlConfig } from "./parsers/parseDlConfig";
 import { parseBatchConfig } from "./parsers/parseBatchConfig";
-import { defaultMarkdown, inlineSuggestion, defaultYaml, markdownPreview } from "./commands";
+import { defaultMarkdown, inlineSuggestion, defaultYaml, markdownPreview, expandedTemplatesPreview } from "./commands";
+import { ExpandedTemplatesProvider, EXP_SCHEME } from "./fillTemplates";
 import { setExtensionContext } from "./contextStore";
 import { FileFixCodeActionProvider } from "./codeActionProvider";
-
+import * as yaml from "js-yaml";
 // should this be named yamlDiagnostics if also using markdown?
 export const diagnosticCollection = vscode.languages.createDiagnosticCollection("yamlDiagnostics");
 
@@ -51,12 +52,12 @@ export async function activate(context: vscode.ExtensionContext) {
         await parseDocument(event);
       }
     }),
-  // for changing document
-  vscode.workspace.onDidChangeTextDocument(async (event) => {
-    if (event?.document !== undefined) {
-      parseDocument(event?.document);
-    };
-  }),
+    // for changing document
+    vscode.workspace.onDidChangeTextDocument(async (event) => {
+      if (event?.document !== undefined) {
+        parseDocument(event?.document);
+      };
+    }),
 
     // When we switch to a document open in another tab
     vscode.window.onDidChangeActiveTextEditor(async (event) => {
@@ -90,4 +91,22 @@ export async function activate(context: vscode.ExtensionContext) {
 
   // Open Markdown preview
   context.subscriptions.push(markdownPreview);
+
+  // Open expanded templates preview
+  const expandedProvider = new ExpandedTemplatesProvider();
+  context.subscriptions.push(
+    vscode.workspace.registerTextDocumentContentProvider(EXP_SCHEME, expandedProvider)
+  );
+
+  // Open preview command
+  context.subscriptions.push(
+    expandedTemplatesPreview
+  );
+
+  // Auto-refresh the preview when the source changes
+  context.subscriptions.push(
+    vscode.workspace.onDidChangeTextDocument((e) => {
+      expandedProvider.refreshForSource(e.document.uri);
+    })
+  );
 }

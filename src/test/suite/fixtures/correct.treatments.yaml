@@ -1,0 +1,597 @@
+templates:
+  ############# Labeling Game #############
+  - templateName: labelingGameInstructions
+    templateContent:
+      # Intro sequence stages
+      - name: Labeling_Game_Comprehension_Checks
+        elements:
+          - type: prompt
+            file: projects/volvovsky_reputation/revision_20250424/labelingGame/instructions.md
+          - type: separator
+          - name: comprehension_check_stage2Points
+            type: prompt
+            file: projects/volvovsky_reputation/revision_20250424/labelingGame/comprehension_check_stage2Points.md
+          - name: comprehension_check_whenTalk
+            type: prompt
+            file: projects/volvovsky_reputation/revision_20250424/labelingGame/comprehension_check_whenTalk.md
+          - type: prompt
+            file: projects/volvovsky_reputation/revision_20250424/all_mandatory.md
+          - type: submitButton
+            buttonText: Submit
+            conditions:
+              - reference: prompt.comprehension_check_stage2Points
+                comparator: includes
+                value: EXACT SAME
+              - reference: prompt.comprehension_check_whenTalk
+                comparator: includes
+                value: Images
+
+  - templateName: labelingGameDiscussion
+    templateContent:
+      # Game Stages
+      - name: groupAssignment
+        duration: 15
+        elements:
+          - type: prompt
+            file: projects/volvovsky_reputation/revision_20250424/labelingGame/group_assignment.md
+          - type: submitButton
+            displayTime: 8
+
+      - name: preDiscussion
+        duration: 30
+        elements:
+          - type: prompt
+            file: projects/volvovsky_reputation/revision_20250424/labelingGame/introductions_BEAR.md
+            showToPositions: [0]
+          - type: prompt
+            file: projects/volvovsky_reputation/revision_20250424/labelingGame/introductions_FISH.md
+            showToPositions: [1]
+          - type: prompt
+            file: projects/volvovsky_reputation/revision_20250424/labelingGame/introductions_BIRD.md
+            showToPositions: [2]
+          - type: submitButton
+            buttonText: Proceed
+
+      - name: coordination discussion
+        duration: 600
+        discussion:
+          chatType: video
+          showNickname: false
+          showTitle: true
+        elements:
+          - type: image
+            file: "projects/volvovsky_reputation/revision_20250424/stimuli/Simple_Panel_A.jpg"
+          - type: submitButton
+            displayTime: 180
+            buttonText: End discussion and proceed to next steps
+            name: labeling
+          - name: labeling
+            type: prompt
+            file: projects/volvovsky_reputation/revision_20250424/labelingGame/label_images.md
+            shared: true
+
+  - templateName: labelingGameRecallTask
+    templateContent:
+      # Game Stages
+      - name: recall 1
+        duration: 30
+        elements:
+          - type: image
+            file: projects/volvovsky_reputation/Simple_A3.jpg
+          - type: prompt
+            name: "recall_1"
+            file: projects/volvovsky_reputation/revision_20250424/labelingGame/recall.md
+          - type: submitButton
+            buttonText: Submit
+            name: "recall_1"
+
+      - name: feedback 1
+        duration: 15
+        elements:
+          - type: image
+            file: projects/volvovsky_reputation/Simple_A3.jpg
+          - type: prompt
+            file: projects/volvovsky_reputation/revision_20250424/labelingGame/labels_match.md
+            conditions:
+              - reference: prompt.recall_1
+                position: percentAgreement
+                comparator: equals
+                value: 100
+              - reference: prompt.recall_1
+                position: all
+                comparator: hasLengthAtLeast
+                value: 1
+          - type: prompt
+            file: projects/volvovsky_reputation/revision_20250424/labelingGame/labels_not_match.md
+            conditions:
+              - reference: "prompt.recall_1"
+                position: percentAgreement
+                comparator: isBelow
+                value: 100
+
+          - type: display
+            reference: "prompt.recall_1"
+            position: 0
+          - type: display
+            reference: "prompt.recall_1"
+            position: 1
+          - type: display
+            reference: "prompt.recall_1"
+            position: 2
+          - type: submitButton
+
+  ############ Art Game Instructions ##########
+  - templateName: artGameInstructions
+    templateContent:
+      # Exit sequence stages
+      - name: Introduction for Art Game
+        elements:
+          - type: prompt
+            file: projects/volvovsky_reputation/revision_20250424/artGameInstructions/introduction.md
+          - type: submitButton
+      - name: Training round as collector
+        elements:
+          - type: prompt
+            file: projects/volvovsky_reputation/revision_20250424/artGameInstructions/training_banner.md
+          - type: prompt
+            file: projects/volvovsky_reputation/revision_20250424/artGameInstructions/chose_to_hire_agent_fixed_price.md
+            name: training_hire_agent
+          - type: separator
+          - type: prompt
+            file: projects/volvovsky_reputation/revision_20250424/artGameInstructions/describe_art_to_agent.md
+            name: collector_description
+            conditions:
+              - reference: prompt.training_hire_agent
+                comparator: equals
+                value: "Yes"
+          - type: submitButton
+            conditions:
+              - reference: prompt.training_hire_agent
+                comparator: equals
+                value: "Yes"
+              - reference: prompt.collector_description
+                comparator: exists
+
+      - name: Result of playing as collector
+        elements:
+          - type: prompt
+            file: projects/volvovsky_reputation/revision_20250424/artGameInstructions/training_banner.md
+          - type: prompt
+            file: projects/volvovsky_reputation/revision_20250424/artGameInstructions/result_of_playing_as_collector.md
+          - type: submitButton
+            buttonText: Proceed to next round of training
+
+      - name: Training Round as Agent part 1 ## Bookmark - pick up here
+        elements:
+          - type: prompt
+            file: projects/volvovsky_reputation/revision_20250424/artGameInstructions/training_banner.md
+          - type: prompt
+            file: projects/volvovsky_reputation/revision_20250424/artGameInstructions/play_as_agent_intro.md
+            name: agent_intro_taxi
+          - type: submitButton
+            conditions:
+              - reference: prompt.agent_intro_taxi
+                comparator: equals
+                value: "Yes"
+
+      - name: Play as Agent part 2
+        elements:
+          - type: prompt
+            file: projects/volvovsky_reputation/revision_20250424/artGameInstructions/training_banner.md
+          - type: prompt
+            file: projects/volvovsky_reputation/revision_20250424/artGameInstructions/play_as_agent_task.md
+          - type: submitButton
+      - name: Result of playing as Agent
+        elements:
+          - type: prompt
+            file: projects/volvovsky_reputation/revision_20250424/artGameInstructions/training_banner.md
+          - type: prompt
+            file: projects/volvovsky_reputation/revision_20250424/artGameInstructions/result_of_playing_as_agent.md
+          - type: submitButton
+
+      - name: Art Game Comprehension Check
+        elements:
+          - type: prompt
+            file: projects/volvovsky_reputation/revision_20250424/artGameInstructions/training_banner.md
+          - type: prompt
+            file: projects/volvovsky_reputation/revision_20250424/artGameInstructions/art_game_comp_review.md
+          - type: prompt
+            file: projects/volvovsky_reputation/revision_20250424/artGameInstructions/art_game_comp_1.md
+            name: art_game_comp_1
+          - type: prompt
+            file: projects/volvovsky_reputation/revision_20250424/artGameInstructions/art_game_comp_2.md
+            name: art_game_comp_2
+          - type: prompt
+            file: projects/volvovsky_reputation/revision_20250424/artGameInstructions/art_game_comp_3.md
+            name: art_game_comp_3
+          - type: prompt
+            file: projects/volvovsky_reputation/revision_20250424/artGameInstructions/art_game_comp_4.md
+            name: art_game_comp_4
+          - type: prompt
+            file: projects/volvovsky_reputation/revision_20250424/artGameInstructions/art_game_comp_5.md
+            name: art_game_comp_5
+          - type: prompt
+            file: projects/volvovsky_reputation/revision_20250424/all_mandatory.md
+          - type: submitButton
+            conditions:
+              - reference: prompt.art_game_comp_1
+                comparator: includes
+                value: "CORRECT piece of art"
+              - reference: prompt.art_game_comp_2
+                comparator: includes
+                value: "hires them"
+              - reference: prompt.art_game_comp_3
+                comparator: includes
+                value: "THE SAME AGENT"
+              - reference: prompt.art_game_comp_4
+                comparator: includes
+                value: "Game will end"
+              - reference: prompt.art_game_comp_5
+                comparator: includes
+                value: "No"
+
+  ############## Observer Templates #############
+
+  - templateName: observerInstructions
+    templateContent:
+      # Exit sequence stages
+      - name: Instructions for Observer
+        elements:
+          - type: prompt
+            file: projects/volvovsky_reputation/revision_20250424/observeArtGame/pairing_with_partner.md
+            hideTime: 9
+          - type: prompt
+            file: projects/volvovsky_reputation/revision_20250424/observeArtGame/observer_instructions.md
+            displayTime: 10
+          - type: submitButton
+            displayTime: 10
+
+  ############## Debriefing Templates #############
+  - templateName: debrief
+    templateContent:
+      # Exit sequence stages
+      - name: Post-choice debrief
+        elements:
+          - type: prompt
+            file: projects/volvovsky_reputation/revision_20250424/chooseAndExplain/post_choice_debrief_yes_a.md
+            hideTime: 9
+            conditions:
+              - reference: prompt.choice_to_hire_observed_agent
+                comparator: equals
+                value: "Yes"
+          - type: prompt
+            file: projects/volvovsky_reputation/revision_20250424/chooseAndExplain/post_choice_debrief_yes_b.md
+            displayTime: 9
+            conditions:
+              - reference: prompt.choice_to_hire_observed_agent
+                comparator: equals
+                value: "Yes"
+          - type: submitButton
+            displayTime: 9
+            conditions:
+              - reference: prompt.choice_to_hire_observed_agent
+                comparator: equals
+                value: "Yes"
+
+          - type: prompt
+            file: projects/volvovsky_reputation/revision_20250424/chooseAndExplain/post_choice_debrief_no.md
+            conditions:
+              - reference: prompt.choice_to_hire_observed_agent
+                comparator: equals
+                value: "No"
+          - type: submitButton
+            conditions:
+              - reference: prompt.choice_to_hire_observed_agent
+                comparator: equals
+                value: "No"
+
+      - name: manipulation check # ask them to remember who they played with?
+        elements:
+          - type: prompt
+            file: projects/volvovsky_reputation/revision_20250424/chooseAndExplain/manipulation_check_agent.md
+            name: manipulation_check_agent
+          - type: prompt
+            file: projects/volvovsky_reputation/revision_20250424/chooseAndExplain/manipulation_check_collector.md
+            name: manipulation_check_collector
+          - type: submitButton
+
+      - name: other reputation questions
+        elements:
+          - type: prompt
+            file: projects/volvovsky_reputation/revision_20250424/chooseAndExplain/do_you_recommend.md
+          - type: prompt
+            file: projects/volvovsky_reputation/revision_20250424/chooseAndExplain/did_observed_agent_succeed.md
+            name: did_observed_agent_succeed
+          - type: prompt
+            file: projects/volvovsky_reputation/revision_20250424/chooseAndExplain/diagnose_observed_agent_error.md
+            conditions:
+              - reference: prompt.did_observed_agent_succeed
+                comparator: doesNotEqual
+                value: "Every time"
+          - type: submitButton
+
+      - name: perceptions of discussion alters 1
+        elements:
+          - type: prompt
+            file: projects/volvovsky_reputation/revision_20250424/chooseAndExplain/perception_of_group_instructions.md
+          - type: survey
+            surveyName: PerceptionOfOthers
+
+      - name: debrief
+        elements:
+          - type: prompt
+            file: projects/volvovsky_reputation/debrief.md
+          - type: submitButton
+
+      - name: Demographic Survey
+        elements:
+          - type: survey
+            surveyName: DemographicsShortUS
+
+  ##########
+
+  - templateName: observeOwnTeamImages
+    templateContent:
+      - type: image
+        file: projects/volvovsky_reputation/revision_20250424/icons/observe_elephant_bear.jpg
+        showToPositions: [1]
+      - type: image
+        file: projects/volvovsky_reputation/revision_20250424/icons/observe_elephant_bird.jpg
+        showToPositions: [2]
+      - type: image
+        file: projects/volvovsky_reputation/revision_20250424/icons/observe_elephant_fish.jpg
+        showToPositions: [0]
+
+  - templateName: observeOwnTeamStage
+    templateContent:
+      - name: observerOwnTeam_Round_1
+        elements:
+          - type: prompt
+            file: projects/volvovsky_reputation/you_will_observe.md
+
+          - template: observeOwnTeamImages
+
+          - type: prompt
+            file: projects/volvovsky_reputation/revision_20250424/observeArtGame/waiting_for_collector.md
+            hideTime: 9
+          - type: timer
+            displayTime: 0
+            endTime: 15
+            hideTime: 9
+            warnTimeRemaining: 3
+
+          - type: prompt
+            file: projects/volvovsky_reputation/revision_20250424/observeArtGame/collector_asks_for.md
+            displayTime: 10
+          - type: display
+            reference: "prompt.recall_1"
+            position: 0
+            showToPositions: [1]
+            displayTime: 10
+          - type: display
+            reference: "prompt.recall_1"
+            position: 1
+            showToPositions: [2]
+            displayTime: 10
+          - type: display
+            reference: "prompt.recall_1"
+            position: 2
+            showToPositions: [0]
+            displayTime: 10
+          - type: prompt
+            file: projects/volvovsky_reputation/revision_20250424/observeArtGame/waiting_for_agent.md
+            displayTime: 10
+            hideTime: 20
+          - type: timer
+            displayTime: 10
+            endTime: 29
+            hideTime: 20
+            warnTimeRemaining: 3
+
+          - type: prompt
+            file: "projects/volvovsky_reputation/revision_20250424/observeArtGame/observe_agent_success.md"
+            displayTime: 20
+          - type: submitButton
+            displayTime: 20
+
+          - type: prompt
+            file: projects/volvovsky_reputation/revision_20250424/observeArtGame/please_click_forward.md
+            displayTime: 30
+
+  - templateName: observeOtherTeamStage
+    templateContent:
+      - name: observerOtherTeam_Round_1
+        elements:
+          - type: prompt
+            file: projects/volvovsky_reputation/revision_20250424/observeArtGame/you_will_observe.md
+          - type: image
+            file: projects/volvovsky_reputation/revision_20250424/icons/observe_elephant_dog.jpg
+
+          - type: prompt
+            file: projects/volvovsky_reputation/revision_20250424/observeArtGame/waiting_for_collector.md
+            hideTime: 9
+          - type: timer
+            displayTime: 0
+            endTime: 15
+            hideTime: 9
+            warnTimeRemaining: 3
+
+          - type: prompt
+            file: "projects/volvovsky_reputation/revision_20250424/observeArtGame/collector_asks_for_simple_1.md"
+            displayTime: 10
+          - type: prompt
+            file: projects/volvovsky_reputation/revision_20250424/observeArtGame/waiting_for_agent.md
+            displayTime: 10
+            hideTime: 20
+          - type: timer
+            displayTime: 10
+            endTime: 29
+            hideTime: 20
+            warnTimeRemaining: 3
+
+          - type: prompt
+            file: "projects/volvovsky_reputation/revision_20250424/observeArtGame/observe_agent_success.md"
+            displayTime: 20
+          - type: submitButton
+            displayTime: 20
+
+          - type: prompt
+            file: projects/volvovsky_reputation/revision_20250424/observeArtGame/please_click_forward.md
+            displayTime: 30
+
+introSequences:
+  - name: baseline
+    desc: standard conditions
+    introSteps:
+      - name: Welcome
+        desc: outline the stages of the experiment, how long it will take, etc.
+        elements:
+          - type: prompt
+            file: projects/volvovsky_reputation/revision_20250424/welcome.md
+          - type: submitButton
+
+      - template: labelingGameInstructions
+
+treatments:
+  ######################### Simple Success Own Team #########################
+  - name: "simple success own team"
+    playerCount: 3
+    groupComposition:
+      - position: 0
+        title: BEAR
+      - position: 1
+        title: FISH
+      - position: 2
+        title: BIRD
+
+    gameStages:
+      - template: labelingGameDiscussion
+        fields:
+          imagePanel: Simple_Panel_A.jpg
+
+      - template: labelingGameRecallTask
+        fields:
+          recallIndex: 1
+        broadcast:
+          d0:
+            - imageFilepath: projects/volvovsky_reputation/Simple_A3.jpg
+            - imageFilepath: projects/volvovsky_reputation/Simple_A1.jpg
+            - imageFilepath: projects/volvovsky_reputation/Simple_A6.jpg
+            - imageFilepath: projects/volvovsky_reputation/Simple_A2.jpg
+            - imageFilepath: projects/volvovsky_reputation/Simple_A8.jpg
+            - imageFilepath: projects/volvovsky_reputation/Simple_A5.jpg
+            - imageFilepath: projects/volvovsky_reputation/Simple_A4.jpg
+            - imageFilepath: projects/volvovsky_reputation/Simple_A7.jpg
+
+    exitSequence:
+      - template: artGameInstructions
+      - template: observerInstructions
+
+      - template: observeOwnTeamStage
+        fields:
+          name: "observerOwnTeam_Round_1"
+          outcomeFile: observe_agent_success
+        broadcast:
+          d0:
+            - recallIndex: "1"
+              outcomeFile: observe_agent_success
+            - recallIndex: "7"
+              outcomeFile: observe_agent_failure
+            - recallIndex: "5"
+              outcomeFile: observe_agent_success
+            - recallIndex: "2"
+              outcomeFile: observe_agent_success
+            - recallIndex: "4"
+              outcomeFile: observe_agent_success
+
+      - name: Choose
+        elements:
+          - type: prompt
+            file: projects/volvovsky_reputation/revision_20250424/chooseAndExplain/your_turn.md
+          - template: observeOwnTeamImages
+          - type: prompt
+            file: projects/volvovsky_reputation/revision_20250424/observeArtGame/summary_of_observation_success.md
+          - type: prompt
+            name: choice_to_hire_observed_agent
+            file: projects/volvovsky_reputation/revision_20250424/observeArtGame/hiring_choice_fixed.md
+          - type: prompt
+            name: explain_choice
+            file: projects/volvovsky_reputation/hiring_choice_explanation.md
+          - type: submitButton
+            conditions:
+              - reference: prompt.choice_to_hire_observed_agent
+                comparator: exists
+
+      - template: debrief
+
+  ######################### Simple Success Other Team #########################
+  - name: "simple success other team"
+    playerCount: 3
+    groupComposition:
+      - position: 0
+        title: BEAR
+      - position: 1
+        title: FISH
+      - position: 2
+        title: BIRD
+
+    gameStages:
+      - template: labelingGameDiscussion
+        fields:
+          imagePanel: Simple_Panel_A.jpg
+
+      - template: labelingGameRecallTask
+        fields:
+          recallIndex: 1
+        broadcast:
+          d0:
+            - imageFilepath: projects/volvovsky_reputation/Simple_A3.jpg
+            - imageFilepath: projects/volvovsky_reputation/Simple_A1.jpg
+            - imageFilepath: projects/volvovsky_reputation/Simple_A6.jpg
+            - imageFilepath: projects/volvovsky_reputation/Simple_A2.jpg
+            - imageFilepath: projects/volvovsky_reputation/Simple_A8.jpg
+            - imageFilepath: projects/volvovsky_reputation/Simple_A5.jpg
+            - imageFilepath: projects/volvovsky_reputation/Simple_A4.jpg
+            - imageFilepath: projects/volvovsky_reputation/Simple_A7.jpg
+
+    exitSequence:
+      - template: artGameInstructions
+      - template: observerInstructions
+
+      - template: observeOtherTeamStage
+        fields:
+          name: "observerOtherTeam_Round_1"
+          outcomeFile: observe_agent_success
+        broadcast:
+          d0:
+            - asksForFile: collector_asks_for_simple_1.md
+              outcomeFile: observe_agent_success
+            - asksForFile: collector_asks_for_simple_2.md
+              outcomeFile: observe_agent_failure
+            - asksForFile: collector_asks_for_simple_3.md
+              outcomeFile: observe_agent_success
+            - asksForFile: collector_asks_for_simple_4.md
+              outcomeFile: observe_agent_success
+            - asksForFile: collector_asks_for_simple_5.md
+              outcomeFile: observe_agent_success
+
+      - name: Choose
+        elements:
+          - type: prompt
+            file: projects/volvovsky_reputation/revision_20250424/chooseAndExplain/your_turn.md
+          - type: image
+            file: projects/volvovsky_reputation/observe_elephant_dog.jpg
+          - type: prompt
+            file: projects/volvovsky_reputation/revision_20250424/chooseAndExplain/summary_of_observation_success.md
+          - type: prompt
+            name: choice_to_hire_observed_agent
+            file: projects/volvovsky_reputation/revision_20250424/observeArtGame/hiring_choice_fixed.md
+          - type: prompt
+            name: explain_choice
+            file: projects/volvovsky_reputation/revision_20250424/chooseAndExplain/hiring_choice_explanation.md
+          - type: submitButton
+            conditions:
+              - reference: prompt.choice_to_hire_observed_agent
+                comparator: exists
+
+      - template: debrief
