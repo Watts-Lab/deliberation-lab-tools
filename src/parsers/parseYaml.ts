@@ -243,7 +243,7 @@ export async function parseYaml(document: vscode.TextDocument) {
                 const [type] = node.reference.split('.', 1);
                 referenceChecks.push({ type, line, fullRef: node.reference});
             }
-            Object.entries(node).forEach(([key, value]) => {
+            Object.entries(node)?.forEach(([key, value]) => {
                 walkYaml(value, [...path, key]);
             });
         }

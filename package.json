@@ -21,8 +21,7 @@
     "Other"
   ],
   "activationEvents": [
-    "onLanguage:treatmentsYaml",
-    "onLanguage:markdown"
+    "onLanguage:treatmentsYaml"
   ],
   "contributes": {
     "configurationDefaults": {
@@ -41,13 +40,6 @@
           ".treatments.yaml"
         ],
         "configuration": "./language-configuration.json"
-      },
-      {
-        "id": "promptMarkdown",
-        "aliases": [
-          "Prompt Markdown"
-        ],
-        "configuration": "./language-configuration.json"
       }
     ],
     "grammars": [
@@ -55,11 +47,6 @@
         "language": "treatmentsYaml",
         "scopeName": "source.yaml",
         "path": "./syntaxes/treatmentsYaml.tmLanguage.json"
-      },
-      {
-        "language": "promptMarkdown",
-        "scopeName": "text.promptMarkdown",
-        "path": "./syntaxes/promptMarkdown.tmLanguage.json"
       }
     ],
     "commands": [

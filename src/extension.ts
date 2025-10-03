@@ -18,10 +18,6 @@ async function parseDocument(document: vscode.TextDocument) {
     await parseYaml(document);
   } else if (detectPromptMarkdown(document)) {
     console.log(detectPromptMarkdown(document));
-    if (document.languageId !== 'promptMarkdown') {
-      await vscode.languages.setTextDocumentLanguage(document, 'promptMarkdown');
-      return;
-    }
     parseMarkdown(document);
   } else if (detectdlConfig(document)) {
     await parseDlConfig(document);
