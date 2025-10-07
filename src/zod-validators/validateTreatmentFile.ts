@@ -657,7 +657,23 @@ export const introExitStepSchema = altTemplateContext(
       elements: elementsSchema,
     })
     .strict()
-);
+).superRefine((data, ctx) => {
+  let hasSubmitButton = false;
+  if (Array.isArray(data.elements)) {
+      data.elements.forEach((element: ElementType, elementIdx: number) => {
+        if (element && typeof element === "object" && (element as any).type === "submitButton") {
+            hasSubmitButton = true;
+        }
+      });
+  }
+  if (!hasSubmitButton) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: [],
+      message: "Intro/exit step must include at least one submitButton element.",
+    });
+  }
+});
 // Todo: add a superrefine that checks that no conditions have position values
 // and that no elements have showToPositions or hideFromPositions
 export type IntroExitStepType = z.infer<typeof introExitStepSchema>;
@@ -670,7 +686,6 @@ export const introExitStepsBaseSchema = altTemplateContext(
 );
 
 export const introStepsSchema = introExitStepsBaseSchema.superRefine((data, ctx) => {
-  let hasSubmitButton = false;
   data?.forEach((step: IntroExitStepType, stepIdx: number) => {
     if (Array.isArray(step.elements)) {
       step.elements.forEach((element: ElementType, elementIdx: number) => {
@@ -681,9 +696,6 @@ export const introStepsSchema = introExitStepsBaseSchema.superRefine((data, ctx)
             message: `Prompt element in intro/exit steps cannot be shared.`,
           });
         }
-        if (element && typeof element === "object" && (element as any).type === "submitButton") {
-            hasSubmitButton = true;
-          }
         //checks if it exists in exit sequence too, might not want this, but this schema applies
         //to both intro and exit steps
         if ("position" in element) {
@@ -710,17 +722,9 @@ export const introStepsSchema = introExitStepsBaseSchema.superRefine((data, ctx)
       });
     }
   });
-  if (!hasSubmitButton) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: [],
-        message: "Intro steps must include at least one submitButton element.",
-      });
-  }
 });
 
 export const exitStepsSchema = introExitStepsBaseSchema.superRefine((data, ctx) => {
-  let hasSubmitButton = false;
   data?.forEach((step: IntroExitStepType, stepIdx: number) => {
     if (Array.isArray(step.elements)) {
       step.elements.forEach((element: ElementType, elementIdx: number) => {
@@ -731,19 +735,9 @@ export const exitStepsSchema = introExitStepsBaseSchema.superRefine((data, ctx) 
             message: `Prompt element in intro/exit steps cannot be shared.`,
           });
         }
-        if (element && typeof element === "object" && (element as any).type === "submitButton") {
-            hasSubmitButton = true;
-          }
       });
     }
   });
-  if (!hasSubmitButton) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: [],
-        message: "Intro steps must include at least one submitButton element.",
-      });
-  }
 });
 
 // ------------------ Intro Sequences and Treatments ------------------ //
@@ -786,6 +780,7 @@ export const treatmentSchema = altTemplateContext(
     .superRefine((treatment, ctx) => {
       const baseResult = baseTreatmentSchema.safeParse(treatment);
       if (!baseResult.success) {
+        console.log("baseResult error", baseResult.error);
         return;
       }
   // Use the parsed/validated data from baseResult so any transforms
@@ -859,6 +854,7 @@ export const treatmentSchema = altTemplateContext(
       });
 
       // Ensure unique element names within each treatment, grouped by type
+      // Wont work unless baseTreatmentSchema is correct
       const typeToNames = new Map<string, Set<string>>();
       gameStages?.forEach((stage: { elements: any[]; name: any }, stageIndex: string | number) => {
         stage?.elements?.forEach((element: any, elementIndex: string | number) => {
@@ -912,8 +908,8 @@ export const templateContentSchema = z.any().superRefine((data, ctx) => {
     { schema: conditionSchema, name: "Condition" },
     { schema: playerSchema, name: "Player" },
     // specify into intro step or exit step not both
-    { schema: introExitStepsBaseSchema, name: "Intro Exit Step" },
-    { schema: introExitStepsBaseSchema, name: "Intro Exit Steps" },
+    { schema: introExitStepSchema, name: "Intro Exit Step" },
+    { schema: exitStepsSchema, name: "Exit Steps" },
     //commented out for now, matches too many schemas
     {
       schema: templateBroadcastAxisValuesSchema,
@@ -1096,7 +1092,7 @@ export const templateSchema = z
       "condition",
       "player",
       "introExitStep",
-      "introExitSteps",
+      "exitSteps",
       "other",
     ]).optional(),
     templateDesc: descriptionSchema.optional(),
@@ -1173,8 +1169,8 @@ export function matchContentType(
       return playerSchema;
     case "introExitStep":
       return introExitStepSchema;
-    case "introExitSteps":
-      return introExitStepsBaseSchema;
+    case "exitSteps":
+      return exitStepsSchema;
     default:
       throw new Error(`Unknown content type: ${contentType}`);
   }
