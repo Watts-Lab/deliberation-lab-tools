@@ -657,7 +657,23 @@ export const introExitStepSchema = altTemplateContext(
       elements: elementsSchema,
     })
     .strict()
-);
+).superRefine((data, ctx) => {
+  let hasSubmitButton = false;
+  if (Array.isArray(data.elements)) {
+      data.elements.forEach((element: ElementType, elementIdx: number) => {
+        if (element && typeof element === "object" && (element as any).type === "submitButton") {
+            hasSubmitButton = true;
+        }
+      });
+  }
+  if (!hasSubmitButton) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: [],
+      message: "Intro/exit step must include at least one submitButton element.",
+    });
+  }
+});
 // Todo: add a superrefine that checks that no conditions have position values
 // and that no elements have showToPositions or hideFromPositions
 export type IntroExitStepType = z.infer<typeof introExitStepSchema>;
@@ -670,7 +686,6 @@ export const introExitStepsBaseSchema = altTemplateContext(
 );
 
 export const introStepsSchema = introExitStepsBaseSchema.superRefine((data, ctx) => {
-  let hasSubmitButton = false;
   data?.forEach((step: IntroExitStepType, stepIdx: number) => {
     if (Array.isArray(step.elements)) {
       step.elements.forEach((element: ElementType, elementIdx: number) => {
@@ -681,9 +696,6 @@ export const introStepsSchema = introExitStepsBaseSchema.superRefine((data, ctx)
             message: `Prompt element in intro/exit steps cannot be shared.`,
           });
         }
-        if (element && typeof element === "object" && (element as any).type === "submitButton") {
-            hasSubmitButton = true;
-          }
         //checks if it exists in exit sequence too, might not want this, but this schema applies
         //to both intro and exit steps
         if ("position" in element) {
@@ -710,17 +722,9 @@ export const introStepsSchema = introExitStepsBaseSchema.superRefine((data, ctx)
       });
     }
   });
-  if (!hasSubmitButton) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: [],
-        message: "Intro steps must include at least one submitButton element.",
-      });
-  }
 });
 
 export const exitStepsSchema = introExitStepsBaseSchema.superRefine((data, ctx) => {
-  let hasSubmitButton = false;
   data?.forEach((step: IntroExitStepType, stepIdx: number) => {
     if (Array.isArray(step.elements)) {
       step.elements.forEach((element: ElementType, elementIdx: number) => {
@@ -731,19 +735,9 @@ export const exitStepsSchema = introExitStepsBaseSchema.superRefine((data, ctx) 
             message: `Prompt element in intro/exit steps cannot be shared.`,
           });
         }
-        if (element && typeof element === "object" && (element as any).type === "submitButton") {
-            hasSubmitButton = true;
-          }
       });
     }
   });
-  if (!hasSubmitButton) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: [],
-        message: "Intro steps must include at least one submitButton element.",
-      });
-  }
 });
 
 // ------------------ Intro Sequences and Treatments ------------------ //

@@ -296,6 +296,10 @@ export class ExpandedTemplatesProvider implements vscode.TextDocumentContentProv
 
       try {
         expanded = fillTemplates({ obj, templates });
+        if (expanded && typeof expanded === "object") {
+          delete (expanded as any).templates;
+          delete (expanded as any).templateLibrary;
+        }
       } catch (e: any) {
         warning = String(e?.message ?? e);
         // Partial expansion

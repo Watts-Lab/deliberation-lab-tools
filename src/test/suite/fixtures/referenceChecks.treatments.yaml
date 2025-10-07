@@ -181,12 +181,14 @@ templates:
           elements:
             - type: qualtrics
               url: https://upenn.co1.qualtrics.com/jfe/form/SV_2bfMgUw37Y2AUZg
+            - type: submitButton
+              buttonText: Proceed to Survey
 
 introSequences:
   - name: default
     introSteps:
       - name: self_construal
-        elements:
+        elements: 
           - type: prompt
             file: "ex.md"
       - name: topic_survey
