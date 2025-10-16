@@ -853,34 +853,8 @@ export const treatmentSchema = altTemplateContext(
         });
       });
 
-      // Ensure unique element names within each treatment, grouped by type
-      // Wont work unless baseTreatmentSchema is correct
-      const typeToNames = new Map<string, Set<string>>();
-      gameStages?.forEach((stage: { elements: any[]; name: any }, stageIndex: string | number) => {
-        stage?.elements?.forEach((element: any, elementIndex: string | number) => {
-          if (!element) return;
-
-          const isObject = typeof element === "object" && element !== null;
-          if (!isObject) return;
-
-          const elType = typeof (element as any).type === "string" ? (element as any).type : undefined;
-          const elName = typeof (element as any).name === "string" ? (element as any).name : undefined;
-
-          if (!elType || !elName) return;
-
-          const seen = typeToNames.get(elType) ?? new Set<string>();
-          if (seen.has(elName)) {
-            ctx.addIssue({
-              code: z.ZodIssueCode.custom,
-              path: ["gameStages", stageIndex, "elements", elementIndex, "name"],
-              message: `Duplicate name "${elName}" for element type "${elType}" within treatment "${treatment.name}". Elements of the same type must have unique names within a single treatment.`,
-            });
-          } else {
-            seen.add(elName);
-            typeToNames.set(elType, seen);
-          }
-        });
-      });
+      // Duplicate-name checks removed here. Unique-name validation may be
+      // performed elsewhere if needed.
     })
 );
 
@@ -996,62 +970,8 @@ export const templateContentSchema = z.any().superRefine((data, ctx) => {
     }
   }
 
-  // After attempting all schemas, traverse the data to find any treatment objects
-  // and check for duplicate element names within each treatment
-  // This is done regardless of whether a treatmentSchema matched,
-  // to catch treatments nested within other structures
-  // (e.g., within an intro sequence or other custom structures)
-  const checkTreatmentForDuplicateNames = (treatment: any, basePath: any[] = []) => {
-    const typeToNamesLocal = new Map<string, Set<string>>();
-    const gameStagesLocal = treatment?.gameStages;
-    gameStagesLocal?.forEach((stage: { elements: any[]; name: any }, stageIndex: string | number) => {
-      stage?.elements?.forEach((element: any, elementIndex: string | number) => {
-        if (!element) return;
-
-        const isObject = typeof element === "object" && element !== null;
-        if (!isObject) return;
-
-        const elType = typeof (element as any).type === "string" ? (element as any).type : undefined;
-        const elName = typeof (element as any).name === "string" ? (element as any).name : undefined;
-
-        if (!elType || !elName) return;
-
-        const seen = typeToNamesLocal.get(elType) ?? new Set<string>();
-        if (seen.has(elName)) {
-          ctx.addIssue({
-            code: z.ZodIssueCode.custom,
-            path: [...basePath, "gameStages", stageIndex, "elements", elementIndex, "name"],
-            message: `Duplicate name "${elName}" for element type "${elType}" within treatment "${treatment?.name}". Elements of the same type must have unique names within a single treatment.`,
-          });
-        } else {
-          seen.add(elName);
-          typeToNamesLocal.set(elType, seen);
-        }
-      });
-    });
-  };
-
-  const traverseAndCheck = (node: any, path: any[] = []) => {
-    if (Array.isArray(node)) {
-      node.forEach((item, idx) => traverseAndCheck(item, [...path, idx]));
-    } else if (node && typeof node === "object") {
-      if ("gameStages" in node && Array.isArray((node as any).gameStages)) {
-        checkTreatmentForDuplicateNames(node, path);
-      }
-      for (const [key, val] of Object.entries(node)) {
-        traverseAndCheck(val, [...path, key]);
-      }
-    }
-  };
-
-  try {
-    traverseAndCheck(data, []);
-  } catch (e) {
-    ctx.addIssue({
-      code: z.ZodIssueCode.custom,
-      message: `Error while validating template content for duplicate element names: ${String(e)}`,
-    });
-  }
+  // Duplicate-name traversal checks removed. Template content validation
+  // will rely on schema-specific checks instead.
 
   if (bestSchemaResult) {
     console.log(

@@ -351,6 +351,37 @@ export function runReferenceStageOrderChecks(
     const globalIntroStages = collectIntroStages(root, templateMap);
     const globalIntroIR = collectInitsAndRefsFromStages(globalIntroStages);
 
+    // --- Duplicate-name checks: intro sequences ---
+    // Collect names by type used within intro sequences and flag duplicates there.
+    const introNamesByType = new Map<string, Set<string>>();
+    for (const st of globalIntroStages) {
+      if (!hasElementsArray(st.node)) continue;
+      const elements = st.node.elements as any[];
+      for (let eIdx = 0; eIdx < elements.length; eIdx++) {
+        const el = elements[eIdx];
+        if (!el || typeof el !== 'object') continue;
+        const t = typeof el.type === 'string' ? el.type : undefined;
+        const name = typeof el.name === 'string' ? el.name.trim() : undefined;
+        if (!t || !name) continue;
+
+        const set = introNamesByType.get(t) ?? new Set<string>();
+        if (set.has(name)) {
+          // duplicate name of same type within intro sequences
+          const pos = findPositionFromPath([...st.path, 'elements', eIdx, 'name'], parsedDoc, document);
+            if (pos) {
+            diagnostics.push(new vscode.Diagnostic(
+              new vscode.Range(pos.start, pos.end ?? pos.start),
+              `Duplicate name "${name}" for element type "${t}" within intro sequences. Element names of the same type must be unique in intro sequences.`,
+              vscode.DiagnosticSeverity.Warning
+            ));
+          }
+        } else {
+          set.add(name);
+          introNamesByType.set(t, set);
+        }
+      }
+    }
+
     for (let tIdx = 0; tIdx < treatments.length; tIdx++) {
       // (B) Collect template-provided intros for THIS treatment (if any)
       const tplIntroStages = collectTemplateIntroStagesForTreatment(root, tIdx, templateMap);
@@ -371,6 +402,52 @@ export function runReferenceStageOrderChecks(
       // (E) Collect inits/refs per segment
       const tplIntroIR = collectInitsAndRefsFromStages(tplIntroStagesOff);
       const bodyIR = collectInitsAndRefsFromStages(bodyStagesOff);
+
+      // --- Duplicate-name checks: per-treatment ---
+      // Collect names by type used within this treatment body (including template-provided body)
+      const treatmentNamesByType = new Map<string, Set<string>>();
+      // Also check against introNamesByType to prevent reuse
+      for (const st of [...tplIntroStagesOff, ...bodyStagesOff]) {
+        if (!hasElementsArray(st.node)) continue;
+        const elements = st.node.elements as any[];
+        for (let eIdx = 0; eIdx < elements.length; eIdx++) {
+          const el = elements[eIdx];
+          if (!el || typeof el !== 'object') continue;
+          const t = typeof el.type === 'string' ? el.type : undefined;
+          const name = typeof el.name === 'string' ? el.name.trim() : undefined;
+          if (!t || !name) continue;
+
+          // Check reuse of intro name for same type
+          const introSet = introNamesByType.get(t);
+          if (introSet && introSet.has(name)) {
+            const pos = findPositionFromPath([...st.path, 'elements', eIdx, 'name'], parsedDoc, document);
+            if (pos) {
+              diagnostics.push(new vscode.Diagnostic(
+                new vscode.Range(pos.start, pos.end ?? pos.start),
+                `Element name "${name}" of type "${t}" in treatment ${tIdx} reuses a name used in intro sequences. Intro element names of a given type are reserved and cannot be reused in treatments.`,
+                vscode.DiagnosticSeverity.Warning
+              ));
+            }
+            continue; // still record in treatmentNamesByType? skip recording since it's invalid
+          }
+
+          const set = treatmentNamesByType.get(t) ?? new Set<string>();
+          if (set.has(name)) {
+            // duplicate name pair within same treatment
+            const pos = findPositionFromPath([...st.path, 'elements', eIdx, 'name'], parsedDoc, document);
+            if (pos) {
+              diagnostics.push(new vscode.Diagnostic(
+                new vscode.Range(pos.start, pos.end ?? pos.start),
+                `Duplicate name "${name}" for element type "${t}" within treatment ${tIdx}. Elements of the same type must have unique names within a single treatment.`,
+                vscode.DiagnosticSeverity.Warning
+              ));
+            }
+          } else {
+            set.add(name);
+            treatmentNamesByType.set(t, set);
+          }
+        }
+      }
 
       // (F) Merge inits preferring earliest stageIndex
       const inits = new Map<string, InitOccurrence>(globalIntroIR.inits);

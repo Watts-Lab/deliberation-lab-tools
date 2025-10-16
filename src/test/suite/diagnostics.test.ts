@@ -102,8 +102,8 @@ suite('Diagnostics detection', () => {
 			diagnostics[0].message,
 			`Error in item "type": Invalid discriminator value. Expected 'audio' | 'display' | 'image' | 'prompt' | 'qualtrics' | 'separator' | 'sharedNotepad' | 'submitButton' | 'survey' | 'talkMeter' | 'timer' | 'video'`
 		);
-		assert.strictEqual(diagnostics[0].range.start.line, 58);
-		assert.strictEqual(diagnostics[0].range.end.line, 60);
+		assert.strictEqual(diagnostics[0].range.start.line, 59);
+		assert.strictEqual(diagnostics[0].range.end.line, 61);
 	});
 
 	test('Indentation error in TemplateContent', async () => {
@@ -584,5 +584,59 @@ suite('Diagnostics detection', () => {
 		assert.strictEqual(diagnostics[0].range.end.line, 135);
 		assert.strictEqual(diagnostics[1].range.start.line, 130);
 		assert.strictEqual(diagnostics[1].range.end.line, 130);
+	});
+
+	test ('missingSubmit button in intro and exit steps', async () => {
+		const filePath = path.resolve('src/test/suite/fixtures/missingSubmit.treatments.yaml');
+		const document = await vscode.workspace.openTextDocument(filePath);
+		await new Promise(resolve => setTimeout(resolve, 1000));
+		const diagnostics = vscode.languages.getDiagnostics(document.uri);
+		assert.strictEqual(diagnostics.length, 2);
+		assert.strictEqual(
+			diagnostics[0].message,
+			`Error in item "0": Intro/exit step must include at least one submitButton element.`
+		);
+		assert.strictEqual(
+			diagnostics[1].message,
+			`Error in item "0": Intro/exit step must include at least one submitButton element.`
+		);
+		assert.strictEqual(diagnostics[0].range.start.line, 4);
+		assert.strictEqual(diagnostics[0].range.end.line, 9);
+		assert.strictEqual(diagnostics[1].range.start.line, 105);
+		assert.strictEqual(diagnostics[1].range.end.line, 108);
+	});
+
+	test ('duplicate element names', async () => {
+		const filePath = path.resolve('src/test/suite/fixtures/duplicateElemName.treatments.yaml');
+		const document = await vscode.workspace.openTextDocument(filePath);
+		await new Promise(resolve => setTimeout(resolve, 1000));
+		const diagnostics = vscode.languages.getDiagnostics(document.uri);
+		assert.strictEqual(diagnostics.length, 3);
+		assert.strictEqual(
+			diagnostics[0].message,
+			`Duplicate name "preamble" for element type "prompt" within intro sequences. Element names of the same type must be unique in intro sequences.`
+		);
+		assert.strictEqual(
+			diagnostics[1].message,
+			`Duplicate name "duplicateName" for element type "prompt" within treatment 0. Elements of the same type must have unique names within a single treatment.`
+		);
+		assert.strictEqual(
+			diagnostics[2].message,
+			`Element name "preamble" of type "prompt" in treatment 0 reuses a name used in intro sequences. Intro element names of a given type are reserved and cannot be reused in treatments.`
+		);
+		assert.strictEqual(diagnostics[0].range.start.line, 9);
+		assert.strictEqual(diagnostics[0].range.end.line, 12);
+		assert.strictEqual(diagnostics[1].range.start.line, 65);
+		assert.strictEqual(diagnostics[1].range.end.line, 68);
+		assert.strictEqual(diagnostics[2].range.start.line, 68);
+		assert.strictEqual(diagnostics[2].range.end.line, 71);
+	});
+
+	test ('valid reference use in templates', async () => {
+		const filePath = path.resolve('src/test/suite/fixtures/validTemplateReference.treatments.yaml');
+		const document = await vscode.workspace.openTextDocument(filePath);
+		await new Promise(resolve => setTimeout(resolve, 1000));
+		const diagnostics = vscode.languages.getDiagnostics(document.uri);
+		assert.strictEqual(diagnostics.length, 0);
 	});
 });

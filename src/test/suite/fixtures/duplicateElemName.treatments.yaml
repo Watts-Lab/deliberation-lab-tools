@@ -7,6 +7,9 @@ introSequences:
           - type: prompt
             name: preamble
             file: "ex.md"
+          - type: prompt
+            name: preamble
+            file: "ex.md"
           - type: submitButton
             buttonText: Continue
       - name: Ten Item Personality Inventory
@@ -27,7 +30,7 @@ introSequences:
             surveyName: CulturalConflictNorms
           - type: submitButton
             buttonText: Continue
-      - name: General Information
+      - name: General Information Optional Reading
         elements:
           - type: prompt
             file: "ex.md"
@@ -51,8 +54,24 @@ treatments:
       - desc: Provost
         position: 1
         title: "Provost"
-
+        
+    
     gameStages:
+      - name: Invalid Element Type Test
+        duration: 60
+        elements:
+          - type: prompt
+            name: duplicateName
+            file: "ex.md"
+          - type: prompt
+            name: duplicateName
+            file: "ex.md"
+          - type: prompt
+            name: preamble
+            file: "ex.md"
+          - type: submitButton
+            buttonText: Continue
+
       - name: Role Reading Preamble
         duration: 30
         elements:
@@ -66,6 +85,7 @@ treatments:
               - 1
           - type: submitButton
             buttonText: Continue
+
       - name: Main Reading Time
         duration: 420
         elements:
@@ -79,6 +99,7 @@ treatments:
               - 1
           - type: submitButton
             buttonText: Continue
+
       - name: Key Things To Remember
         duration: 90
         elements:
@@ -92,25 +113,6 @@ treatments:
               - 1
           - type: submitButton
             buttonText: Continue
-      - name: Reading Comprehension Check
-        duration: 420
-        elements:
-          - type: prompt
-            file: "ex.md"
-          - type: prompt
-            file: "ex.md"
-            name: ReadingComp1
-            showToPositions: [0]
-          - type: prompt
-            file: "ex.md"
-            name: ReadingComp2
-            showToPositions: [1]
-          - type: submitButton
-            buttonText: Continue
-            conditions:
-              - promptName: ReadingComp1
-                comparator: lengthAtLeast
-                value: 10
 
     exitSequence:
       - name: Deal Sheet
@@ -118,6 +120,3 @@ treatments:
           - type: prompt
             file: "ex.md"
           - type: submitButton
-            buttonText: Submit
-
-# invalid comparator at line 106
