@@ -58,7 +58,6 @@ treatments:
 
       # ---------- The templated stage ----------
       - template: negotiation_round
-
       # ---------- Stage AFTER the template ----------
       - name: Reflection Stage
         desc: Players reflect on outcomes after negotiation
