@@ -13,14 +13,20 @@ introSequences:
         elements:
           - type: survey
             surveyName: TIPI
+          - type: submitButton
+            buttonText: Continue
       - name: Self-awareness Self-monitoring and Growth Mindset
         elements:
           - type: survey
             surveyName: AwarenessMonitoringGrowth
+          - type: submitButton
+            buttonText: Continue
       - name: Cultural Conflict Norms
         elements:
           - type: survey
             surveyName: CulturalConflictNorms
+          - type: submitButton
+            buttonText: Continue
       - name: General Information Optional Reading
         elements:
           - type: prompt
@@ -45,6 +51,7 @@ treatments:
       - desc: Provost
         position: 1
         title: "Provost"
+        
     
     gameStages:
       - name: Invalid Element Type Test

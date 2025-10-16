@@ -503,6 +503,8 @@ export async function parseYaml(document: vscode.TextDocument) {
                 handleError(issue, parsedData, document, diagnostics);
             }
         );
+
+        diagnosticCollection.set(document.uri, diagnostics);
     } else {
         //     console.log(
         //         "Zod validation passed. Types are consistent with TreatmentFileType."

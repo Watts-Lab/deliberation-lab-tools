@@ -188,10 +188,12 @@ introSequences:
         elements:
           - type: prompt
             file: "ex.md"
+          - type: submitButton
       - name: topic_survey
         elements:
           - type: prompt
             file: "ex.md"
+          - type: submitButton
 
 treatments:
   - template: disagreeing_dyads

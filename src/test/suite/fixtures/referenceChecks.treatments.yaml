@@ -181,6 +181,7 @@ templates:
           elements:
             - type: qualtrics
               url: https://upenn.co1.qualtrics.com/jfe/form/SV_2bfMgUw37Y2AUZg
+            - type: submitButton
 
 introSequences:
   - name: default
@@ -190,10 +191,12 @@ introSequences:
           - type: prompt
             file: "ex.md"
             name: GA
+          - type: submitButton
       - name: topic_survey
         elements:
           - type: prompt
             file: "ex.md"
+          - type: submitButton
 
 treatments:
   - template: disagreeing_dyads

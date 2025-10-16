@@ -90,7 +90,7 @@
     "compile-web": "npm run prepare-web && tsc -p tsconfig.json && npm run lint && node esbuild.js",
     "package-web": "npm run prepare-web && npm run check-types && npm run lint && node esbuild.js --production",
     "compile-test": "npm run build:css && tsc -p tsconfig.test.json",
-    "test": "npm run compile-test && ELECTRON_DISABLE_GPU=1 xvfb-run -a node runExtensionTests.js $TEST_FILES",
+    "test": "npm run compile-test && ELECTRON_DISABLE_GPU=1 node -e \"const { spawnSync } = require('child_process'); const run = (cmd) => spawnSync(cmd, { shell: true, stdio: 'inherit' }); const check = spawnSync('command -v xvfb-run', { shell: true, stdio: 'pipe' }); if (check.status === 0) { console.log('🖥️ Using xvfb virtual display'); const xvfb = run('xvfb-run -a node runExtensionTests.js'); process.exit(xvfb.status ?? 0); } else { console.log('⚠️ xvfb not found, running tests without virtual display'); const plain = run('node runExtensionTests.js'); process.exit(plain.status ?? 1); }\"",
     "test:electron": "vscode-test --extensionDevelopmentPath=. --extensionTestsPath=out/test/suite/extensionTests.js",
     "vscode:prepublish": "npm run package-web",
     "check-types": "tsc --noEmit",

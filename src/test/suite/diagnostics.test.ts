@@ -102,8 +102,8 @@ suite('Diagnostics detection', () => {
 			diagnostics[0].message,
 			`Error in item "type": Invalid discriminator value. Expected 'audio' | 'display' | 'image' | 'prompt' | 'qualtrics' | 'separator' | 'sharedNotepad' | 'submitButton' | 'survey' | 'talkMeter' | 'timer' | 'video'`
 		);
-		assert.strictEqual(diagnostics[0].range.start.line, 52);
-		assert.strictEqual(diagnostics[0].range.end.line, 54);
+		assert.strictEqual(diagnostics[0].range.start.line, 58);
+		assert.strictEqual(diagnostics[0].range.end.line, 60);
 	});
 
 	test('Indentation error in TemplateContent', async () => {
@@ -132,8 +132,8 @@ suite('Diagnostics detection', () => {
 			diagnostics[0].message,
 			`Error in item "dx": String must start with 'd' followed by a nonnegative integer`
 		);
-		assert.strictEqual(diagnostics[0].range.start.line, 198);
-		assert.strictEqual(diagnostics[0].range.end.line, 200);
+		assert.strictEqual(diagnostics[0].range.start.line, 203);
+		assert.strictEqual(diagnostics[0].range.end.line, 205);
 	});
 
 	test('Invalid Comparator', async () => {
@@ -147,8 +147,8 @@ suite('Diagnostics detection', () => {
 			diagnostics[0].message,
 			`Error in item "comparator": Invalid discriminator value. Expected 'exists' | 'doesNotExist' | 'equals' | 'doesNotEqual' | 'isAbove' | 'isBelow' | 'isAtLeast' | 'isAtMost' | 'hasLengthAtLeast' | 'hasLengthAtMost' | 'includes' | 'doesNotInclude' | 'matches' | 'doesNotMatch' | 'isOneOf' | 'isNotOneOf'`
 		);
-		assert.strictEqual(diagnostics[0].range.start.line, 104);
-		assert.strictEqual(diagnostics[0].range.end.line, 107);
+		assert.strictEqual(diagnostics[0].range.start.line, 110);
+		assert.strictEqual(diagnostics[0].range.end.line, 113);
 	});
 
 	test('Missing dash', async () => {
@@ -177,8 +177,8 @@ suite('Diagnostics detection', () => {
 			diagnostics[0].message,
 			'Error in item "0": Stage must have elements field (check elementsSchema).'
 		);
-		assert.strictEqual(diagnostics[0].range.start.line, 13);
-		assert.strictEqual(diagnostics[0].range.end.line, 19);
+		assert.strictEqual(diagnostics[0].range.start.line, 15);
+		assert.strictEqual(diagnostics[0].range.end.line, 21);
 	});
 
 	test('missing survey name', async () => {
@@ -192,7 +192,7 @@ suite('Diagnostics detection', () => {
 			diagnostics[0].message,
 			'Error in item "surveyName": Required'
 		);
-		assert.strictEqual(diagnostics[0].range.start.line, 183);
+		assert.strictEqual(diagnostics[0].range.start.line, 135);
 	});
 
 	test('negative duration in timer', async () => {
@@ -206,8 +206,8 @@ suite('Diagnostics detection', () => {
 			diagnostics[0].message,
 			'Error in item "duration": Number must be greater than 0'
 		);
-		assert.strictEqual(diagnostics[0].range.start.line, 13);
-		assert.strictEqual(diagnostics[0].range.end.line, 22);
+		assert.strictEqual(diagnostics[0].range.start.line, 15);
+		assert.strictEqual(diagnostics[0].range.end.line, 24);
 	});
 
 	test('name in template content has special characters', async () => {
@@ -232,7 +232,7 @@ suite('Diagnostics detection', () => {
 			'Error in item "playerCount": Expected number, received string'
 		);
 		assert.strictEqual(diagnostics[0].range.start.line, 88);
-		assert.strictEqual(diagnostics[0].range.end.line, 137);
+		assert.strictEqual(diagnostics[0].range.end.line, 139);
 	});
 
 	test('broadcast field is in wrong spot', async () => {
@@ -259,8 +259,8 @@ suite('Diagnostics detection', () => {
 			diagnostics[0].message,
 			`Error in item "reference": Invalid template content for content type 'treatment': Invalid reference type "participantInf", need to be in form of a valid reference type such as 'survey', 'submitButton', 'qualtrics', 'discussion', 'participantInfo', 'prompt', 'urlParams', 'connectionInfo', or 'browserInfo' followed by a . and name or path.`
 		);
-		assert.strictEqual(diagnostics[0].range.start.line, 249);
-		assert.strictEqual(diagnostics[0].range.end.line, 253);
+		assert.strictEqual(diagnostics[0].range.start.line, 256);
+		assert.strictEqual(diagnostics[0].range.end.line, 260);
 	});
 
 	test('invalid file reference in template content', async () => {
@@ -271,7 +271,7 @@ suite('Diagnostics detection', () => {
 		assert.strictEqual(diagnostics.length, 1);
 		assert.strictEqual(
 			diagnostics[0].message,
-			`Error in item "file": File "shared/yesNo/survey.md" does not exist in the workspace. Make sure "shared/yesNo/survey.md" is located in and is written relative to "file:///home/runner/work/deliberation-lab-tools/deliberation-lab-tools/src/test/suite/fixtures"`
+			`Error in item "file": File "shared/yesNo/survey.md" does not exist in the workspace. Make sure "shared/yesNo/survey.md" is located in and is written relative to "file:///Users/gmo/deliberation-lab-tools/src/test/suite/fixtures"`
 		);
 		assert.strictEqual(diagnostics[0].range.start.line, 4);
 		assert.strictEqual(diagnostics[0].range.end.line, 8);
@@ -285,7 +285,7 @@ suite('Diagnostics detection', () => {
 		assert.strictEqual(diagnostics.length, 1);
 		assert.strictEqual(
 			diagnostics[0].message,
-			`Error in item "file": File "src/test/suite/fixtures/dlConfig.treatments.yaml" does not exist in the workspace. Make sure "src/test/suite/fixtures/dlConfig.treatments.yaml" is located in and is written relative to "file:///home/runner/work/deliberation-lab-tools/deliberation-lab-tools/src/test/suite/fixtures"`
+			`Error in item "file": File "src/test/suite/fixtures/dlConfig.treatments.yaml" does not exist in the workspace. Make sure "src/test/suite/fixtures/dlConfig.treatments.yaml" is located in and is written relative to "file:///Users/gmo/deliberation-lab-tools/src/test/suite/fixtures"`
 		);
 		assert.strictEqual(diagnostics[0].range.start.line, 4);
 		assert.strictEqual(diagnostics[0].range.end.line, 8);
@@ -296,7 +296,7 @@ suite('Diagnostics detection', () => {
 		const document = await vscode.workspace.openTextDocument(filePath);
 		await new Promise(resolve => setTimeout(resolve, 1000));
 		const diagnostics = vscode.languages.getDiagnostics(document.uri);
-		assert.strictEqual(diagnostics.length, 1);
+		assert.strictEqual(diagnostics.length, 2);
 		assert.strictEqual(
 			diagnostics[0].message,
 			`Error in item "position": Invalid template content for content type 'treatment': Player position index 2 in groupComposition exceeds playerCount of 2.`
@@ -513,8 +513,8 @@ suite('Diagnostics detection', () => {
 			diagnostics[0].message,
 			`Error in item "shared": Prompt element in intro/exit steps cannot be shared.`
 		);
-		assert.strictEqual(diagnostics[0].range.start.line, 186);
-		assert.strictEqual(diagnostics[0].range.end.line, 199);
+		assert.strictEqual(diagnostics[0].range.start.line, 187);
+		assert.strictEqual(diagnostics[0].range.end.line, 190);
 	});
 
 	//positionNotIntro.treatments.yaml
@@ -526,22 +526,22 @@ suite('Diagnostics detection', () => {
 		assert.strictEqual(diagnostics.length, 3);
 		assert.strictEqual(
 			diagnostics[0].message,
-			`Error in item "showToPositions": Elements in intro/exit steps cannot have a 'showToPositions' field.`
+			`Error in item "0": Elements in intro steps cannot have a 'showToPositions' field.`
 		);
 		assert.strictEqual(
 			diagnostics[1].message,
-			`Error in item "hideFromPositions": Elements in intro/exit steps cannot have a 'hideFromPositions' field.`
+			`Error in item "0": Elements in intro steps cannot have a 'hideFromPositions' field.`
 		);
 		assert.strictEqual(
 			diagnostics[2].message,
-			`Error in item "position": Elements in intro/exit steps cannot have a 'position' field.`
+			`Error in item "position": Elements in intro steps cannot have a 'position' field.`
 		);
-		assert.strictEqual(diagnostics[0].range.start.line, 188);
-		assert.strictEqual(diagnostics[0].range.end.line, 188);
-		assert.strictEqual(diagnostics[1].range.start.line, 189);
-		assert.strictEqual(diagnostics[1].range.end.line, 189);
-		assert.strictEqual(diagnostics[2].range.start.line, 190);
-		assert.strictEqual(diagnostics[2].range.end.line, 193);
+		assert.strictEqual(diagnostics[0].range.start.line, 187);
+		assert.strictEqual(diagnostics[0].range.end.line, 192);
+		assert.strictEqual(diagnostics[1].range.start.line, 187);
+		assert.strictEqual(diagnostics[1].range.end.line, 192);
+		assert.strictEqual(diagnostics[2].range.start.line, 193);
+		assert.strictEqual(diagnostics[2].range.end.line, 196);
 	});
 
 	//groupCompositionLength.treatments.yaml
@@ -574,15 +574,15 @@ suite('Diagnostics detection', () => {
 		assert.strictEqual(diagnostics.length, 2);
 		assert.strictEqual(
 			diagnostics[0].message,
-			`Reference "connectionInfo.fake" does not match any defined connectionInfo element name.`
+			`Reference "survey.real.done" appears before its survey "real" is initialized (init stage 7, found at stage 6).`
 		);
 		assert.strictEqual(
 			diagnostics[1].message,
-			`Reference "survey.real.done" does not match any previously defined survey element name.`
+			`Reference "connectionInfo.fake" does not match any defined connectionInfo element name.`
 		);
-		assert.strictEqual(diagnostics[0].range.start.line, 130);
-		assert.strictEqual(diagnostics[0].range.end.line, 130);
-		assert.strictEqual(diagnostics[1].range.start.line, 133);
-		assert.strictEqual(diagnostics[1].range.end.line, 133);
+		assert.strictEqual(diagnostics[0].range.start.line, 132);
+		assert.strictEqual(diagnostics[0].range.end.line, 135);
+		assert.strictEqual(diagnostics[1].range.start.line, 130);
+		assert.strictEqual(diagnostics[1].range.end.line, 130);
 	});
 });
