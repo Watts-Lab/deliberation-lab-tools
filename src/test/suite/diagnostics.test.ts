@@ -271,7 +271,7 @@ suite('Diagnostics detection', () => {
 		assert.strictEqual(diagnostics.length, 1);
 		assert.strictEqual(
 			diagnostics[0].message,
-			`Error in item "file": File "shared/yesNo/survey.md" does not exist in the workspace. Make sure "shared/yesNo/survey.md" is located in and is written relative to "file:///Users/gmo/deliberation-lab-tools/src/test/suite/fixtures"`
+			`Error in item "file": File "shared/yesNo/survey.md" does not exist in the workspace. Make sure "shared/yesNo/survey.md" is located in and is written relative to "file:///home/runner/work/deliberation-lab-tools/deliberation-lab-tools/src/test/suite/fixtures"`
 		);
 		assert.strictEqual(diagnostics[0].range.start.line, 4);
 		assert.strictEqual(diagnostics[0].range.end.line, 8);
@@ -285,7 +285,7 @@ suite('Diagnostics detection', () => {
 		assert.strictEqual(diagnostics.length, 1);
 		assert.strictEqual(
 			diagnostics[0].message,
-			`Error in item "file": File "src/test/suite/fixtures/dlConfig.treatments.yaml" does not exist in the workspace. Make sure "src/test/suite/fixtures/dlConfig.treatments.yaml" is located in and is written relative to "file:///Users/gmo/deliberation-lab-tools/src/test/suite/fixtures"`
+			`Error in item "file": File "src/test/suite/fixtures/dlConfig.treatments.yaml" does not exist in the workspace. Make sure "src/test/suite/fixtures/dlConfig.treatments.yaml" is located in and is written relative to "file:///home/runner/work/deliberation-lab-tools/deliberation-lab-tools/src/test/suite/fixtures"`
 		);
 		assert.strictEqual(diagnostics[0].range.start.line, 4);
 		assert.strictEqual(diagnostics[0].range.end.line, 8);
