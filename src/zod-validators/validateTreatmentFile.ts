@@ -780,7 +780,6 @@ export const treatmentSchema = altTemplateContext(
     .superRefine((treatment, ctx) => {
       const baseResult = baseTreatmentSchema.safeParse(treatment);
       if (!baseResult.success) {
-        console.log("baseResult error", baseResult.error);
         return;
       }
   // Use the parsed/validated data from baseResult so any transforms
@@ -854,7 +853,6 @@ export const treatmentSchema = altTemplateContext(
       });
 
       // Ensure unique element names within each treatment, grouped by type
-      // Wont work unless baseTreatmentSchema is correct
       const typeToNames = new Map<string, Set<string>>();
       gameStages?.forEach((stage: { elements: any[]; name: any }, stageIndex: string | number) => {
         stage?.elements?.forEach((element: any, elementIndex: string | number) => {
@@ -908,8 +906,8 @@ export const templateContentSchema = z.any().superRefine((data, ctx) => {
     { schema: conditionSchema, name: "Condition" },
     { schema: playerSchema, name: "Player" },
     // specify into intro step or exit step not both
-    { schema: introExitStepSchema, name: "Intro Exit Step" },
-    { schema: exitStepsSchema, name: "Exit Steps" },
+    { schema: introExitStepsBaseSchema, name: "Intro Exit Step" },
+    { schema: introExitStepsBaseSchema, name: "Intro Exit Steps" },
     //commented out for now, matches too many schemas
     {
       schema: templateBroadcastAxisValuesSchema,
@@ -1092,7 +1090,7 @@ export const templateSchema = z
       "condition",
       "player",
       "introExitStep",
-      "exitSteps",
+      "introExitSteps",
       "other",
     ]).optional(),
     templateDesc: descriptionSchema.optional(),
@@ -1169,8 +1167,8 @@ export function matchContentType(
       return playerSchema;
     case "introExitStep":
       return introExitStepSchema;
-    case "exitSteps":
-      return exitStepsSchema;
+    case "introExitSteps":
+      return introExitStepsBaseSchema;
     default:
       throw new Error(`Unknown content type: ${contentType}`);
   }
