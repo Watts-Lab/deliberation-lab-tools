@@ -82,7 +82,7 @@ suite('Diagnostics detection', () => {
 		// Third error should be encompassing the first metadata section (from start of separator to type line), reporting that type is null
 		assert.strictEqual(diagnostics[2].range.start.line, 0);
 		assert.strictEqual(diagnostics[2].range.end.line, 2);
-		assert.strictEqual(diagnostics[2].message, "Error in item \"type\": Expected 'openResponse' | 'multipleChoice' | 'noResponse' | 'listSorter', received null");
+		assert.strictEqual(diagnostics[2].message, "Error in item \"type\": Expected 'openResponse' | 'multipleChoice' | 'noResponse' | 'listSorter' | 'slider', received null");
 
 		// Fourth error should be on separator for prompt text, reporting that prompt text must exist
 		assert.strictEqual(diagnostics[3].range.start.line, 3);
