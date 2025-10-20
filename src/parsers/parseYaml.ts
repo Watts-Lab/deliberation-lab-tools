@@ -22,22 +22,16 @@ interface RefOccurrence extends OccurrenceBase { key: RefKey; raw: string; dynam
 
 interface StageDescriptor {
   stageIndex: number;
-  // Path to the stage node in the YAML AST (used to compute element paths)
   path: (string | number)[];
-  // The stage object (should contain an `elements` array)
   node: any;
-  // For context/debug
   kind: 'intro' | 'game' | 'exit';
   name?: string;
 }
 
 // ------------------------------ Template flattening helpers ------------------------------
 
-// Returns a deep-cloned value
 function clone<T>(x: T): T { return JSON.parse(JSON.stringify(x)); }
 
-// If a node is a template context, resolve to its templateContent (ignoring fields/broadcast for ordering).
-// We only need structure to find init names + refs; any ${...} names are treated as dynamic and skipped later.
 function expandTemplateContextIfAny(
   node: any,
   templateMap: Map<string, { idx: number; content: any }>
@@ -47,16 +41,38 @@ function expandTemplateContextIfAny(
 
   const tplName = (node as any).template;
   if (!tplName || !templateMap.has(tplName)) return node;
-  // Use raw template content for ordering/static scanning
-  return clone(templateMap.get(tplName)!.content);
+  
+  const cloned = clone(templateMap.get(tplName)!.content);
+  try {
+    const tplIdx = templateMap.get(tplName)!.idx;
+    (cloned as any).__originPath = ['templates', tplIdx, 'templateContent'];
+    
+    // Propagate origin paths to nested containers
+    if (Array.isArray((cloned as any).gameStages)) {
+      ((cloned as any).gameStages as any[]).forEach((st, i) => {
+        if (st && typeof st === 'object') (st as any).__originPath = ['templates', tplIdx, 'templateContent', 'gameStages', i];
+      });
+    }
+    if (Array.isArray((cloned as any).exitSequence)) {
+      ((cloned as any).exitSequence as any[]).forEach((st, i) => {
+        if (st && typeof st === 'object') (st as any).__originPath = ['templates', tplIdx, 'templateContent', 'exitSequence', i];
+      });
+    }
+    if (Array.isArray((cloned as any).introSequences)) {
+      ((cloned as any).introSequences as any[]).forEach((seq, si) => {
+        if (seq && typeof seq === 'object' && Array.isArray(seq.introSteps)) {
+          (seq.introSteps as any[]).forEach((step, sidx) => {
+            if (step && typeof step === 'object') (step as any).__originPath = ['templates', tplIdx, 'templateContent', 'introSequences', si, 'introSteps', sidx];
+          });
+        }
+      });
+    }
+  } catch (e) {
+    // ignore propagation errors
+  }
+  return cloned;
 }
 
-// Flatten arrays that may contain template contexts whose contents are
-//   - elements (element / elements)
-//   - stages (stage / stages / gameStages)
-//   - intro steps (introSequence / introSequences)
-//   - exitSteps
-// We recurse as needed to yield a homogeneous list for the caller.
 function flattenArrayWithTemplates(
   arr: any[],
   kind: 'elements' | 'stages' | 'introSteps' | 'exitSteps',
@@ -66,14 +82,13 @@ function flattenArrayWithTemplates(
   for (const item of arr ?? []) {
     const resolved = expandTemplateContextIfAny(item, templateMap);
 
-    // If the resolved thing is itself a container, pluck out the right child per kind
     if (resolved && typeof resolved === 'object') {
       if (kind === 'elements') {
         if (Array.isArray(resolved.elements)) {
           out.push(...flattenArrayWithTemplates(resolved.elements, 'elements', templateMap));
           continue;
         }
-        if ((resolved as any).type) { out.push(resolved); continue; } // single element
+        if ((resolved as any).type) { out.push(resolved); continue; }
       } else if (kind === 'stages') {
         if (Array.isArray(resolved.gameStages)) {
           out.push(...flattenArrayWithTemplates(resolved.gameStages, 'stages', templateMap));
@@ -84,7 +99,6 @@ function flattenArrayWithTemplates(
           continue;
         }
         if ((resolved as any).elements) {
-          // normalize stage { name?, elements: [...] }
           out.push({ ...resolved, elements: flattenArrayWithTemplates(resolved.elements, 'elements', templateMap) });
           continue;
         }
@@ -109,7 +123,6 @@ function flattenArrayWithTemplates(
       }
     }
 
-    // Primitive or already the right shape
     out.push(resolved);
   }
   return out;
@@ -120,13 +133,12 @@ function flattenArrayWithTemplates(
 function parseReferenceString(ref: string): { key: RefKey | null; dynamic: boolean } {
   if (typeof ref !== 'string') return { key: null, dynamic: false };
   const s = ref.trim();
-  // We only care about refs that begin with one of our types + '.'
   const firstDot = s.indexOf('.');
   if (firstDot <= 0) return { key: null, dynamic: false };
   const prefix = s.slice(0, firstDot) as CheckedType;
   if (!CHECKED_TYPES.includes(prefix)) return { key: null, dynamic: false };
   const rest = s.slice(firstDot + 1);
-  const namePart = rest.split('.')[0]; // e.g., survey.real.done -> name=real
+  const namePart = rest.split('.')[0];
   const dynamic = namePart.includes('${');
   if (!namePart || dynamic) {
     return { key: null, dynamic };
@@ -137,7 +149,7 @@ function parseReferenceString(ref: string): { key: RefKey | null; dynamic: boole
 function safeArray(x: any): any[] { return Array.isArray(x) ? x : []; }
 function hasElementsArray(stage: any): boolean { return stage && Array.isArray(stage.elements); }
 
-// ------------------------------ Stage collection (templates-aware) ------------------------------
+// ------------------------------ Stage collection ------------------------------
 
 function buildTemplateMap(root: any): Map<string, { idx: number; content: any }> {
   const out = new Map<string, { idx: number; content: any }>();
@@ -154,10 +166,8 @@ function collectIntroStages(root: any, templateMap: Map<string, { idx: number; c
   let stageCounter = 0;
 
   for (let i = 0; i < seqs.length; i++) {
-    // introSteps may themselves contain template contexts producing intro steps/elements
     const flatSteps = flattenArrayWithTemplates(safeArray(seqs[i]?.introSteps), 'introSteps', templateMap);
     for (let s = 0; s < flatSteps.length; s++) {
-      // Also ensure elements inside an introStep are flattened (element templates)
       const node = flatSteps[s];
       const flatElements = flattenArrayWithTemplates(safeArray(node?.elements), 'elements', templateMap);
       stages.push({
@@ -172,7 +182,6 @@ function collectIntroStages(root: any, templateMap: Map<string, { idx: number; c
   return stages;
 }
 
-// Template-provided intros for a given treatment (if the treatment's template includes them)
 function collectTemplateIntroStagesForTreatment(
   root: any,
   tIdx: number,
@@ -204,8 +213,6 @@ function collectTemplateIntroStagesForTreatment(
   return stages;
 }
 
-// Only returns the treatment "body": game stages and exit steps (inline or from template)
-// (All intros are handled separately and occur before these.)
 function collectBodyStagesForTreatment(
   root: any,
   tIdx: number,
@@ -215,7 +222,6 @@ function collectBodyStagesForTreatment(
   const treatment = safeArray(root?.treatments)[tIdx] ?? {};
   let stageCounter = 0;
 
-  // Determine where to get game/exit from: treatment itself or its template
   let gameStages: any[] | undefined;
   let exitSequence: any[] | undefined;
   let basePathForGame: (string | number)[] | undefined;
@@ -236,30 +242,31 @@ function collectBodyStagesForTreatment(
     return stages;
   }
 
-  // Flatten stage arrays (template contexts may embed stages)
   const flatGameStages = flattenArrayWithTemplates(gameStages ?? [], 'stages', templateMap);
   const flatExitSteps = flattenArrayWithTemplates(exitSequence ?? [], 'exitSteps', templateMap);
 
-  // Game stages (ensure elements are flattened)
   for (let s = 0; s < flatGameStages.length; s++) {
     const stageNode = flatGameStages[s];
     const flatElements = flattenArrayWithTemplates(safeArray(stageNode?.elements), 'elements', templateMap);
+    const origin = stageNode && typeof stageNode === 'object' ? (stageNode as any).__originPath : undefined;
+    const stagePath = Array.isArray(origin) ? origin : [...(basePathForGame as any[]), s];
     stages.push({
       stageIndex: stageCounter++,
-      path: [...(basePathForGame as any[]), s],
+      path: stagePath,
       node: { ...stageNode, elements: flatElements },
       kind: 'game',
       name: stageNode?.name,
     });
   }
 
-  // Exit sequence (each item is step-like with elements; ensure elements are flattened)
   for (let s = 0; s < flatExitSteps.length; s++) {
     const stepNode = flatExitSteps[s];
     const flatElements = flattenArrayWithTemplates(safeArray(stepNode?.elements), 'elements', templateMap);
+    const origin = stepNode && typeof stepNode === 'object' ? (stepNode as any).__originPath : undefined;
+    const stepPath = Array.isArray(origin) ? origin : [...(basePathForExit as any[]), s];
     stages.push({
       stageIndex: stageCounter++,
-      path: [...(basePathForExit as any[]), s],
+      path: stepPath,
       node: { ...stepNode, elements: flatElements },
       kind: 'exit',
       name: stepNode?.name,
@@ -284,7 +291,6 @@ function collectInitsAndRefsFromStages(
     for (let eIdx = 0; eIdx < elements.length; eIdx++) {
       const el = elements[eIdx];
 
-      // Initialization: element has type in CHECKED_TYPES and a concrete name
       if (CHECKED_TYPES.includes(el?.type) && typeof el?.name === 'string' && el.name.trim()) {
         const key: RefKey = { type: el.type, name: el.name.trim() } as RefKey;
         const mapKey = `${key.type}::${key.name}`;
@@ -297,7 +303,6 @@ function collectInitsAndRefsFromStages(
         }
       }
 
-      // References: only properties literally named `reference`
       if (typeof el?.reference === 'string') {
         const { key, dynamic } = parseReferenceString(el.reference);
         if (key) {
@@ -311,7 +316,6 @@ function collectInitsAndRefsFromStages(
         }
       }
 
-      // Also look inside element.conditions[].reference
       if (Array.isArray(el?.conditions)) {
         for (let cIdx = 0; cIdx < el.conditions.length; cIdx++) {
           const cond = el.conditions[cIdx];
@@ -347,12 +351,10 @@ export function runReferenceStageOrderChecks(
     const templateMap = buildTemplateMap(root);
     const treatments = safeArray(root?.treatments);
 
-    // (A) Collect ALL top-level intro stages once; these always occur before treatments.
     const globalIntroStages = collectIntroStages(root, templateMap);
     const globalIntroIR = collectInitsAndRefsFromStages(globalIntroStages);
 
-    // --- Duplicate-name checks: intro sequences ---
-    // Collect names by type used within intro sequences and flag duplicates there.
+    // Check for duplicate names within intro sequences
     const introNamesByType = new Map<string, Set<string>>();
     for (const st of globalIntroStages) {
       if (!hasElementsArray(st.node)) continue;
@@ -366,9 +368,8 @@ export function runReferenceStageOrderChecks(
 
         const set = introNamesByType.get(t) ?? new Set<string>();
         if (set.has(name)) {
-          // duplicate name of same type within intro sequences
           const pos = findPositionFromPath([...st.path, 'elements', eIdx, 'name'], parsedDoc, document);
-            if (pos) {
+          if (pos) {
             diagnostics.push(new vscode.Diagnostic(
               new vscode.Range(pos.start, pos.end ?? pos.start),
               `Duplicate name "${name}" for element type "${t}" within intro sequences. Element names of the same type must be unique in intro sequences.`,
@@ -383,13 +384,9 @@ export function runReferenceStageOrderChecks(
     }
 
     for (let tIdx = 0; tIdx < treatments.length; tIdx++) {
-      // (B) Collect template-provided intros for THIS treatment (if any)
       const tplIntroStages = collectTemplateIntroStagesForTreatment(root, tIdx, templateMap);
-
-      // (C) Collect this treatment's game/exit stages (inline or via template)
       const bodyStages = collectBodyStagesForTreatment(root, tIdx, templateMap);
 
-      // (D) Offset and combine: globalIntros → tplIntros → body
       let offset = 0;
       const globalIntroStagesOff = globalIntroStages.map(st => ({ ...st, stageIndex: st.stageIndex + offset }));
       offset += globalIntroStagesOff.length;
@@ -399,14 +396,11 @@ export function runReferenceStageOrderChecks(
 
       const bodyStagesOff = bodyStages.map(st => ({ ...st, stageIndex: st.stageIndex + offset }));
 
-      // (E) Collect inits/refs per segment
       const tplIntroIR = collectInitsAndRefsFromStages(tplIntroStagesOff);
       const bodyIR = collectInitsAndRefsFromStages(bodyStagesOff);
 
-      // --- Duplicate-name checks: per-treatment ---
-      // Collect names by type used within this treatment body (including template-provided body)
+      // Check for duplicate names within treatment
       const treatmentNamesByType = new Map<string, Set<string>>();
-      // Also check against introNamesByType to prevent reuse
       for (const st of [...tplIntroStagesOff, ...bodyStagesOff]) {
         if (!hasElementsArray(st.node)) continue;
         const elements = st.node.elements as any[];
@@ -417,7 +411,6 @@ export function runReferenceStageOrderChecks(
           const name = typeof el.name === 'string' ? el.name.trim() : undefined;
           if (!t || !name) continue;
 
-          // Check reuse of intro name for same type
           const introSet = introNamesByType.get(t);
           if (introSet && introSet.has(name)) {
             const pos = findPositionFromPath([...st.path, 'elements', eIdx, 'name'], parsedDoc, document);
@@ -428,12 +421,11 @@ export function runReferenceStageOrderChecks(
                 vscode.DiagnosticSeverity.Warning
               ));
             }
-            continue; // still record in treatmentNamesByType? skip recording since it's invalid
+            continue;
           }
 
           const set = treatmentNamesByType.get(t) ?? new Set<string>();
           if (set.has(name)) {
-            // duplicate name pair within same treatment
             const pos = findPositionFromPath([...st.path, 'elements', eIdx, 'name'], parsedDoc, document);
             if (pos) {
               diagnostics.push(new vscode.Diagnostic(
@@ -449,7 +441,7 @@ export function runReferenceStageOrderChecks(
         }
       }
 
-      // (F) Merge inits preferring earliest stageIndex
+      // Merge inits preferring earliest stageIndex
       const inits = new Map<string, InitOccurrence>(globalIntroIR.inits);
       for (const [k, occ] of tplIntroIR.inits.entries()) {
         if (!inits.has(k) || occ.stageIndex < inits.get(k)!.stageIndex) inits.set(k, occ);
@@ -458,16 +450,15 @@ export function runReferenceStageOrderChecks(
         if (!inits.has(k) || occ.stageIndex < inits.get(k)!.stageIndex) inits.set(k, occ);
       }
 
-      // (G) Merge refs
       const refs: RefOccurrence[] = [
         ...globalIntroIR.refs,
         ...tplIntroIR.refs,
         ...bodyIR.refs,
       ];
 
-      // (H) Validate
+      // Validate references
       for (const ref of refs) {
-        if (ref.dynamic) continue; // skip prompt.${...}, etc.
+        if (ref.dynamic) continue;
 
         const k = `${ref.key.type}::${ref.key.name}`;
         const init = inits.get(k);
@@ -496,11 +487,11 @@ export function runReferenceStageOrderChecks(
         }
       }
     }
-  } catch {
+  } catch (e) {
     // fail-safe: never crash diagnostics
+    console.error('Error in runReferenceStageOrderChecks:', e);
   }
 }
-
 
 // YAML validator for treatments
 
@@ -801,6 +792,9 @@ export async function parseYaml(document: vscode.TextDocument) {
                         vscode.DiagnosticSeverity.Warning
                     )
                 );
+
+              // Publish any diagnostics collected so far (synchronous checks)
+              diagnosticCollection.set(document.uri, diagnostics);
             }
         }
         if (type === 'connectionInfo') {
