@@ -65,6 +65,10 @@
       {
         "command": "deliberation-lab-tools.openStagePreview",
         "title": "Deliberation Lab Tools: Open Stage Preview"
+      },
+      {
+        "command": "deliberation-lab-tools.previewExpandedTemplates",
+        "title": "Preview: Expanded Treatment File"
       }
     ],
     "menus": {
@@ -76,6 +80,11 @@
         },
         {
           "command": "deliberation-lab-tools.openStagePreview",
+          "when": "editorLangId == treatmentsYaml",
+          "group": "deliberation-lab-tools"
+        },
+        {
+          "command": "deliberation-lab-tools.previewExpandedTemplates",
           "when": "editorLangId == treatmentsYaml",
           "group": "deliberation-lab-tools"
         }

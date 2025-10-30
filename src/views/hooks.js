@@ -1,6 +1,6 @@
 /* eslint-disable default-case */
 
-// Taken from deliberation-empirica/client/src/components/hooks.js, emulating useText() and usePermalink()
+/* eslint-disable default-case */
 import {
   usePlayer,
   useGame,
@@ -8,8 +8,7 @@ import {
 } from "@empirica/core/player/classic/react";
 import { useGlobal } from "@empirica/core/player/react";
 import axios from "axios";
-import { useState, useEffect } from "react";
-import { vscode } from "./index.jsx";
+import { useState, useEffect, useCallback, useRef } from "react";
 
 const cdnList = {
   // test: "deliberation-assets",
@@ -38,31 +37,31 @@ export function useFileURL({ file }) {
   return filepath;
 }
 
-// should be passed the text in the active window document already, where file is the text
-// error is null because there should not be an error
-// this could probably be coded better to actually prevent these errors
-// TODO: add handling for errors
-// TODO: make work with prompt
 export function useText({ file }) {
-  const [text, setText] = useState(null);
-
-  vscode.postMessage({ type: "file", file: file });
+  const [text, setText] = useState(undefined);
+  const [error, setError] = useState(null);
+  const [retryCount, setRetryCount] = useState(0);
+  const url = useFileURL({ file });
 
   useEffect(() => {
-      const handler = (event) => {
-        const { type, fileText } = event.data;
-
-        if (type === "file") {
-          setText(fileText);
+    async function loadData() {
+      try {
+        const { data } = await axios.get(url);
+        setText(data);
+        setError(null); // Clear any previous errors
+      } catch (err) {
+        console.error("Error loading url:", url, err);
+        setError(err);
+        if (retryCount < 4) {
+          // Retry up to 4 times
+          setTimeout(() => setRetryCount(retryCount + 1), 1000); // Retry after 1 seconds
         }
-      };
-  
-      window.addEventListener("message", handler);
-      return () => window.removeEventListener("message", handler);
-    }, []);
+      }
+    }
+    if (url) loadData();
+  }, [url, retryCount]);
 
-  // return text once message is received
-  return { text: text, error: null };
+  return { text, error };
 }
 
 export function useConnectionInfo() {
@@ -117,12 +116,10 @@ export function useConnectionInfo() {
 }
 
 export function usePermalink(file) {
-  // how necessary is it to have permalink? Commented out because permalink is just for recordkeeping
-  //   const globals = useGlobal();
-  //   const resourceLookup = globals?.get("resourceLookup"); // get the permalink for this implementation of the file
-  //   const permalink = resourceLookup ? resourceLookup[file] : undefined;
-  //   return permalink;
-  return "permalink";
+  const globals = useGlobal();
+  const resourceLookup = globals?.get("resourceLookup"); // get the permalink for this implementation of the file
+  const permalink = resourceLookup ? resourceLookup[file] : undefined;
+  return permalink;
 }
 
 const trimSlashes = (str) =>
@@ -156,9 +153,6 @@ export function compare(lhs, comparator, rhs) {
     // returned a falsy value, but that the comparison could not yet be made
     if (comparator === "doesNotEqual") return true; // undefined is not equal to anything
 
-    console.log(
-      `reference undefined with lhs ${lhs}, rhs ${rhs}, and comparator ${comparator}`
-    );
     return undefined;
   }
 
@@ -309,4 +303,79 @@ export function useReferenceValues({ reference, position }) {
   }
 
   return referenceValues;
+}
+
+export function useGetBrowser() {
+  const [browser, setBrowser] = useState("unknown");
+
+  useEffect(() => {
+    if (browser !== "unknown") return;
+
+    const detect = () => {
+      if (typeof navigator === "undefined") return "unknown";
+
+      // Use the User-Agent Client Hints API if available
+      const brands = navigator.userAgentData?.brands;
+      if (Array.isArray(brands)) {
+        if (brands.some(({ brand }) => brand.includes("Edg"))) return "Edge";
+        if (brands.some(({ brand }) => brand.includes("Chromium")))
+          return "Chrome";
+        if (brands.some(({ brand }) => brand.includes("Firefox")))
+          return "Firefox";
+        if (brands.some(({ brand }) => brand.includes("Safari")))
+          return "Safari";
+        return "other";
+      }
+
+      // Fallback to userAgent string
+      const ua = navigator.userAgent;
+      if (!ua || typeof ua !== "string") return "unknown";
+      if (/edg/i.test(ua)) return "Edge";
+      if (/chrome/i.test(ua) && !/edg/i.test(ua)) return "Chrome";
+      if (/firefox/i.test(ua)) return "Firefox";
+      if (/safari/i.test(ua) && !/chrome/i.test(ua)) return "Safari";
+
+      return "other";
+    };
+
+    setBrowser(detect());
+  }, [browser]);
+
+  return browser;
+}
+
+export function useGetOS() {
+  const [os, setOS] = useState("unknown");
+
+  useEffect(() => {
+    if (os !== "unknown") return;
+
+    const detectOS = () => {
+      if (typeof navigator === "undefined") return "unknown";
+      const ua = navigator.userAgent;
+
+      if (/windows/i.test(ua)) return "Windows";
+      if (/macintosh|mac os x/i.test(ua)) return "MacOS";
+      if (/linux/i.test(ua)) return "Linux";
+      if (/android/i.test(ua)) return "Android";
+      if (/iphone|ipad|ipod/i.test(ua)) return "iOS";
+
+      return "other";
+    };
+
+    setOS(detectOS());
+  }, [os]);
+
+  return os;
+}
+
+export function useDebounce(callback, delay) {
+  const timeoutRef = useRef();
+  
+  return useCallback((...args) => {
+    clearTimeout(timeoutRef.current);
+    timeoutRef.current = setTimeout(() => {
+      callback(...args);
+    }, delay);
+  }, [callback, delay]);
 }

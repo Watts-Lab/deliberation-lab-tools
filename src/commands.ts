@@ -1,7 +1,9 @@
 import { get } from "http";
 import * as vscode from "vscode";
 import { getExtensionUri } from "./contextStore";
-import { load as loadYaml } from "js-yaml";
+import { dump as dumpYaml, load as loadYaml } from "js-yaml";
+import { EXP_SCHEME } from "./fillTemplates";
+import { fillTemplates } from "./fillTemplates";
 
 // Command to create default treatments YAML file
 export const defaultYaml = vscode.commands.registerCommand("deliberation-lab-tools.defaultTreatmentsYaml", async () => {
@@ -313,3 +315,30 @@ function getNonce(): string {
     }
     return text;
 }
+
+export const expandedTemplatesPreview = vscode.commands.registerCommand("deliberation-lab-tools.previewExpandedTemplates", async (resource?: vscode.Uri) => {
+      const src = resource ?? vscode.window.activeTextEditor?.document.uri;
+      if (!src) return;
+
+      const doc = await vscode.workspace.openTextDocument(src);
+      if (doc.languageId !== "treatmentsYaml") {
+        vscode.window.showWarningMessage("This preview is only for treatments YAML files.");
+        return;
+      }
+
+      const previewUri = vscode.Uri.parse(
+        `${EXP_SCHEME}:${src.path}.expanded.treatments.yaml?src=${encodeURIComponent(src.toString())}`
+      );
+
+      const vdoc = await vscode.workspace.openTextDocument(previewUri);
+
+      if (vdoc.languageId !== "treatmentsYaml") {
+        await vscode.languages.setTextDocumentLanguage(vdoc, "treatmentsYaml");
+      }
+
+      await vscode.window.showTextDocument(vdoc, {
+        preview: true,
+        preserveFocus: false,
+        viewColumn: vscode.ViewColumn.Beside,
+      });
+    })
