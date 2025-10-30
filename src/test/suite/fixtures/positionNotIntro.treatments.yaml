@@ -178,6 +178,7 @@ templates:
           elements:
             - type: qualtrics
               url: https://upenn.co1.qualtrics.com/jfe/form/SV_2bfMgUw37Y2AUZg
+            - type: submitButton
 
 introSequences:
   - name: default
@@ -186,8 +187,10 @@ introSequences:
         elements:
           - type: prompt
             file: "ex.md"
+            name: self_construal_info
             showToPositions: [0]
             hideFromPositions: [1]
+          - type: submitButton
           - type: display
             reference: prompt.self_construal_info
             position: 1
@@ -195,6 +198,7 @@ introSequences:
         elements:
           - type: prompt
             file: "ex.md"
+          - type: submitButton
 
 treatments:
   - template: disagreeing_dyads

@@ -53,7 +53,7 @@ templates:
             - type: prompt
               file: "ex.md"
               showToPositions: [0]
-              name: GA
+              name: G
             - type: prompt
               file: "ex.md"
               showToPositions: [1]
@@ -182,7 +182,10 @@ templates:
             - type: qualtrics
               url: https://upenn.co1.qualtrics.com/jfe/form/SV_2bfMgUw37Y2AUZg
             - type: submitButton
+<<<<<<< HEAD
               buttonText: Proceed to Survey
+=======
+>>>>>>> main
 
 introSequences:
   - name: default
@@ -191,10 +194,13 @@ introSequences:
         elements: 
           - type: prompt
             file: "ex.md"
+            name: GA
+          - type: submitButton
       - name: topic_survey
         elements:
           - type: prompt
             file: "ex.md"
+          - type: submitButton
 
 treatments:
   - template: disagreeing_dyads
