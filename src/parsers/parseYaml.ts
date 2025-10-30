@@ -11,10 +11,6 @@ import { handleError, offsetToPosition, findPositionFromPath } from "../errorPos
 import { parse } from 'path';
 import { off } from 'process';
 
-<<<<<<< HEAD
-=======
-
->>>>>>> main
 type CheckedType = 'prompt' | 'survey' | 'submitButton';
 const CHECKED_TYPES: CheckedType[] = ['prompt', 'survey', 'submitButton'];
 
@@ -24,33 +20,6 @@ interface InitOccurrence extends OccurrenceBase { key: RefKey; }
 interface RefOccurrence extends OccurrenceBase { key: RefKey; raw: string; dynamic: boolean; }
 
 interface StageDescriptor {
-<<<<<<< HEAD
-    stageIndex: number;
-    // Path to the stage node in the YAML AST (used to compute element paths)
-    path: (string | number)[];
-    // The stage object (should contain an `elements` array)
-    node: any;
-    // For context/debug
-    kind: 'intro' | 'game' | 'exit';
-    name?: string;
-}
-
-function parseReferenceString(ref: string): { key: RefKey | null; dynamic: boolean } {
-    if (typeof ref !== 'string') return { key: null, dynamic: false };
-    const s = ref.trim();
-    // We only care about refs that begin with one of our types + '.'
-    const firstDot = s.indexOf('.')
-    if (firstDot <= 0) return { key: null, dynamic: false };
-    const prefix = s.slice(0, firstDot) as CheckedType;
-    if (!CHECKED_TYPES.includes(prefix)) return { key: null, dynamic: false };
-    const rest = s.slice(firstDot + 1);
-    const namePart = rest.split('.')[0]; // e.g., survey.real.done -> name=real
-    const dynamic = namePart.includes('${');
-    if (!namePart || dynamic) {
-        return { key: null, dynamic };
-    }
-    return { key: { type: prefix, name: namePart }, dynamic };
-=======
   stageIndex: number;
   path: (string | number)[];
   node: any;
@@ -174,204 +143,11 @@ function parseReferenceString(ref: string): { key: RefKey | null; dynamic: boole
     return { key: null, dynamic };
   }
   return { key: { type: prefix, name: namePart }, dynamic };
->>>>>>> main
 }
 
 function safeArray(x: any): any[] { return Array.isArray(x) ? x : []; }
 function hasElementsArray(stage: any): boolean { return stage && Array.isArray(stage.elements); }
 
-<<<<<<< HEAD
-// We treat introSteps, gameStages, and exitSequence steps as sequential "stages" for ordering.
-// If a treatment uses a template (treatment.template = templateName), we use the template's
-// templateContent.{gameStages, exitSequence}. If the treatment defines its own gameStages/exitSequence,
-// we use those preferentially.
-
-function buildTemplateMap(root: any): Map<string, { idx: number; content: any }> {
-    const out = new Map<string, { idx: number; content: any }>();
-    for (const [i, t] of safeArray(root?.templates).entries()) {
-        const name = t?.templateName;
-        if (name && t?.templateContent) out.set(String(name), { idx: i, content: t.templateContent });
-    }
-    return out;
-}
-
-function buildIntroMap(root: any): Map<string, { idx: number; steps: any[] }> {
-    const m = new Map<string, { idx: number; steps: any[] }>();
-    for (const [i, intro] of safeArray(root?.introSequences).entries()) {
-        const nm = intro?.name ?? `__intro_${i}`;
-        const steps = safeArray(intro?.introSteps);
-        m.set(String(nm), { idx: i, steps });
-    }
-    return m;
-}
-
-function collectStagesForTreatment(
-    root: any,
-    tIdx: number,
-    templateMap: Map<string, { idx: number; content: any }>,
-    introMap: Map<string, { idx: number; steps: any[] }>
-): StageDescriptor[] {
-    const stages: StageDescriptor[] = [];
-    const treatment = safeArray(root?.treatments)[tIdx] ?? {};
-    let stageCounter = 0;
-
-    // 1) Intros (if the treatment declares one; otherwise none)
-    const introName = treatment?.introSequence ?? treatment?.intro ?? null;
-    if (introName && introMap.has(introName)) {
-        const introInfo = introMap.get(introName)!;
-        for (let s = 0; s < introInfo.steps.length; s++) {
-            stages.push({
-                stageIndex: stageCounter++,
-                path: ['introSequences', introInfo.idx, 'introSteps', s],
-                node: introInfo.steps[s],
-                kind: 'intro',
-                name: introInfo.steps[s]?.name,
-            });
-        }
-    }
-
-    // Determine where to get game/exit from: treatment itself or its template
-    let gameStages: any[] | undefined;
-    let exitSequence: any[] | undefined;
-    let basePathForGame: (string | number)[] | undefined;
-    let basePathForExit: (string | number)[] | undefined;
-
-    if (Array.isArray(treatment?.gameStages) || Array.isArray(treatment?.exitSequence)) {
-        gameStages = safeArray(treatment.gameStages);
-        exitSequence = safeArray(treatment.exitSequence);
-        basePathForGame = ['treatments', tIdx, 'gameStages'];
-        basePathForExit = ['treatments', tIdx, 'exitSequence'];
-    } else if (treatment?.template && templateMap.has(treatment.template)) {
-        const { idx: tplIdx, content } = templateMap.get(treatment.template)!;
-        gameStages = safeArray(content?.gameStages);
-        exitSequence = safeArray(content?.exitSequence);
-        basePathForGame = ['templates', tplIdx, 'templateContent', 'gameStages'];
-        basePathForExit = ['templates', tplIdx, 'templateContent', 'exitSequence'];
-    } else {
-        return stages;
-    }
-
-    // 2) Game stages
-    for (let s = 0; s < (gameStages?.length ?? 0); s++) {
-        stages.push({
-            stageIndex: stageCounter++,
-            path: [...(basePathForGame as any[]), s],
-            node: gameStages![s],
-            kind: 'game',
-            name: gameStages![s]?.name,
-        });
-    }
-
-    // 3) Exit sequence
-    for (let s = 0; s < (exitSequence?.length ?? 0); s++) {
-        stages.push({
-            stageIndex: stageCounter++,
-            path: [...(basePathForExit as any[]), s],
-            node: exitSequence![s],
-            kind: 'exit',
-            name: exitSequence![s]?.name,
-        });
-    }
-
-    return stages;
-}
-
-function collectInitsAndRefsFromStages(
-    stages: StageDescriptor[],
-): { inits: Map<string, InitOccurrence>; refs: RefOccurrence[] } {
-    const inits = new Map<string, InitOccurrence>();
-    const refs: RefOccurrence[] = [];
-
-    for (const st of stages) {
-        if (!hasElementsArray(st.node)) continue;
-        const elements = st.node.elements as any[];
-        for (let eIdx = 0; eIdx < elements.length; eIdx++) {
-            const el = elements[eIdx];
-
-            // Initialization: element has type in CHECKED_TYPES and a concrete name
-            if (CHECKED_TYPES.includes(el?.type) && typeof el?.name === 'string' && el.name.trim()) {
-                const key: RefKey = { type: el.type, name: el.name.trim() } as RefKey;
-                const mapKey = `${key.type}::${key.name}`;
-                if (!inits.has(mapKey)) {
-                    inits.set(mapKey, {
-                        key,
-                        stageIndex: st.stageIndex,
-                        path: [...st.path, 'elements', eIdx, 'name'],
-                    });
-                }
-            }
-
-            // References: any element with a `reference` field
-            if (typeof el?.reference === 'string') {
-                const { key, dynamic } = parseReferenceString(el.reference);
-                if (key) {
-                    refs.push({ key, stageIndex: st.stageIndex, path: [...st.path, 'elements', eIdx, 'reference'], raw: el.reference, dynamic });
-                }
-            }
-
-
-            if (Array.isArray(el?.conditions)) {
-                for (let cIdx = 0; cIdx < el.conditions.length; cIdx++) {
-                    const cond = el.conditions[cIdx];
-                    if (typeof cond?.reference === 'string') {
-                        const { key, dynamic } = parseReferenceString(cond.reference);
-                        if (key) {
-                            refs.push({ key, stageIndex: st.stageIndex, path: [...st.path, 'elements', eIdx, 'conditions', cIdx, 'reference'], raw: cond.reference, dynamic });
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    return { inits, refs };
-}
-
-export function runReferenceStageOrderChecks(
-    document: vscode.TextDocument,
-    parsedDoc: YAML.Document.Parsed,
-    root: any,
-    diagnostics: vscode.Diagnostic[]
-) {
-    try {
-        const templateMap = buildTemplateMap(root);
-        const introMap = buildIntroMap(root);
-        const treatments = safeArray(root?.treatments);
-
-        for (let tIdx = 0; tIdx < treatments.length; tIdx++) {
-            const stages = collectStagesForTreatment(root, tIdx, templateMap, introMap);
-            if (!stages.length) continue;
-
-            const { inits, refs } = collectInitsAndRefsFromStages(stages);
-
-            for (const ref of refs) {
-                if (ref.dynamic) continue; // skip refs with ${...} in the name component
-                const mapKey = `${ref.key.type}::${ref.key.name}`;
-                const init = inits.get(mapKey);
-
-                if (!init) {
-                    continue;
-                }
-
-                if (ref.stageIndex < init.stageIndex) {
-                    // Reference is before its element’s initialization by stage order.
-                    const pos = findPositionFromPath(ref.path, parsedDoc, document);
-                    if (pos) {
-                        diagnostics.push(new vscode.Diagnostic(
-                            new vscode.Range(pos.start, pos.end ?? pos.start),
-                            `Reference \"${ref.raw}\" must appear at the same or a later stage than the ${ref.key.type} \"${ref.key.name}\" is initialized (stage ${init.stageIndex}). Found at stage ${ref.stageIndex}.`,
-                            vscode.DiagnosticSeverity.Warning,
-                        ));
-                    }
-                }
-            }
-        }
-    } catch (err) {
-    }
-}
-
-
-=======
 // ------------------------------ Stage collection ------------------------------
 
 function buildTemplateMap(root: any): Map<string, { idx: number; content: any }> {
@@ -716,7 +492,6 @@ export function runReferenceStageOrderChecks(
   }
 }
 
->>>>>>> main
 // YAML validator for treatments
 
 export async function parseYaml(document: vscode.TextDocument) {

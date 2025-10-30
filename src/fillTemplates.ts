@@ -296,10 +296,6 @@ export class ExpandedTemplatesProvider implements vscode.TextDocumentContentProv
 
       try {
         expanded = fillTemplates({ obj, templates });
-        if (expanded && typeof expanded === "object") {
-          delete (expanded as any).templates;
-          delete (expanded as any).templateLibrary;
-        }
       } catch (e: any) {
         warning = String(e?.message ?? e);
         // Partial expansion
@@ -309,6 +305,13 @@ export class ExpandedTemplatesProvider implements vscode.TextDocumentContentProv
           tmp = recursivelyFillTemplates({ obj: tmp, templates });
         }
         expanded = tmp;
+      }
+
+      // Always remove the templates section from the preview output whether
+      // expansion succeeded or we fell back to the partial expansion above.
+      if (expanded && typeof expanded === "object") {
+        delete (expanded as any).templates;
+        delete (expanded as any).templateLibrary;
       }
 
       const dumped = yaml.dump(expanded, { noRefs: true, sortKeys: false, lineWidth: 100 });
