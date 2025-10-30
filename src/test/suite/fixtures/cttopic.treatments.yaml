@@ -1,21 +1,18 @@
 templates:
   - templateName: topicPrompt
-    contentType: element
     templateContent:
       type: prompt
       name: "${topicName}_presurvey"
-      file: "ex.md"
+      file: "shared/yesNo/${topicName}_survey.md"
       tags: ["predictor"]
 
   - templateName: topicCondition
-    contentType: condition
     templateContent:
       reference: prompt.${topicName}_presurvey
       comparator: exists
 
   - templateName: introSequence
     templateDesc: generic presurvey
-    contentType: introSequence
     templateContent:
       name: ${sequenceName}
       introSteps:
@@ -25,30 +22,27 @@ templates:
               surveyName: PoliticalPartyUS
               name: partyAffiliation
               tags: ["predictor"]
-            - type: submitButton
-              buttonText: Begin
-
+ 
         - name: FeelingThermometerPretest # 2 questions
           elements:
             - type: survey
               name: feelingThermometerPretest
               surveyName: PartisanFeelingThermometerUS # asks about both parties
               tags: ["predictor"]
-            - type: submitButton
 
         - name: TraitRatingsPretest # 8 questions
           elements: # if participants are not US partisans, we use this page to show them a screen-out code
             - type: prompt
-              file: "ex.md"
+              file: projects/css_lab/ct_topic/consider_democrats.md
               conditions:
-                - reference: survey.partyAffiliation.result.normPosition
+                - reference: connectionInfo.poo
                   comparator: isAbove
                   value: 0.5
                 - reference: connectionInfo.country
                   comparator: equals
                   value: US
             - type: prompt
-              file: "ex.md"
+              file: projects/css_lab/ct_topic/consider_republicans.md
               conditions:
                 - reference: survey.partyAffiliation.result.normPosition
                   comparator: isBelow
@@ -67,17 +61,16 @@ templates:
                 - reference: connectionInfo.country
                   comparator: equals
                   value: US
-            - type: submitButton
 
             - type: prompt # show screener if not a partisan
-              file: "ex.md"
+              file: projects/css_lab/ct_topic/screener.md
               conditions:
                 - reference: survey.partyAffiliation.result.normPosition
                   comparator: equals
                   value: 0.5
 
             - type: prompt # show screener if not in the US
-              file: "ex.md"
+              file: projects/css_lab/ct_topic/screener.md
               conditions:
                 - reference: connectionInfo.country
                   comparator: doesNotEqual
@@ -89,7 +82,6 @@ templates:
               surveyName: RmeTen
               name: RME
               tags: ["predictor"]
-            - type: submitButton
 
         - name: Big-5 # 10 questions
           elements:
@@ -97,12 +89,11 @@ templates:
               name: big5Personality
               surveyName: TIPI
               tags: ["predictor"]
-            - type: submitButton
 
         - name: TopicPreSurvey
           elements:
             - type: prompt
-              file: "ex.md"
+              file: projects/css_lab/ct_topic/presurvey_instructions.md
 
             - template: topicPrompt
               broadcast:
@@ -110,14 +101,14 @@ templates:
 
             - type: prompt
               name: attentionCheck
-              file: "ex.md"
+              file: projects/css_lab/ct_topic/attention_check.md
 
             - template: topicPrompt
               broadcast:
                 d0: ${otherWaveTopicNames}
 
             - type: prompt
-              file: "ex.md"
+              file: projects/css_lab/ct_topic/all_mandatory.md
 
             - type: submitButton
               buttonText: Continue
@@ -138,11 +129,9 @@ templates:
               surveyName: DemographicsShortUS
               name: demographics
               tags: ["predictor"]
-            - type: submitButton
 
   - templateName: crossPartisanDiscussion
     templateDesc: for measuring the effect of topic on cross-party discussion outcomes
-    contentType: treatment
     templateContent:
       name: ${treatmentName}
       playerCount: 2
@@ -178,16 +167,16 @@ templates:
           duration: 300
           elements:
             - type: audio
-              file: "ex.md"
+              file: shared/westminster_short.mp3
             - type: prompt
-              file: "ex.md"
+              file: projects/css_lab/ct_topic/attitude_attribute_instructions_A.md
             - type: prompt
-              file: "ex.md"
+              file: "shared/yesNo/${topicName}_discussion.md"
             - type: display
               reference: prompt.${topicName}_presurvey
               position: player
             - type: prompt
-              file: "ex.md"
+              file: projects/css_lab/ct_topic/attitude_attribute_instructions_B.md
             - type: survey
               name: attitudeAttributes
               surveyName: AttitudeAttributes
@@ -197,10 +186,10 @@ templates:
           duration: 45
           elements:
             - type: prompt
-              file: "ex.md"
+              file: projects/css_lab/ct_topic/pre_discussion_instructions_democrat.md
               showToPositions: [0]
             - type: prompt
-              file: "ex.md"
+              file: projects/css_lab/ct_topic/pre_discussion_instructions_republican.md
               showToPositions: [1]
             - type: submitButton
               name: preDiscussionInstructions
@@ -214,11 +203,11 @@ templates:
             showTitle: true
           elements:
             - type: prompt
-              file: "ex.md"
+              file: projects/css_lab/ct_topic/discussion_instructions.md
             - type: prompt
-              file: "ex.md"
+              file: "shared/yesNo/${topicName}_discussion.md"
             - type: prompt
-              file: "ex.md"
+              file: projects/css_lab/ct_topic/discussion_wrapup.md
               displayTime: 600
             - type: submitButton
               name: endCall
@@ -230,20 +219,20 @@ templates:
         - name: PostDiscussionInstructions
           elements:
             - type: prompt
-              file: "ex.md"
+              file: projects/css_lab/ct_topic/post_discussion_instructions.md
             - type: submitButton
               buttonText: Proceed to Survey
 
         - name: AttitudeChange # 1 question
           elements:
             - type: prompt
-              file: "ex.md"
+              file: projects/css_lab/ct_topic/attitude_change_instructions.md
             - type: prompt
               name: discussionTopicPostAttitude
-              file: "ex.md"
+              file: "shared/yesNo/${topicName}_survey.md"
               tags: ["outcome"]
             - type: prompt
-              file: "ex.md"
+              file: projects/css_lab/ct_topic/all_mandatory.md
             - type: submitButton
               conditions:
                 - reference: prompt.discussionTopicPostAttitude
@@ -252,10 +241,10 @@ templates:
         - name: ManipulationCheck # 2 questions
           elements:
             - type: prompt
-              file: "ex.md"
+              file: projects/css_lab/ct_topic/consider_partner.md
 
             - type: display
-              reference: participantInf
+              reference: participantInfo.name
               position: 0
               showToPositions: [1]
             - type: display
@@ -264,17 +253,17 @@ templates:
               showToPositions: [0]
 
             - type: prompt
-              file: "ex.md"
+              file: projects/css_lab/ct_topic/guess_partner_party.md
               name: guessPartnerParty
               tags: ["outcome"]
             - type: prompt
-              file: "ex.md"
+              file: projects/css_lab/ct_topic/guess_partner_position.md
             - type: prompt
-              file: "ex.md"
+              file: "shared/yesNo/${topicName}_survey.md"
               name: guessPartnerPosition
               tags: ["outcome"]
             - type: prompt
-              file: "ex.md"
+              file: projects/css_lab/ct_topic/all_mandatory.md
             - type: submitButton
               conditions:
                 - reference: prompt.guessPartnerParty
@@ -285,7 +274,7 @@ templates:
         - name: PerceptionOfPartner # 8 questions
           elements:
             - type: prompt
-              file: "ex.md"
+              file: projects/css_lab/ct_topic/consider_partner.md
 
             - type: display
               reference: participantInfo.name
@@ -300,7 +289,6 @@ templates:
               name: PerceptionOfPartner
               surveyName: PerceptionOfOthers
               tags: ["outcome"]
-            - type: submitButton
 
         - name: DiscussionGeneralPerception # 9 questions
           elements:
@@ -308,29 +296,26 @@ templates:
               name: discussionGeneral
               surveyName: DiscussionGeneral
               tags: ["outcome"]
-            - type: submitButton
 
         - name: FeelingThermometerPostTest # 2 questions
           elements:
-            - type: survey
+            - type: surve
               name: feelingThermometerPosttest
               surveyName: PartisanFeelingThermometerUS # asks about both parties
               tags: ["outcome"]
-            - type: submitButton
 
         - name: TraitRatingsPostTest # 8 questions
           elements:
             - type: prompt
-              file: "ex.md"
+              file: projects/css_lab/ct_topic/consider_democrats.md
               showToPositions: [1]
             - type: prompt
-              file: "ex.md"
+              file: projects/css_lab/ct_topic/consider_republicans.md
               showToPositions: [0]
             - type: survey
               surveyName: TraitRatings
               name: traitRatingsPosttest
               tags: ["outcome"]
-            - type: submitButton
 
         - name: Bipartisanship # 3 questions
           elements:
@@ -338,7 +323,6 @@ templates:
               surveyName: BipartisanshipUS
               name: bipartisanship
               tags: ["outcome"]
-            - type: submitButton
 
         - name: Reengagement # 3 questions
           elements:
@@ -346,7 +330,6 @@ templates:
               surveyName: DiscussionReengagement
               name: discussionReengagement
               tags: ["outcome"]
-            - type: submitButton
 
 introSequences:
   - template: introSequence
@@ -437,5 +420,3 @@ treatments:
         - topicName: capAndTrade
         - topicName: policeDefundingDiscrimination
         - topicName: cubaEmbargo
-
-# path in reference in groupComposition is not valid path

@@ -7,7 +7,7 @@ templates:
       playerCount: 2
 
       groupComposition:
-        - position: 2
+        - position: 0
           conditions:
             - reference: "prompt.${topic}"
               comparator: includes
@@ -27,7 +27,7 @@ templates:
               showToPositions: [0]
             - type: prompt
               file: "ex.md"
-              showToPositions: [1]
+              hideFromPositions: [1]
             - type: prompt
               file: "ex.md"
               showToPositions: [1]
@@ -53,7 +53,7 @@ templates:
             - type: prompt
               file: "ex.md"
               showToPositions: [0]
-              name: GA
+              name: G
             - type: prompt
               file: "ex.md"
               showToPositions: [1]
@@ -109,6 +109,7 @@ templates:
             - type: submitButton
               buttonText: Continue
 
+
         - name: Pre-discussion Reminder
           duration: 60
           elements:
@@ -127,10 +128,10 @@ templates:
               file: "ex.md"
               showToPositions: [1]
             - type: display
-              reference: prompt.GA
+              reference: connectionInfo.fake
               showToPositions: [0]
             - type: display
-              reference: prompt.LG_PG_write
+              reference: survey.real.done
               showToPositions: [1]
             - type: submitButton
               buttonText: Continue
@@ -159,6 +160,9 @@ templates:
               file: "ex.md"
             - type: prompt
               file: "ex.md"
+            - type: survey
+              name: real
+              surveyName: post_discussion_survey
             - type: display
               reference: prompt.GA
               showToPositions: [0]
@@ -176,9 +180,8 @@ templates:
         - name: Qualtrics_Escape_Hatch
           elements:
             - type: qualtrics
-              url: https://upenn.co1.qualtrics.com/jfe/form/SV_2bfMgUw37Y2AUZq
+              url: https://upenn.co1.qualtrics.com/jfe/form/SV_2bfMgUw37Y2AUZg
             - type: submitButton
-              buttonText: Proceed to Survey
 
 introSequences:
   - name: default
@@ -187,6 +190,7 @@ introSequences:
         elements:
           - type: prompt
             file: "ex.md"
+            name: GA
           - type: submitButton
       - name: topic_survey
         elements:
@@ -205,5 +209,3 @@ treatments:
       d1:
         - topic: bathroom_choice
         - topic: censoring_extremism
-
-# broadcast field dx is wrong, needs to be d followed by int

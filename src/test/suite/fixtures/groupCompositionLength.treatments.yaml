@@ -7,16 +7,19 @@ templates:
       playerCount: 2
 
       groupComposition:
-        - position: 2
+        - position: 0
           conditions:
             - reference: "prompt.${topic}"
               comparator: includes
               value: ${p0}
-        - position: 1
+        - position: 0
           conditions:
             - reference: "prompt.${topic}"
               comparator: includes
               value: ${p1}
+        - position: 0
+          conditions: []
+        
 
       gameStages:
         - name: Strategies and Filler
@@ -27,7 +30,7 @@ templates:
               showToPositions: [0]
             - type: prompt
               file: "ex.md"
-              showToPositions: [1]
+              hideFromPositions: [1]
             - type: prompt
               file: "ex.md"
               showToPositions: [1]
@@ -109,6 +112,7 @@ templates:
             - type: submitButton
               buttonText: Continue
 
+
         - name: Pre-discussion Reminder
           duration: 60
           elements:
@@ -176,9 +180,8 @@ templates:
         - name: Qualtrics_Escape_Hatch
           elements:
             - type: qualtrics
-              url: https://upenn.co1.qualtrics.com/jfe/form/SV_2bfMgUw37Y2AUZq
+              url: https://upenn.co1.qualtrics.com/jfe/form/SV_2bfMgUw37Y2AUZg
             - type: submitButton
-              buttonText: Proceed to Survey
 
 introSequences:
   - name: default
@@ -205,5 +208,3 @@ treatments:
       d1:
         - topic: bathroom_choice
         - topic: censoring_extremism
-
-# broadcast field dx is wrong, needs to be d followed by int

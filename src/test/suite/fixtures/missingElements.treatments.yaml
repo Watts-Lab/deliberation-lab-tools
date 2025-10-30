@@ -5,6 +5,8 @@ introSequences:
         elements:
           - type: qualtrics
             url: https://oii.qualtrics.com/jfe/form/SV_6D1FDLFEQRqJByu
+          - type: submitButton
+            buttonText: Begin
 
 treatments:
   - name: default
@@ -24,5 +26,7 @@ treatments:
         elements:
           - type: qualtrics
             url: https://oii.qualtrics.com/jfe/form/SV_bCKP9iurcrlpjLM
+          - type: submitButton
+            buttonText: Finish
 
 # gamestage missing required field "elements"

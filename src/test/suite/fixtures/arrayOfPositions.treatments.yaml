@@ -109,6 +109,7 @@ templates:
             - type: submitButton
               buttonText: Continue
 
+
         - name: Pre-discussion Reminder
           duration: 60
           elements:
@@ -177,6 +178,8 @@ templates:
           elements:
             - type: qualtrics
               url: https://upenn.co1.qualtrics.com/jfe/form/SV_2bfMgUw37Y2AUZg
+            - type: submitButton
+              buttonText: Finish
 
 introSequences:
   - name: default
@@ -185,10 +188,12 @@ introSequences:
         elements:
           - type: prompt
             file: "ex.md"
+          - type: submitButton
       - name: topic_survey
         elements:
           - type: prompt
             file: "ex.md"
+          - type: submitButton
 
 treatments:
   - template: disagreeing_dyads
