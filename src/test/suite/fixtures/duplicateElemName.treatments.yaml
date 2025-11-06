@@ -61,10 +61,10 @@ treatments:
         duration: 60
         elements:
           - type: prompt
-            name: duplicateName
+            name: duplicateNam
             file: "ex.md"
           - type: prompt
-            name: duplicateName
+            name: duplicateNam
             file: "ex.md"
           - type: prompt
             name: preamble
