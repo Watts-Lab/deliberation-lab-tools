@@ -7,6 +7,9 @@ introSequences:
           - type: prompt
             name: preamble
             file: "ex.md"
+          - type: prompt
+            name: preamble
+            file: "ex.md"
           - type: submitButton
             buttonText: Continue
       - name: Ten Item Personality Inventory
@@ -57,7 +60,14 @@ treatments:
       - name: Invalid Element Type Test
         duration: 60
         elements:
-          - type: form
+          - type: prompt
+            name: duplicateName
+            file: "ex.md"
+          - type: prompt
+            name: duplicateName
+            file: "ex.md"
+          - type: prompt
+            name: preamble
             file: "ex.md"
           - type: submitButton
             buttonText: Continue
@@ -110,6 +120,3 @@ treatments:
           - type: prompt
             file: "ex.md"
           - type: submitButton
-            buttonText: Submit
-
-# An element uses an invalid type "form" which is not defined in the system.

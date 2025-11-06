@@ -1,0 +1,82 @@
+templates:
+  - templateName: negotiation_round
+    contentType: stage
+    templateDesc: A reusable negotiation discussion stage
+    templateContent:
+      name: Negotiation Round
+      desc: Core negotiation stage with shared discussion
+      duration: 300
+      elements:
+        - type: prompt
+          name: negotiation_instructions
+          showToPositions:
+            - 0
+            - 1
+        - type: display
+          reference: prompt.prep_instructions
+          position: shared
+        - type: submitButton
+          buttonText: Submit Negotiation
+
+introSequences:
+  - name: baseline_intro
+    desc: Basic introduction before gameplay
+    introSteps:
+      - name: Welcome
+        desc: Welcome the participant
+        elements:
+          - type: prompt
+            name: welcome_message
+          - type: submitButton
+            buttonText: Continue
+
+treatments:
+  - name: templated_game
+    desc: Demonstration of a template game stage inserted mid-sequence
+    playerCount: 2
+    groupComposition:
+      - desc: Negotiator A
+        position: 0
+        title: "Negotiator A"
+      - desc: Negotiator B
+        position: 1
+        title: "Negotiator B"
+
+    gameStages:
+      # ---------- Stage BEFORE the template ----------
+      - name: Preparation Stage
+        desc: Individual role preparation
+        duration: 120
+        elements:
+          - type: prompt
+            name: prep_instructions
+            showToPositions:
+              - 0
+              - 1
+          - type: submitButton
+            buttonText: Ready
+
+      # ---------- The templated stage ----------
+      - template: negotiation_round
+      # ---------- Stage AFTER the template ----------
+      - name: Reflection Stage
+        desc: Players reflect on outcomes after negotiation
+        duration: 180
+        elements:
+          - type: prompt
+            name: reflection_prompt
+            showToPositions:
+              - 0
+              - 1
+          - type: survey
+            surveyName: ReflectionSurvey
+          - type: submitButton
+            buttonText: Finish
+
+    exitSequence:
+      - name: Debrief
+        desc: Exit survey after all game stages
+        elements:
+          - type: submitButton
+            buttonText: Submit
+
