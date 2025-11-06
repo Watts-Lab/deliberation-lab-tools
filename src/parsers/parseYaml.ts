@@ -3,6 +3,7 @@ import { load as loadYaml, YAMLException } from "js-yaml";
 import * as YAML from 'yaml';
 import { diagnosticCollection } from '../extension';
 import { z, ZodError, ZodIssue } from "zod";
+import { detectPromptMarkdown } from '../detectFile';
 import {
     treatmentFileSchema,
     TreatmentFileType,
@@ -414,6 +415,125 @@ export async function parseYaml(document: vscode.TextDocument) {
 
     runReferenceStageOrderChecks(document, parsedData, parsedData.toJS(), diagnostics);
 
+    async function validateReferencedPromptFiles(
+        document: vscode.TextDocument,
+        parsedDoc: YAML.Document.Parsed,
+        root: any,
+        diagnostics: vscode.Diagnostic[],
+        fileExistsInWorkspace: (relativePath: string) => Promise<{ uri: vscode.Uri; exists: boolean }>
+    ) {
+        try {
+            // Collect all prompt file references from the YAML
+            const promptFileRefs: Array<{
+                path: (string | number)[];
+                file: string;
+            }> = [];
+
+            function walkYaml(node: any, path: (string | number)[] = []) {
+                if (!node) return;
+                if (Array.isArray(node)) {
+                    node.forEach((item, idx) => walkYaml(item, [...path, idx]));
+                } else if (typeof node === 'object') {
+                    // Check if this is a prompt element with a file reference
+                    if (node.type === 'prompt' && typeof node.file === 'string') {
+                        promptFileRefs.push({
+                            path: [...path, 'file'],
+                            file: node.file
+                        });
+                    }
+                    Object.entries(node)?.forEach(([key, value]) => {
+                        walkYaml(value, [...path, key]);
+                    });
+                }
+            }
+
+            walkYaml(root);
+
+            // Validate each referenced prompt file
+            for (const ref of promptFileRefs) {
+                try {
+                    const fileData = await fileExistsInWorkspace(ref.file);
+
+                    if (!fileData.exists) {
+                        // File doesn't exist - already handled by existing validation
+                        continue;
+                    }
+
+                    // Open the document to get its URI
+                    let promptDoc: vscode.TextDocument;
+                    try {
+                        promptDoc = await vscode.workspace.openTextDocument(fileData.uri);
+                    } catch (err) {
+                        console.error(`Failed to open prompt file: ${ref.file}`, err);
+                        continue;
+                    }
+
+                    const isPromptMarkdown = detectPromptMarkdown(promptDoc);
+                    const pos = findPositionFromPath(ref.path, parsedDoc, document);
+
+                    if (!isPromptMarkdown) {
+                        if (pos) {
+                            diagnostics.push(new vscode.Diagnostic(
+                                new vscode.Range(pos.start, pos.end ?? pos.start),
+                                `File "${ref.file}" is not a valid prompt markdown file. Prompt markdown files must have YAML metadata with 'type' and 'name' fields between '---' separators.`,
+                                vscode.DiagnosticSeverity.Warning
+                            ));
+                        }
+                        continue;
+                    }
+
+                    // Check if the prompt file has any diagnostics
+                    const promptDiagnostics = vscode.languages.getDiagnostics(promptDoc.uri);
+
+                    if (promptDiagnostics && promptDiagnostics.length > 0) {
+                        // Find the position of the 'file:' line in the treatments YAML
+                        const pos = findPositionFromPath(ref.path, parsedDoc, document);
+
+                        if (pos) {
+                            // Count errors vs warnings
+                            const errorCount = promptDiagnostics.filter(
+                                d => d.severity === vscode.DiagnosticSeverity.Error
+                            ).length;
+                            const warningCount = promptDiagnostics.filter(
+                                d => d.severity === vscode.DiagnosticSeverity.Warning
+                            ).length;
+
+                            let message = `Referenced prompt file "${ref.file}" has validation issues: `;
+                            const issues: string[] = [];
+                            if (errorCount > 0) issues.push(`${errorCount} error(s)`);
+                            if (warningCount > 0) issues.push(`${warningCount} warning(s)`);
+                            message += issues.join(', ');
+
+                            // Use Error severity if the prompt has errors, Warning otherwise
+                            const severity = errorCount > 0
+                                ? vscode.DiagnosticSeverity.Error
+                                : vscode.DiagnosticSeverity.Warning;
+
+                            diagnostics.push(new vscode.Diagnostic(
+                                new vscode.Range(pos.start, pos.end ?? pos.start),
+                                message,
+                                severity
+                            ));
+                        }
+                    }
+                } catch (err) {
+                    console.error(`Error validating prompt file ${ref.file}:`, err);
+                }
+            }
+        } catch (err) {
+            console.error('Error in validateReferencedPromptFiles:', err);
+        }
+    }
+
+    // NOW call the function
+    await validateReferencedPromptFiles(
+        document,
+        parsedData,
+        parsedData.toJS(),
+        diagnostics,
+        fileExistsInWorkspace
+    );
+
     const missingFiles = asyncValidateFilesToIssues(
         parsedData.toJS() as TreatmentFileType
     ).then((issues: ZodIssue[]) => {
@@ -454,40 +574,6 @@ export async function parseYaml(document: vscode.TextDocument) {
         if (Array.isArray(node)) {
             node.forEach((item, idx) => walkYaml(item, [...path, idx]));
         } else if (typeof node === 'object') {
-            // Only track elements of type "survey" for now
-            // if (node.type === 'survey' && typeof node.name === 'string') {
-            //     // Find the path to the 'name' property
-            //     const namePath = [...path, 'name'];
-            //     const range = findPositionFromPath(namePath, parsedData, document);
-            //     // Default to line 1 if range is not found
-            //     const line = range ? range.start.line + 1 : 1;
-            //     if (!referenceTypeMap['survey']) {
-            //         referenceTypeMap['survey'] = [];
-            //     }
-            //     referenceTypeMap['survey'].push({ name: node.name, line });
-            // }
-            // if (node.type === 'prompt' && typeof node.name === 'string') {
-            //     // Find the path to the 'name' property
-            //     const namePath = [...path, 'name'];
-            //     const range = findPositionFromPath(namePath, parsedData, document);
-            //     // Default to line 1 if range is not found
-            //     const line = range ? range.start.line + 1 : 1;
-            //     if (!referenceTypeMap['prompt']) {
-            //         referenceTypeMap['prompt'] = [];
-            //     }
-            //     referenceTypeMap['prompt'].push({ name: node.name, line });
-            // }
-            // if (node.type === 'submitButton' && typeof node.name === 'string') {
-            //     // Find the path to the 'name' property
-            //     const namePath = [...path, 'name'];
-            //     const range = findPositionFromPath(namePath, parsedData, document);
-            //     // Default to line 1 if range is not found
-            //     const line = range ? range.start.line + 1 : 1;
-            //     if (!referenceTypeMap['submitButton']) {
-            //         referenceTypeMap['submitButton'] = [];
-            //     }
-            //     referenceTypeMap['submitButton'].push({ name: node.name, line });
-            // }
             // Track references for any type (future extensibility)
             if (typeof node.reference === 'string' && node.reference.includes('.')) {
                 const refPath = [...path, 'reference'];
@@ -507,22 +593,6 @@ export async function parseYaml(document: vscode.TextDocument) {
 
     // Now check references for each type
     referenceChecks.forEach(({ type, line, fullRef }) => {
-        // if (type === 'survey') {
-        //     // Only 'survey' type is currently supported
-        //     const name = fullRef.split('.', 2)[1];
-        //     if (!(referenceTypeMap[type]?.some(entry => entry.name === name && entry.line < line))) {
-        //         diagnostics.push(
-        //             new vscode.Diagnostic(
-        //                 new vscode.Range(
-        //                     new vscode.Position(line, 0),
-        //                     new vscode.Position(line, 100)
-        //                 ),
-        //                 `Reference "${fullRef}" does not match any previously defined ${type} element name.`,
-        //                 vscode.DiagnosticSeverity.Warning
-        //             )
-        //         );
-        //     }
-        // }
         if (type === 'discussion') {
             // Only 'discussion' type is currently supported
             const name = fullRef.split('.', 2)[1];
@@ -555,39 +625,6 @@ export async function parseYaml(document: vscode.TextDocument) {
                 );
             }
         }
-        // if (type === 'prompt') {
-        //     // Only 'prompt' type is currently supported
-        //     const name = fullRef.split('.', 2)[1];
-        //     if (!(referenceTypeMap[type]?.some(entry => entry.name === name && entry.line < line))) {
-        //         diagnostics.push(
-        //             new vscode.Diagnostic(
-        //                 new vscode.Range(
-        //                     new vscode.Position(line, 0),
-        //                     new vscode.Position(line, 100)
-        //                 ),
-        //                 `Reference "${fullRef}" does not match any previously defined ${type} element name.`,
-        //                 vscode.DiagnosticSeverity.Warning
-        //             )
-        //         );
-        //     }
-        // }
-        // if (type === 'submitButton') {
-        //     // Only 'submitButton' type is currently supported
-        //     const name = fullRef.split('.', 2)[1];
-        //     if (!(referenceTypeMap[type]?.some(entry => entry.name === name && entry.line < line))) {
-        //         diagnostics.push(
-        //             new vscode.Diagnostic(
-        //                 new vscode.Range(
-        //                     new vscode.Position(line, 0),
-        //                     new vscode
-        //                         .Position(line, 100)
-        //                 ),
-        //                 `Reference "${fullRef}" does not match any previously defined ${type} element name.`,
-        //                 vscode.DiagnosticSeverity.Warning
-        //             )
-        //         );
-        //     }
-        // }
     });
 
 
