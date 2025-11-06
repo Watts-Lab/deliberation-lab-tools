@@ -639,4 +639,18 @@ suite('Diagnostics detection', () => {
 		const diagnostics = vscode.languages.getDiagnostics(document.uri);
 		assert.strictEqual(diagnostics.length, 0);
 	});
+
+	test ('prompt referenced has errors', async () => {
+		const filePath = path.resolve('src/test/suite/fixtures/badPrompt.treatments.yaml');
+		const document = await vscode.workspace.openTextDocument(filePath);
+		await new Promise(resolve => setTimeout(resolve, 1000));
+		const diagnostics = vscode.languages.getDiagnostics(document.uri);
+		assert.strictEqual(diagnostics.length, 1);
+		assert.strictEqual(
+			diagnostics[0].message,
+			`Referenced prompt file "bad.md" has validation issues: 4 warning(s)`
+		);
+		assert.strictEqual(diagnostics[0].range.start.line, 156);
+		assert.strictEqual(diagnostics[0].range.end.line, 158);
+	});
 });
