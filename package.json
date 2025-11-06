@@ -94,7 +94,7 @@
   "scripts": {
     "build:css": "npx windicss deliberation-empirica/client/src/baseStyles.css -o src/views/styles.css --config deliberation-empirica/client/windi.config.cjs && npx tailwindcss -i src/views/index.css -o src/views/playerStyles.css --config src/views/tailwind.config.js && npx tailwindcss -i src/views/globals.css -o src/views/layout.css --config src/views/tailwind.config.js",
     "prepare-submodule": "git submodule update --init --recursive",
-    "copy-validators": "cp ./deliberation-empirica/server/src/preFlight/validateTreatmentFile.ts ./src/zod-validators && cp ./deliberation-empirica/server/src/preFlight/validatePromptFile.ts ./src/zod-validators && cp ./deliberation-empirica/server/src/preFlight/validateDlConfig.ts ./src/zod-validators  && cp ./deliberation-empirica/server/src/preFlight/validateBatchConfig.ts ./src/zod-validators",
+    "copy-validators": "cp ./deliberation-empirica/server/src/preFlight/validateTreatmentFile.ts ./src/zod-validators && cp ./deliberation-empirica/server/src/preFlight/validatePromptFile.ts ./src/zod-validators && cp ./deliberation-empirica/server/src/preFlight/validateDlConfig.ts ./src/zod-validators  && cp ./deliberation-empirica/server/src/preFlight/validateBatchConfig.ts ./src/zod-validators && cp ./deliberation-empirica/server/src/preFlight/fillTemplates.ts ./src",
     "prepare-web": "npm run prepare-submodule && npm run copy-validators && npm run build:css",
     "compile-web": "npm run prepare-web && tsc -p tsconfig.json && npm run lint && node esbuild.js",
     "package-web": "npm run prepare-web && npm run check-types && npm run lint && node esbuild.js --production",
