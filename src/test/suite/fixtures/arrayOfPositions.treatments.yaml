@@ -179,7 +179,11 @@ templates:
             - type: qualtrics
               url: https://upenn.co1.qualtrics.com/jfe/form/SV_2bfMgUw37Y2AUZg
             - type: submitButton
+<<<<<<< HEAD
               buttonText: Proceed to Survey
+=======
+              buttonText: Finish
+>>>>>>> main
 
 introSequences:
   - name: default

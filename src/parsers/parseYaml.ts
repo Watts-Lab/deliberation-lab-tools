@@ -12,7 +12,10 @@ import { handleError, offsetToPosition, findPositionFromPath } from "../errorPos
 import { parse } from 'path';
 import { off } from 'process';
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> main
 type CheckedType = 'prompt' | 'survey' | 'submitButton';
 const CHECKED_TYPES: CheckedType[] = ['prompt', 'survey', 'submitButton'];
 
