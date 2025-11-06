@@ -236,7 +236,7 @@ export function parseMarkdown(document: vscode.TextDocument) {
                         document.positionAt(index),
                         document.positionAt(text.length - 1)
                     );
-                    const issue = "Response should contain text for type list sorter";
+                    const issue = "Response should contain sortable choices for type list sorter";
                     diagnostics.push(
                         new vscode.Diagnostic(
                             diagnosticRange,

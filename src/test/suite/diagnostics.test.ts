@@ -82,7 +82,7 @@ suite('Diagnostics detection', () => {
 		// Third error should be encompassing the first metadata section (from start of separator to type line), reporting that type is null
 		assert.strictEqual(diagnostics[2].range.start.line, 0);
 		assert.strictEqual(diagnostics[2].range.end.line, 2);
-		assert.strictEqual(diagnostics[2].message, "Error in item \"type\": Expected 'openResponse' | 'multipleChoice' | 'noResponse' | 'listSorter' | 'slider', received null");
+		assert.strictEqual(diagnostics[2].message, "Error in item \"type\": Expected 'openResponse' | 'multipleChoice' | 'noResponse' | 'listSorter', received null");
 
 		// Fourth error should be on separator for prompt text, reporting that prompt text must exist
 		assert.strictEqual(diagnostics[3].range.start.line, 3);
@@ -645,12 +645,63 @@ suite('Diagnostics detection', () => {
 		const document = await vscode.workspace.openTextDocument(filePath);
 		await new Promise(resolve => setTimeout(resolve, 1000));
 		const diagnostics = vscode.languages.getDiagnostics(document.uri);
+		assert.strictEqual(diagnostics.length, 2);
+		assert.strictEqual(
+			diagnostics[0].message,
+			`Referenced prompt file "erroneous.md" has validation issues: 4 warning(s)`
+		);
+		assert.strictEqual(
+			diagnostics[1].message,
+			`File "normalMarkdown.md" is not a valid prompt markdown file. Prompt markdown files must have YAML metadata with 'type' and 'name' fields between '---' separators.`
+		);
+		assert.strictEqual(diagnostics[0].range.start.line, 155);
+		assert.strictEqual(diagnostics[0].range.end.line, 157);
+		assert.strictEqual(diagnostics[1].range.start.line, 157);
+		assert.strictEqual(diagnostics[1].range.end.line, 159);
+	});
+
+	test ('multiple choice prompt with no options', async () => {
+		const filePath = path.resolve('src/test/suite/fixtures/multipleChoiceNoOptions.md');
+		const document = await vscode.workspace.openTextDocument(filePath);
+		await new Promise(resolve => setTimeout(resolve, 1000));
+		const diagnostics = vscode.languages.getDiagnostics(document.uri);
 		assert.strictEqual(diagnostics.length, 1);
 		assert.strictEqual(
 			diagnostics[0].message,
-			`Referenced prompt file "bad.md" has validation issues: 4 warning(s)`
+			`Response should contain at least one choice for type multiple choice`
 		);
-		assert.strictEqual(diagnostics[0].range.start.line, 156);
-		assert.strictEqual(diagnostics[0].range.end.line, 158);
+		assert.strictEqual(diagnostics[0].range.start.line, 5);
+		assert.strictEqual(diagnostics[0].range.end.line, 5);
 	});
+
+	test ('list sorter prompt with no options', async () => {
+		const filePath = path.resolve('src/test/suite/fixtures/listSorterNoOptions.md');
+		const document = await vscode.workspace.openTextDocument(filePath);
+		await new Promise(resolve => setTimeout(resolve, 1000));
+		const diagnostics = vscode.languages.getDiagnostics(document.uri);
+		assert.strictEqual(diagnostics.length, 1);
+		assert.strictEqual(
+			diagnostics[0].message,
+			`Response should contain sortable choices for type list sorter`
+		);
+		assert.strictEqual(diagnostics[0].range.start.line, 5);
+		assert.strictEqual(diagnostics[0].range.end.line, 5);
+	});
+
+	test ('open response has empty response field', async () => {
+		const filePath = path.resolve('src/test/suite/fixtures/openResponseEmpty.md');
+		const document = await vscode.workspace.openTextDocument(filePath);
+		await new Promise(resolve => setTimeout(resolve, 1000));
+		const diagnostics = vscode.languages.getDiagnostics(document.uri);
+		assert.strictEqual(diagnostics.length, 1);
+		assert.strictEqual(
+			diagnostics[0].message,
+			`Response should contain text for type open response`
+		);
+		assert.strictEqual(diagnostics[0].range.start.line, 5);
+		assert.strictEqual(diagnostics[0].range.end.line, 5);
+	});
+
+
+	
 });

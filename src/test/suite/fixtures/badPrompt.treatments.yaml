@@ -154,9 +154,9 @@ templates:
               file: "ex.md"
               showToPositions: [1]
             - type: prompt
-              file: "bad.md"
+              file: "erroneous.md"
             - type: prompt
-              file: "ex.md"
+              file: "normalMarkdown.md"
             - type: prompt
               file: "ex.md"
             - type: display

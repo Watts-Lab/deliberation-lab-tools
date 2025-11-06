@@ -3,14 +3,15 @@ import { load as loadYaml, YAMLException } from "js-yaml";
 import * as YAML from 'yaml';
 import { diagnosticCollection } from '../extension';
 import { z, ZodError, ZodIssue } from "zod";
-import { detectPromptMarkdown } from '../detectFile';
 import {
     treatmentFileSchema,
     TreatmentFileType,
 } from "../zod-validators/validateTreatmentFile";
+import { detectPromptMarkdown } from '../detectFile';
 import { handleError, offsetToPosition, findPositionFromPath } from "../errorPosition";
 import { parse } from 'path';
 import { off } from 'process';
+
 
 type CheckedType = 'prompt' | 'survey' | 'submitButton';
 const CHECKED_TYPES: CheckedType[] = ['prompt', 'survey', 'submitButton'];
@@ -779,7 +780,6 @@ export async function parseYaml(document: vscode.TextDocument) {
         }
     }
 
-    // NOW call the function
     await validateReferencedPromptFiles(
         document,
         parsedData,
@@ -834,7 +834,7 @@ export async function parseYaml(document: vscode.TextDocument) {
                 const range = findPositionFromPath(refPath, parsedData, document);
                 const line = range ? range.start.line + 1 : 1;
                 const [type] = node.reference.split('.', 1);
-                referenceChecks.push({ type, line, fullRef: node.reference });
+                referenceChecks.push({ type, line, fullRef: node.reference});
             }
             Object.entries(node)?.forEach(([key, value]) => {
                 walkYaml(value, [...path, key]);
@@ -882,39 +882,6 @@ export async function parseYaml(document: vscode.TextDocument) {
                 );
             }
         }
-        // if (type === 'prompt') {
-        //     // Only 'prompt' type is currently supported
-        //     const name = fullRef.split('.', 2)[1];
-        //     if (!(referenceTypeMap[type]?.some(entry => entry.name === name && entry.line < line))) {
-        //         diagnostics.push(
-        //             new vscode.Diagnostic(
-        //                 new vscode.Range(
-        //                     new vscode.Position(line, 0),
-        //                     new vscode.Position(line, 100)
-        //                 ),
-        //                 `Reference "${fullRef}" does not match any previously defined ${type} element name.`,
-        //                 vscode.DiagnosticSeverity.Warning
-        //             )
-        //         );
-        //     }
-        // }
-        // if (type === 'submitButton') {
-        //     // Only 'submitButton' type is currently supported
-        //     const name = fullRef.split('.', 2)[1];
-        //     if (!(referenceTypeMap[type]?.some(entry => entry.name === name && entry.line < line))) {
-        //         diagnostics.push(
-        //             new vscode.Diagnostic(
-        //                 new vscode.Range(
-        //                     new vscode.Position(line, 0),
-        //                     new vscode
-        //                         .Position(line, 100)
-        //                 ),
-        //                 `Reference "${fullRef}" does not match any previously defined ${type} element name.`,
-        //                 vscode.DiagnosticSeverity.Warning
-        //             )
-        //         );
-        //     }
-        // }
     });
 
 
