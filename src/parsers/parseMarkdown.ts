@@ -156,6 +156,20 @@ export function parseMarkdown(document: vscode.TextDocument) {
             case "multipleChoice": {
                 let { text, index } = getIndex(document, 3);
                 const lineNum = (document.positionAt(index).line) + 1;
+                if (!response || /^\s*$/.test(response)) {
+                    const diagnosticRange = new vscode.Range(
+                        document.positionAt(index),
+                        document.positionAt(text.length - 1)
+                    );
+                    const issue = "Response should contain at least one choice for type multiple choice";
+                    diagnostics.push(
+                        new vscode.Diagnostic(
+                            diagnosticRange,
+                            issue,
+                            vscode.DiagnosticSeverity.Warning
+                        )
+                    );
+                }
                 for (let i = lineNum; i < document.lineCount; i++) {
                     const str = document.lineAt(i).text;
                     // console.log(str);
@@ -181,6 +195,20 @@ export function parseMarkdown(document: vscode.TextDocument) {
             case "openResponse": {
                 let { text, index } = getIndex(document, 3);
                 const lineNum = (document.positionAt(index).line) + 1;
+                if (!response || /^\s*$/.test(response)) {
+                    const diagnosticRange = new vscode.Range(
+                        document.positionAt(index),
+                        document.positionAt(text.length - 1)
+                    );
+                    const issue = "Response should contain text for type open response";
+                    diagnostics.push(
+                        new vscode.Diagnostic(
+                            diagnosticRange,
+                            issue,
+                            vscode.DiagnosticSeverity.Warning
+                        )
+                    );
+                }
                 for (let i = lineNum; i < document.lineCount; i++) {
                     const str = document.lineAt(i).text;
                     if (!(/^\s*$/.test(str)) && str.substring(0, 2) !== "> ") {
@@ -189,6 +217,42 @@ export function parseMarkdown(document: vscode.TextDocument) {
                             new vscode.Position(i, str.length)
                         );
                         const issue = `Response at line ${i + 1} should start with "> " (for open response)`;
+                        diagnostics.push(
+                            new vscode.Diagnostic(
+                                diagnosticRange,
+                                issue,
+                                vscode.DiagnosticSeverity.Warning
+                            )
+                        );
+                    }
+                }
+                break;
+            }
+            case "listSorter": {
+                let { text, index } = getIndex(document, 3);
+                const lineNum = (document.positionAt(index).line) + 1;
+                if (!response || /^\s*$/.test(response)) {
+                    const diagnosticRange = new vscode.Range(
+                        document.positionAt(index),
+                        document.positionAt(text.length - 1)
+                    );
+                    const issue = "Response should contain text for type list sorter";
+                    diagnostics.push(
+                        new vscode.Diagnostic(
+                            diagnosticRange,
+                            issue,
+                            vscode.DiagnosticSeverity.Warning
+                        )
+                    );
+                }
+                for (let i = lineNum; i < document.lineCount; i++) {
+                    const str = document.lineAt(i).text;
+                    if (!(/^\s*$/.test(str)) && str.substring(0, 2) !== "> ") {
+                        const diagnosticRange = new vscode.Range(
+                            new vscode.Position(i, 0),
+                            new vscode.Position(i, str.length)
+                        );
+                        const issue = `Response at line ${i + 1} should start with "> " (for list sorter)`;
                         diagnostics.push(
                             new vscode.Diagnostic(
                                 diagnosticRange,

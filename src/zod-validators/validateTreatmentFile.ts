@@ -414,7 +414,6 @@ const elementBaseSchema = z
   .object({
     name: nameSchema.optional(),
     desc: descriptionSchema.optional(),
-    file: fileSchema.or(fieldPlaceholderSchema).optional(),
     displayTime: displayTimeSchema.or(fieldPlaceholderSchema).optional(),
     hideTime: hideTimeSchema.or(fieldPlaceholderSchema).optional(),
     showToPositions: showToPositionsSchema
@@ -555,15 +554,15 @@ export const elementSchema = altTemplateContext(
     const isObject = typeof data === "object" && data !== null;
     const hasTypeKey = isObject && "type" in data;
 
-    if (hasTypeKey && (data as any).type === "prompt") {
-      if (!("file" in (data as any)) || (data as any).file === undefined || (data as any).file === null) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          path: ["file"],
-          message: "Prompt elements must include a 'file' field.",
-        });
-      }
-    }
+    // if (hasTypeKey && (data as any).type === "prompt") {
+    //   if (!("file" in (data as any)) || (data as any).file === undefined || (data as any).file === null) {
+    //     ctx.addIssue({
+    //       code: z.ZodIssueCode.custom,
+    //       path: ["file"],
+    //       message: "Prompt elements must include a 'file' field.",
+    //     });
+    //   }
+    // }
 
     const schemaToUse = hasTypeKey
       ? z.discriminatedUnion("type", [
@@ -790,7 +789,6 @@ export const treatmentSchema = altTemplateContext(
     .superRefine((treatment, ctx) => {
       const baseResult = baseTreatmentSchema.safeParse(treatment);
       if (!baseResult.success) {
-        console.log("baseResult error", baseResult.error);
         return;
       }
   // Use the parsed/validated data from baseResult so any transforms
@@ -863,8 +861,33 @@ export const treatmentSchema = altTemplateContext(
         });
       });
 
-      // Duplicate-name checks removed here. Unique-name validation may be
-      // performed elsewhere if needed.
+      // Ensure unique element names within each treatment, grouped by type
+      const typeToNames = new Map<string, Set<string>>();
+      gameStages?.forEach((stage: { elements: any[]; name: any }, stageIndex: string | number) => {
+        stage?.elements?.forEach((element: any, elementIndex: string | number) => {
+          if (!element) return;
+
+          const isObject = typeof element === "object" && element !== null;
+          if (!isObject) return;
+
+          const elType = typeof (element as any).type === "string" ? (element as any).type : undefined;
+          const elName = typeof (element as any).name === "string" ? (element as any).name : undefined;
+
+          if (!elType || !elName) return;
+
+          const seen = typeToNames.get(elType) ?? new Set<string>();
+          if (seen.has(elName)) {
+            ctx.addIssue({
+              code: z.ZodIssueCode.custom,
+              path: ["gameStages", stageIndex, "elements", elementIndex, "name"],
+              message: `Duplicate name "${elName}" for element type "${elType}" within treatment "${treatment.name}". Elements of the same type must have unique names within a single treatment.`,
+            });
+          } else {
+            seen.add(elName);
+            typeToNames.set(elType, seen);
+          }
+        });
+      });
     })
 );
 
@@ -892,8 +915,8 @@ export const templateContentSchema = z.any().superRefine((data, ctx) => {
     { schema: conditionSchema, name: "Condition" },
     { schema: playerSchema, name: "Player" },
     // specify into intro step or exit step not both
-    { schema: introExitStepSchema, name: "Intro Exit Step" },
-    { schema: exitStepsSchema, name: "Exit Steps" },
+    { schema: introExitStepsBaseSchema, name: "Intro Exit Step" },
+    { schema: introExitStepsBaseSchema, name: "Intro Exit Steps" },
     //commented out for now, matches too many schemas
     {
       schema: templateBroadcastAxisValuesSchema,
@@ -925,7 +948,7 @@ export const templateContentSchema = z.any().superRefine((data, ctx) => {
       // fallthrough: we don't immediately return here because we want to
       // always run the treatment duplicate-name check across any templateContent
       // (the traversal below will handle that after the loop finishes)
-      return;
+      break;
     } else {
       // console.log(`Schema "${name}" failed with errors:`, result.error.issues);
 
@@ -980,8 +1003,62 @@ export const templateContentSchema = z.any().superRefine((data, ctx) => {
     }
   }
 
-  // Duplicate-name traversal checks removed. Template content validation
-  // will rely on schema-specific checks instead.
+  // After attempting all schemas, traverse the data to find any treatment objects
+  // and check for duplicate element names within each treatment
+  // This is done regardless of whether a treatmentSchema matched,
+  // to catch treatments nested within other structures
+  // (e.g., within an intro sequence or other custom structures)
+  const checkTreatmentForDuplicateNames = (treatment: any, basePath: any[] = []) => {
+    const typeToNamesLocal = new Map<string, Set<string>>();
+    const gameStagesLocal = treatment?.gameStages;
+    gameStagesLocal?.forEach((stage: { elements: any[]; name: any }, stageIndex: string | number) => {
+      stage?.elements?.forEach((element: any, elementIndex: string | number) => {
+        if (!element) return;
+
+        const isObject = typeof element === "object" && element !== null;
+        if (!isObject) return;
+
+        const elType = typeof (element as any).type === "string" ? (element as any).type : undefined;
+        const elName = typeof (element as any).name === "string" ? (element as any).name : undefined;
+
+        if (!elType || !elName) return;
+
+        const seen = typeToNamesLocal.get(elType) ?? new Set<string>();
+        if (seen.has(elName)) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: [...basePath, "gameStages", stageIndex, "elements", elementIndex, "name"],
+            message: `Duplicate name "${elName}" for element type "${elType}" within treatment "${treatment?.name}". Elements of the same type must have unique names within a single treatment.`,
+          });
+        } else {
+          seen.add(elName);
+          typeToNamesLocal.set(elType, seen);
+        }
+      });
+    });
+  };
+
+  const traverseAndCheck = (node: any, path: any[] = []) => {
+    if (Array.isArray(node)) {
+      node.forEach((item, idx) => traverseAndCheck(item, [...path, idx]));
+    } else if (node && typeof node === "object") {
+      if ("gameStages" in node && Array.isArray((node as any).gameStages)) {
+        checkTreatmentForDuplicateNames(node, path);
+      }
+      for (const [key, val] of Object.entries(node)) {
+        traverseAndCheck(val, [...path, key]);
+      }
+    }
+  };
+
+  try {
+    traverseAndCheck(data, []);
+  } catch (e) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: `Error while validating template content for duplicate element names: ${String(e)}`,
+    });
+  }
 
   if (bestSchemaResult) {
     console.log(
@@ -1022,7 +1099,7 @@ export const templateSchema = z
       "condition",
       "player",
       "introExitStep",
-      "exitSteps",
+      "introExitSteps",
       "other",
     ]).optional(),
     templateDesc: descriptionSchema.optional(),
@@ -1099,8 +1176,8 @@ export function matchContentType(
       return playerSchema;
     case "introExitStep":
       return introExitStepSchema;
-    case "exitSteps":
-      return exitStepsSchema;
+    case "introExitSteps":
+      return introExitStepsBaseSchema;
     default:
       throw new Error(`Unknown content type: ${contentType}`);
   }

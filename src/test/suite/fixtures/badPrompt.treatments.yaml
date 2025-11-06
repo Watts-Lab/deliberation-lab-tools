@@ -148,7 +148,6 @@ templates:
               displayTime: 300
               hideTime: 330
             - type: prompt
-              file: "ex.md"
               displayTime: 480
               hideTime: 510
             - type: prompt
