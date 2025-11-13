@@ -346,3 +346,4 @@ function applyTruncation(s: string, maxLines: number): { text: string; truncated
   slice.push("# … truncated …");
   return { text: slice.join("\n"), truncated: true };
 }
+//s
