@@ -11,6 +11,7 @@ import {
 import { handleError, offsetToPosition, findPositionFromPath } from "../errorPosition";
 import { parse } from 'path';
 import { off } from 'process';
+import { strict } from 'assert';
 
 type CheckedType = 'prompt' | 'survey' | 'submitButton';
 const CHECKED_TYPES: CheckedType[] = ['prompt', 'survey', 'submitButton'];
@@ -248,12 +249,66 @@ export async function parseYaml(document: vscode.TextDocument) {
     const diagnostics: vscode.Diagnostic[] = [];
 
     //Parse YAML content into AST
-    let parsedData = YAML.parseDocument(document.getText(), {
+    const parsedData = YAML.parseDocument(document.getText(), {
         keepCstNodes: true,
         keepNodeTypes: true,
     } as any) || null;
+
     // console.log("YAML parsed successfully.");
     // console.log(parsedData.errors);
+    function getKeyString(keyNode: any): string {
+        if (typeof keyNode?.value === 'string') return keyNode.value;
+        if (typeof keyNode?.strValue === 'string') return keyNode.strValue;
+        if (typeof keyNode?.cstNode?.strValue === 'string') return keyNode.cstNode.strValue;
+        if (typeof keyNode?.toString === 'function') return keyNode.toString();
+        return String(keyNode);
+    }
+
+    function getKeyRange(keyNode: any, pair: any): [number, number] {
+        if (Array.isArray(keyNode?.range)) return [keyNode.range[0], keyNode.range[1]];
+        if (Array.isArray(keyNode?.cstNode?.range))
+            return [keyNode.cstNode.range[0], keyNode.cstNode.range[1]];
+        if (Array.isArray(pair?.range))
+            return [pair.range[0], pair.range[1]];
+        return [0, 1];
+    }
+
+    function checkDuplicateKeysAST(node: any) {
+        if (YAML.isMap(node)) {
+            const seen = new Set<string>();
+
+            for (const pair of node.items) {
+                const keyNode = pair.key;
+
+                const keyString = getKeyString(keyNode);
+
+                if (seen.has(keyString)) {
+                    const [start, end] = getKeyRange(keyNode, pair);
+
+                    diagnostics.push(
+                        new vscode.Diagnostic(
+                            new vscode.Range(
+                                offsetToPosition(start, document),
+                                offsetToPosition(end, document)
+                            ),
+                            `Duplicate key "${keyString}" found in this mapping.`,
+                            vscode.DiagnosticSeverity.Error
+                        )
+                    );
+                } else {
+                    seen.add(keyString);
+                }
+
+                checkDuplicateKeysAST(pair.value);
+            }
+        }
+
+        if (YAML.isSeq(node)) {
+            node.items.forEach((item: any) => checkDuplicateKeysAST(item));
+        }
+    }
+
+    checkDuplicateKeysAST(parsedData.contents);
 
     if (parsedData.errors.length > 0) {
         // console.log("YAML parsing errors found:", parsedData.errors);
@@ -293,6 +348,7 @@ export async function parseYaml(document: vscode.TextDocument) {
             );
         });
     }
+
 
     // Check if the YAML document is empty
     if (
