@@ -585,4 +585,18 @@ suite('Diagnostics detection', () => {
 		assert.strictEqual(diagnostics[1].range.start.line, 133);
 		assert.strictEqual(diagnostics[1].range.end.line, 133);
 	});
+
+	test('duplicate duration key in file', async () => {
+		const filePath = path.resolve('src/test/suite/fixtures/duplicateKeys.treatments.yaml');
+		const document = await vscode.workspace.openTextDocument(filePath);
+		await new Promise(resolve => setTimeout(resolve, 1000));
+		const diagnostics = vscode.languages.getDiagnostics(document.uri);
+		assert.strictEqual(diagnostics.length, 1);
+		assert.strictEqual(
+			diagnostics[0].message,
+			`Duplicate key "duration" found in this mapping.`
+		);
+		assert.strictEqual(diagnostics[0].range.start.line, 66);
+		assert.strictEqual(diagnostics[0].range.end.line, 66);
+	});
 });
