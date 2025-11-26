@@ -586,10 +586,6 @@ suite('Diagnostics detection', () => {
 		assert.strictEqual(diagnostics[1].range.end.line, 130);
 	});
 
-<<<<<<< HEAD
-	test('duplicate duration key in file', async () => {
-		const filePath = path.resolve('src/test/suite/fixtures/duplicateKeys.treatments.yaml');
-=======
 	test ('missingSubmit button in intro and exit steps', async () => {
 		const filePath = path.resolve('src/test/suite/fixtures/missingSubmit.treatments.yaml');
 		const document = await vscode.workspace.openTextDocument(filePath);
@@ -666,20 +662,12 @@ suite('Diagnostics detection', () => {
 
 	test ('multiple choice prompt with no options', async () => {
 		const filePath = path.resolve('src/test/suite/fixtures/multipleChoiceNoOptions.md');
->>>>>>> main
 		const document = await vscode.workspace.openTextDocument(filePath);
 		await new Promise(resolve => setTimeout(resolve, 1000));
 		const diagnostics = vscode.languages.getDiagnostics(document.uri);
 		assert.strictEqual(diagnostics.length, 1);
 		assert.strictEqual(
 			diagnostics[0].message,
-<<<<<<< HEAD
-			`Duplicate key "duration" found in this mapping.`
-		);
-		assert.strictEqual(diagnostics[0].range.start.line, 66);
-		assert.strictEqual(diagnostics[0].range.end.line, 66);
-	});
-=======
 			`Response should contain at least one choice for type multiple choice`
 		);
 		assert.strictEqual(diagnostics[0].range.start.line, 5);
@@ -714,7 +702,19 @@ suite('Diagnostics detection', () => {
 		assert.strictEqual(diagnostics[0].range.end.line, 5);
 	});
 
+	test('duplicate duration key in file', async () => {
+		const filePath = path.resolve('src/test/suite/fixtures/duplicateKeys.treatments.yaml');
+		const document = await vscode.workspace.openTextDocument(filePath);
+		await new Promise(resolve => setTimeout(resolve, 1000));
+		const diagnostics = vscode.languages.getDiagnostics(document.uri);
+		assert.strictEqual(diagnostics.length, 1);
+		assert.strictEqual(
+			diagnostics[0].message,
+			`Duplicate key "duration" found in this mapping.`
+		);
+		assert.strictEqual(diagnostics[0].range.start.line, 66);
+		assert.strictEqual(diagnostics[0].range.end.line, 66);
+	});
 
 	
->>>>>>> main
 });
