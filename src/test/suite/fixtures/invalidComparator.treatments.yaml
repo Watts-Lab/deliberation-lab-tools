@@ -13,14 +13,20 @@ introSequences:
         elements:
           - type: survey
             surveyName: TIPI
+          - type: submitButton
+            buttonText: Continue
       - name: Self-awareness Self-monitoring and Growth Mindset
         elements:
           - type: survey
             surveyName: AwarenessMonitoringGrowth
+          - type: submitButton
+            buttonText: Continue
       - name: Cultural Conflict Norms
         elements:
           - type: survey
             surveyName: CulturalConflictNorms
+          - type: submitButton
+            buttonText: Continue
       - name: General Information
         elements:
           - type: prompt
@@ -97,7 +103,7 @@ treatments:
             showToPositions: [0]
           - type: prompt
             file: "ex.md"
-            name: ReadingComp1
+            name: ReadingComp2
             showToPositions: [1]
           - type: submitButton
             buttonText: Continue
@@ -111,5 +117,7 @@ treatments:
         elements:
           - type: prompt
             file: "ex.md"
+          - type: submitButton
+            buttonText: Submit
 
 # invalid comparator at line 106

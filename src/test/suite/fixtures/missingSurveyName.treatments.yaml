@@ -134,7 +134,7 @@ treatments:
       - name: Demographics
         elements:
           - type: survey
-            surveyName: Demographics
+          - type: submitButton
 
   - name: schema B
     playerCount: 2
@@ -182,5 +182,8 @@ treatments:
       - name: Demographics
         elements:
           - type: survey
+            surveyName: Demographics
+          - type: submitButton
+            buttonText: Submit
 
 # missing survey name 

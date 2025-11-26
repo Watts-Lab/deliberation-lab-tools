@@ -12,6 +12,7 @@ introSequences:
       - name: "exampleStep1"
         elements:
           - type: "prompt"
+          - type: submitButton
             
 treatments:
   - name: "exampleTreatment"

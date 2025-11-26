@@ -175,6 +175,8 @@ templates:
               buttonText: Proceed to Survey
         - name: Qualtrics_Escape_Hatch
           elements:
+            - type: submitButton
+              buttonText: Proceed to Survey
             - type: qualtrics
               url: https://upenn.co1.qualtrics.com/jfe/form/SV_2bfMgUw37Y2AUZg
 
@@ -185,11 +187,14 @@ introSequences:
         elements:
           - type: prompt
             file: "ex.md"
+          - type: submitButton
+            buttonText: Continue
       - name: topic_survey
         elements:
           - type: prompt
             file: "ex.md"
-
+          - type: submitButton
+            buttonText: Continue
 treatments:
   - template: disagreeing_dyads
     fields:

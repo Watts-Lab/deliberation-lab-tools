@@ -39,6 +39,8 @@ templates:
       elements:
       - type: survey
         surveyName: Demographics
+      - type: submitButton
+        buttonText: Submit
 introSequences:
 - name: Default
   introSteps:

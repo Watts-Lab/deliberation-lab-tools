@@ -135,6 +135,8 @@ treatments:
         elements:
           - type: survey
             surveyName: Demographics
+          - type: submitButton
+            buttonText: Submit
 
   - name: schema B
     playerCount: 2
@@ -183,5 +185,7 @@ treatments:
         elements:
           - type: survey
             surveyName: Demographics
+          - type: submitButton
+            buttonText: Submit
 
 # playerCount is string rather than number

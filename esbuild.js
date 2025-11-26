@@ -30,9 +30,7 @@ filesToCopy.forEach((filePath) => {
 });
 
 /**
- * This plugin hooks into the build process to print errors in a format that the problem matcher in
- * Visual Studio Code can understand.
- * @type {import('esbuild').Plugin}
+ * Plugin to display errors nicely in VS Code's problem matcher format
  */
 const esbuildProblemMatcherPlugin = {
   name: "esbuild-problem-matcher",
@@ -44,9 +42,11 @@ const esbuildProblemMatcherPlugin = {
     build.onEnd((result) => {
       result.errors.forEach(({ text, location }) => {
         console.error(`✘ [ERROR] ${text}`);
-        console.error(
-          `    ${location.file}:${location.line}:${location.column}:`
-        );
+        if (location) {
+          console.error(
+            `    ${location.file}:${location.line}:${location.column}:`
+          );
+        }
       });
       console.log("[watch] build finished");
     });
@@ -54,10 +54,7 @@ const esbuildProblemMatcherPlugin = {
 };
 
 /**
- * For web extension, all tests, including the test runner, need to be bundled into
- * a single module that has a exported `run` function .
- * This plugin bundles implements a virtual file extensionTests.ts that bundles all these together.
- * @type {import('esbuild').Plugin}
+ * Plugin for bundling all test files into a single entry (used for VS Code extension tests)
  */
 const testBundlePlugin = {
   name: "testBundlePlugin",
@@ -67,7 +64,7 @@ const testBundlePlugin = {
         return { path: path.resolve(args.path) };
       }
     });
-    build.onLoad({ filter: /[\/\\]extensionTests\.ts$/ }, async (args) => {
+    build.onLoad({ filter: /[\/\\]extensionTests\.ts$/ }, async () => {
       const testsRoot = path.join(__dirname, "src/test/suite");
       const files = await glob.glob("*.test.{ts,tsx}", {
         cwd: testsRoot,
@@ -84,12 +81,14 @@ const testBundlePlugin = {
   },
 };
 
-// Points hooks.js from deliberation-empirica to the mock hooks.js file in src/views
-// Needed for rendering
+/**
+ * Alias plugin to handle ../components/hooks imports
+ * Used in deliberation-empirica code
+ */
 const aliasHooksImport = {
   name: "alias-hooks-imports",
   setup(build) {
-    build.onResolve({ filter: /^\.\.\/components\/hooks$/ }, args => {
+    build.onResolve({ filter: /^\.\.\/components\/hooks$/ }, () => {
       return {
         path: path.resolve(__dirname, "src/views/hooks.js"),
       };
@@ -97,12 +96,12 @@ const aliasHooksImport = {
   },
 };
 
-
+/**
+ * Build VS Code extension backend
+ */
 async function buildExtension() {
   const ctx = await esbuild.context({
-    entryPoints: [
-      "src/extension.ts"
-    ],
+    entryPoints: ["src/extension.ts"],
     bundle: true,
     format: "cjs",
     minify: production,
@@ -112,14 +111,20 @@ async function buildExtension() {
     outdir: "dist/",
     external: ["vscode", "path", "assert"],
     logLevel: "silent",
-    // Node.js global to browser globalThis
-    define: {
-      global: "globalThis",
-    },
-    alias: { // Aliases of empirica modules to mocks for rendering
-      '@empirica/core/player/react': path.resolve(__dirname, 'src/views/mocks.js'),
-      '@empirica/core/player/classic/react': path.resolve(__dirname, 'src/views/mocks.js'),
-      'deliberation-empirica/client/src/components/hooks': path.resolve(__dirname, 'src/views/hooks.js')
+    define: { global: "globalThis" },
+    alias: {
+      "@empirica/core/player/react": path.resolve(__dirname, "src/views/mocks.js"),
+      "@empirica/core/player/classic/react": path.resolve(__dirname, "src/views/mocks.js"),
+      "components/hooks": path.resolve(__dirname, "src/views/hooks.js"),
+      "components/hooks.js": path.resolve(__dirname, "src/views/hooks.js"),
+      "deliberation-empirica/client/src/components/hooks": path.resolve(
+        __dirname,
+        "src/views/hooks.js"
+      ),
+      "deliberation-empirica/client/src/components/hooks.js": path.resolve(
+        __dirname,
+        "src/views/hooks.js"
+      ),
     },
 
     plugins: [
@@ -127,19 +132,26 @@ async function buildExtension() {
         process: true,
         buffer: true,
       }),
-
       alias({
         aliases: {
-          "../components/hooks": path.resolve(__dirname, "src/views/hooks.js"),
+          "components/hooks": path.resolve(__dirname, "src/views/hooks.js"),
+          "components/hooks.js": path.resolve(__dirname, "src/views/hooks.js"),
+          "deliberation-empirica/client/src/components/hooks": path.resolve(
+            __dirname,
+            "src/views/hooks.js"
+          ),
+          "deliberation-empirica/client/src/components/hooks.js": path.resolve(
+            __dirname,
+            "src/views/hooks.js"
+          ),
         },
         resolve: [".js", ".jsx"],
       }),
-
       aliasHooksImport,
-
-      esbuildProblemMatcherPlugin /* add to the end of plugins array */,
+      esbuildProblemMatcherPlugin,
     ],
   });
+
   if (watch) {
     await ctx.watch();
   } else {
@@ -148,7 +160,9 @@ async function buildExtension() {
   }
 }
 
-// Builds index.jsx for prompt file rendering and CSS style files
+/**
+ * Build webview frontend (prompt preview, styles)
+ */
 async function buildPrompt() {
   const ctx = await esbuild.context({
     entryPoints: [
@@ -156,7 +170,7 @@ async function buildPrompt() {
       "src/views/styles.css",
       "src/views/playerStyles.css",
       "src/views/layout.css",
-      "src/views/baseStyles.css"
+      "src/views/baseStyles.css",
     ],
     bundle: true,
     format: "esm",
@@ -167,22 +181,40 @@ async function buildPrompt() {
     outdir: "dist/views/",
     logLevel: "silent",
     external: ["vscode", "path", "assert"],
-    alias: { // Aliasing empirica module methods to point to mocks
-      '@empirica/core/player/react': path.resolve(__dirname, 'src/views/mocks.js'),
-      '@empirica/core/player/classic/react': path.resolve(__dirname, 'src/views/mocks.js'),
-      'deliberation-empirica/client/src/components/hooks': path.resolve(__dirname, 'src/views/hooks.js')
+    alias: {
+      "@empirica/core/player/react": path.resolve(__dirname, "src/views/mocks.js"),
+      "@empirica/core/player/classic/react": path.resolve(__dirname, "src/views/mocks.js"),
+      "components/hooks": path.resolve(__dirname, "src/views/hooks.js"),
+      "components/hooks.js": path.resolve(__dirname, "src/views/hooks.js"),
+      "deliberation-empirica/client/src/components/hooks": path.resolve(
+        __dirname,
+        "src/views/hooks.js"
+      ),
+      "deliberation-empirica/client/src/components/hooks.js": path.resolve(
+        __dirname,
+        "src/views/hooks.js"
+      ),
     },
     plugins: [
       alias({
         aliases: {
-          "../components/hooks": path.resolve(__dirname, "src/views/hooks.js"),
+          "components/hooks": path.resolve(__dirname, "src/views/hooks.js"),
+          "components/hooks.js": path.resolve(__dirname, "src/views/hooks.js"),
+          "deliberation-empirica/client/src/components/hooks": path.resolve(
+            __dirname,
+            "src/views/hooks.js"
+          ),
+          "deliberation-empirica/client/src/components/hooks.js": path.resolve(
+            __dirname,
+            "src/views/hooks.js"
+          ),
         },
         resolve: [".js", ".jsx"],
       }),
-
-      aliasHooksImport
-    ]
+      aliasHooksImport,
+    ],
   });
+
   if (watch) {
     await ctx.watch();
   } else {
@@ -191,6 +223,9 @@ async function buildPrompt() {
   }
 }
 
+/**
+ * Run both builds
+ */
 async function main() {
   await buildExtension();
   await buildPrompt();
@@ -200,3 +235,5 @@ main().catch((e) => {
   console.error(e);
   process.exit(1);
 });
+
+

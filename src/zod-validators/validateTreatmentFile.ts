@@ -81,8 +81,37 @@ export const discussionSchema = z
     chatType: z.enum(["text", "audio", "video"]),
     showNickname: z.boolean(),
     showTitle: z.boolean(),
+    reactionEmojisAvailable: z.array(z.string()).optional(),
+    reactToSelf: z.boolean().optional(),
+    numReactionsPerMessage: z.number().int().nonnegative().optional(),
   })
-  .strict();
+  .strict()
+  .superRefine((data, ctx) => {
+    // Emoji reaction parameters should only be used with text chat
+    if (data.chatType !== "text") {
+      if (data.reactionEmojisAvailable !== undefined) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["reactionEmojisAvailable"],
+          message: "reactionEmojisAvailable can only be used with chatType 'text'",
+        });
+      }
+      if (data.reactToSelf !== undefined) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["reactToSelf"],
+          message: "reactToSelf can only be used with chatType 'text'",
+        });
+      }
+      if (data.numReactionsPerMessage !== undefined) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["numReactionsPerMessage"],
+          message: "numReactionsPerMessage can only be used with chatType 'text'",
+        });
+      }
+    }
+  });
 export type DiscussionType = z.infer<typeof discussionSchema>;
 
 // ------------------ Template contexts ------------------ //
@@ -414,7 +443,6 @@ const elementBaseSchema = z
   .object({
     name: nameSchema.optional(),
     desc: descriptionSchema.optional(),
-    file: fileSchema.or(fieldPlaceholderSchema).optional(),
     displayTime: displayTimeSchema.or(fieldPlaceholderSchema).optional(),
     hideTime: hideTimeSchema.or(fieldPlaceholderSchema).optional(),
     showToPositions: showToPositionsSchema
@@ -555,6 +583,19 @@ export const elementSchema = altTemplateContext(
     const isObject = typeof data === "object" && data !== null;
     const hasTypeKey = isObject && "type" in data;
 
+<<<<<<< HEAD
+=======
+    // if (hasTypeKey && (data as any).type === "prompt") {
+    //   if (!("file" in (data as any)) || (data as any).file === undefined || (data as any).file === null) {
+    //     ctx.addIssue({
+    //       code: z.ZodIssueCode.custom,
+    //       path: ["file"],
+    //       message: "Prompt elements must include a 'file' field.",
+    //     });
+    //   }
+    // }
+
+>>>>>>> main
     const schemaToUse = hasTypeKey
       ? z.discriminatedUnion("type", [
         audioSchema,
@@ -851,34 +892,6 @@ export const treatmentSchema = altTemplateContext(
           });
         });
       });
-
-      // Ensure unique element names within each treatment, grouped by type
-      const typeToNames = new Map<string, Set<string>>();
-      gameStages?.forEach((stage: { elements: any[]; name: any }, stageIndex: string | number) => {
-        stage?.elements?.forEach((element: any, elementIndex: string | number) => {
-          if (!element) return;
-
-          const isObject = typeof element === "object" && element !== null;
-          if (!isObject) return;
-
-          const elType = typeof (element as any).type === "string" ? (element as any).type : undefined;
-          const elName = typeof (element as any).name === "string" ? (element as any).name : undefined;
-
-          if (!elType || !elName) return;
-
-          const seen = typeToNames.get(elType) ?? new Set<string>();
-          if (seen.has(elName)) {
-            ctx.addIssue({
-              code: z.ZodIssueCode.custom,
-              path: ["gameStages", stageIndex, "elements", elementIndex, "name"],
-              message: `Duplicate name "${elName}" for element type "${elType}" within treatment "${treatment.name}". Elements of the same type must have unique names within a single treatment.`,
-            });
-          } else {
-            seen.add(elName);
-            typeToNames.set(elType, seen);
-          }
-        });
-      });
     })
 );
 
@@ -999,57 +1012,6 @@ export const templateContentSchema = z.any().superRefine((data, ctx) => {
   // This is done regardless of whether a treatmentSchema matched,
   // to catch treatments nested within other structures
   // (e.g., within an intro sequence or other custom structures)
-  const checkTreatmentForDuplicateNames = (treatment: any, basePath: any[] = []) => {
-    const typeToNamesLocal = new Map<string, Set<string>>();
-    const gameStagesLocal = treatment?.gameStages;
-    gameStagesLocal?.forEach((stage: { elements: any[]; name: any }, stageIndex: string | number) => {
-      stage?.elements?.forEach((element: any, elementIndex: string | number) => {
-        if (!element) return;
-
-        const isObject = typeof element === "object" && element !== null;
-        if (!isObject) return;
-
-        const elType = typeof (element as any).type === "string" ? (element as any).type : undefined;
-        const elName = typeof (element as any).name === "string" ? (element as any).name : undefined;
-
-        if (!elType || !elName) return;
-
-        const seen = typeToNamesLocal.get(elType) ?? new Set<string>();
-        if (seen.has(elName)) {
-          ctx.addIssue({
-            code: z.ZodIssueCode.custom,
-            path: [...basePath, "gameStages", stageIndex, "elements", elementIndex, "name"],
-            message: `Duplicate name "${elName}" for element type "${elType}" within treatment "${treatment?.name}". Elements of the same type must have unique names within a single treatment.`,
-          });
-        } else {
-          seen.add(elName);
-          typeToNamesLocal.set(elType, seen);
-        }
-      });
-    });
-  };
-
-  const traverseAndCheck = (node: any, path: any[] = []) => {
-    if (Array.isArray(node)) {
-      node.forEach((item, idx) => traverseAndCheck(item, [...path, idx]));
-    } else if (node && typeof node === "object") {
-      if ("gameStages" in node && Array.isArray((node as any).gameStages)) {
-        checkTreatmentForDuplicateNames(node, path);
-      }
-      for (const [key, val] of Object.entries(node)) {
-        traverseAndCheck(val, [...path, key]);
-      }
-    }
-  };
-
-  try {
-    traverseAndCheck(data, []);
-  } catch (e) {
-    ctx.addIssue({
-      code: z.ZodIssueCode.custom,
-      message: `Error while validating template content for duplicate element names: ${String(e)}`,
-    });
-  }
 
   if (bestSchemaResult) {
     console.log(

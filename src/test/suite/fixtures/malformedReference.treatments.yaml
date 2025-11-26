@@ -25,6 +25,8 @@ templates:
               surveyName: PoliticalPartyUS
               name: partyAffiliation
               tags: ["predictor"]
+            - type: submitButton
+              buttonText: Begin
 
         - name: FeelingThermometerPretest # 2 questions
           elements:
@@ -32,6 +34,7 @@ templates:
               name: feelingThermometerPretest
               surveyName: PartisanFeelingThermometerUS # asks about both parties
               tags: ["predictor"]
+            - type: submitButton
 
         - name: TraitRatingsPretest # 8 questions
           elements: # if participants are not US partisans, we use this page to show them a screen-out code
@@ -64,6 +67,7 @@ templates:
                 - reference: connectionInfo.country
                   comparator: equals
                   value: US
+            - type: submitButton
 
             - type: prompt # show screener if not a partisan
               file: "ex.md"
@@ -85,6 +89,7 @@ templates:
               surveyName: RmeTen
               name: RME
               tags: ["predictor"]
+            - type: submitButton
 
         - name: Big-5 # 10 questions
           elements:
@@ -92,6 +97,7 @@ templates:
               name: big5Personality
               surveyName: TIPI
               tags: ["predictor"]
+            - type: submitButton
 
         - name: TopicPreSurvey
           elements:
@@ -132,6 +138,7 @@ templates:
               surveyName: DemographicsShortUS
               name: demographics
               tags: ["predictor"]
+            - type: submitButton
 
   - templateName: crossPartisanDiscussion
     templateDesc: for measuring the effect of topic on cross-party discussion outcomes
@@ -293,6 +300,7 @@ templates:
               name: PerceptionOfPartner
               surveyName: PerceptionOfOthers
               tags: ["outcome"]
+            - type: submitButton
 
         - name: DiscussionGeneralPerception # 9 questions
           elements:
@@ -300,6 +308,7 @@ templates:
               name: discussionGeneral
               surveyName: DiscussionGeneral
               tags: ["outcome"]
+            - type: submitButton
 
         - name: FeelingThermometerPostTest # 2 questions
           elements:
@@ -307,6 +316,7 @@ templates:
               name: feelingThermometerPosttest
               surveyName: PartisanFeelingThermometerUS # asks about both parties
               tags: ["outcome"]
+            - type: submitButton
 
         - name: TraitRatingsPostTest # 8 questions
           elements:
@@ -320,6 +330,7 @@ templates:
               surveyName: TraitRatings
               name: traitRatingsPosttest
               tags: ["outcome"]
+            - type: submitButton
 
         - name: Bipartisanship # 3 questions
           elements:
@@ -327,6 +338,7 @@ templates:
               surveyName: BipartisanshipUS
               name: bipartisanship
               tags: ["outcome"]
+            - type: submitButton
 
         - name: Reengagement # 3 questions
           elements:
@@ -334,6 +346,7 @@ templates:
               surveyName: DiscussionReengagement
               name: discussionReengagement
               tags: ["outcome"]
+            - type: submitButton
 
 introSequences:
   - template: introSequence
