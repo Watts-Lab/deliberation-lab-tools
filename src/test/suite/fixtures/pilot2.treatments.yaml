@@ -1,0 +1,462 @@
+templates:
+  ############# INTERVENTIONS #############
+
+  # Control - no intervention, just a prompt to remind them of the topic
+  - templateName: c_conversation_only_pre
+    contentType: elements
+    templateContent:
+      - type: prompt
+        file: projects/css_lab/dialogue_levers/pilot_2/arms/c_conversation_only/pre_A.md
+      - type: prompt
+        file: projects/css_lab/dialogue_levers/pilot_2/topics/${topicName}.md
+      - type: submitButton
+        name: c1_pre
+        buttonText: Continue to Discussion
+
+  # Treatment 1 - General preparation
+  - templateName: t_prep_general_pre
+    contentType: elements
+    templateContent:
+      - type: prompt
+        file: projects/css_lab/dialogue_levers/pilot_2/arms/t_prep_general/pre_A.md
+      - type: prompt
+        file: projects/css_lab/dialogue_levers/pilot_2/topics/${topicName}.md
+      - type: prompt
+        file: projects/css_lab/dialogue_levers/pilot_2/arms/t_prep_general/pre_B.md
+      - type: submitButton
+        name: t1_pre
+        buttonText: Continue to Discussion
+
+  # Treatment 2 - Go-around structure
+  - templateName: t_go_around_pre
+    contentType: elements
+    templateContent:
+      - type: prompt
+        file: projects/css_lab/dialogue_levers/pilot_2/arms/t_go_around/pre_A.md
+      - type: prompt
+        file: projects/css_lab/dialogue_levers/pilot_2/topics/${topicName}.md
+      - type: prompt
+        file: projects/css_lab/dialogue_levers/pilot_2/arms/t_go_around/pre_B.md
+      - type: prompt
+        file: projects/css_lab/dialogue_levers/pilot_2/arms/t_go_around/pre_comp_duration.md
+        name: t2_pre_comp_duration
+      - type: prompt
+        file: projects/css_lab/dialogue_levers/pilot_2/arms/t_go_around/pre_comp_interruptions.md
+        name: t2_pre_comp_interruptions
+        conditions:
+          - reference: prompt.t2_pre_comp_duration # force a correct response on Q1
+            comparator: equals
+            value: "2 minutes"
+      - type: prompt
+        file: projects/css_lab/dialogue_levers/pilot_2/arms/t_go_around/pre_comp_open.md
+        name: t2_pre_comp_open
+        conditions:
+          - reference: prompt.t2_pre_comp_interruptions # force a correct response on Q2
+            comparator: equals
+            value: "No"
+      - type: prompt
+        file: projects/css_lab/dialogue_levers/pilot_2/arms/t_go_around/pre_comp_timer.md
+        name: t2_pre_comp_timer
+        conditions:
+          - reference: prompt.t2_pre_comp_open # force a correct response on Q3
+            comparator: includes
+            value: "back-and-forth"
+      - type: submitButton
+        name: t2_pre
+        buttonText: Continue to Discussion
+        conditions:
+          - reference: prompt.t2_pre_comp_timer # force a correct response on Q4
+            comparator: includes
+            value: "yourself"
+
+  # Treatment 3 - Goal setting: understanding
+  - templateName: t_goal_understanding_pre
+    contentType: elements
+    templateContent:
+      - type: prompt
+        file: projects/css_lab/dialogue_levers/pilot_2/arms/t_goal_understanding/pre_A.md
+      - type: prompt
+        file: projects/css_lab/dialogue_levers/pilot_2/topics/${topicName}.md
+      - type: prompt
+        file: projects/css_lab/dialogue_levers/pilot_2/arms/t_goal_understanding/pre_B.md
+      - type: prompt
+        file: projects/css_lab/dialogue_levers/pilot_2/arms/t_goal_understanding/pre_comp_goal.md
+        name: t3_pre_comp_goal
+      - type: prompt
+        file: projects/css_lab/dialogue_levers/pilot_2/arms/t_goal_understanding/pre_comp_shared.md
+        name: t3_pre_comp_shared
+        conditions:
+          - reference: prompt.t3_pre_comp_goal # force a correct response on Q1
+            comparator: includes
+            value: "understand"
+      - type: submitButton
+        name: t3_pre
+        buttonText: Continue to Discussion
+        conditions:
+          - reference: prompt.t3_pre_comp_shared # force a correct response on Q2
+            comparator: equals
+            value: "Yes"
+
+  # Treatment 4 - Goal setting: finding a solution
+  - templateName: t_goal_solution
+    contentType: elements
+    templateContent:
+      - type: prompt
+        file: projects/css_lab/dialogue_levers/pilot_2/arms/t_goal_solution/pre_A.md
+      - type: prompt
+        file: projects/css_lab/dialogue_levers/pilot_2/topics/${topicName}.md
+      - type: prompt
+        file: projects/css_lab/dialogue_levers/pilot_2/arms/t_goal_solution/pre_B.md
+      - type: prompt
+        file: projects/css_lab/dialogue_levers/pilot_2/arms/t_goal_solution/pre_comp_goal.md
+        name: t4_pre_comp_goal
+      - type: prompt
+        file: projects/css_lab/dialogue_levers/pilot_2/arms/t_goal_solution/pre_comp_shared.md
+        name: t4_pre_comp_shared
+        conditions:
+          - reference: prompt.t4_pre_comp_goal # force a correct response on Q1
+            comparator: includes
+            value: "solution"
+      - type: submitButton
+        name: t4_pre
+        buttonText: Continue to Discussion
+        conditions:
+          - reference: prompt.t4_pre_comp_shared # force a correct response on Q2
+            comparator: equals
+            value: "Yes"
+
+  ############## REPEATED PIECES ##############
+  # Displays a stage asking the user's opinion and knowledge of the topic,
+  # used in the intro sequence to gauge opinions.
+  - templateName: topicPrompt
+    contentType: introExitSteps
+    templateContent:
+      - name: ${topicName}_presurvey
+        elements:
+          - type: prompt
+            file: projects/css_lab/dialogue_levers/pilot_2/intro/consider_topic.md
+
+          - type: prompt
+            file: "projects/css_lab/dialogue_levers/pilot_2/topics/${topicName}.md"
+
+          - type: prompt
+            name: presurvey_${topicName}
+            file: projects/css_lab/dialogue_levers/pilot_2/intro/topic_opinion.md
+
+          - type: prompt
+            name: presurvey_${topicName}_familiarity
+            file: projects/css_lab/dialogue_levers/pilot_2/intro/topic_familiarity.md
+
+          - type: submitButton
+            buttonText: Continue
+            name: presurvey_${topicName}
+            conditions:
+              - reference: prompt.presurvey_${topicName}
+                comparator: exists
+              - reference: prompt.presurvey_${topicName}_familiarity
+                comparator: exists
+
+  ############# GENERIC STUDY STRUCTURE #############
+  - templateName: condition
+    contentType: treatment
+    templateContent:
+      name: ${conditionName}
+      playerCount: 1 # for development; uncomment below for study
+      # playerCount: 2
+      # groupComposition:
+      #   - position: 0
+      #     title: In Favor
+      #     conditions:
+      #       - reference: prompt.presurvey_${topicName}
+      #         comparator: isOneOf
+      #         value: ["Strongly Support", "Moderately Support"]
+      #       - reference: prompt.presurvey_${topicName}_familiarity
+      #         comparator: isOneOf
+      #         value: ["Extremely familiar", "Very familiar", "Moderately familiar"]
+      #   - position: 1
+      #     title: Opposed
+      #     conditions:
+      #       - reference: prompt.presurvey_${topicName}
+      #         comparator: isOneOf
+      #         value: ["Strongly Oppose", "Moderately Oppose"]
+      #       - reference: prompt.presurvey_${topicName}_familiarity
+      #         comparator: isOneOf
+      #         value: ["Extremely familiar", "Very familiar", "Moderately familiar"]
+
+      gameStages:
+        - name: attitude_attributes
+          duration: 300
+          elements:
+            - type: audio
+              file: shared/westminster_short.mp3 # Todo: Remove when this becomes default?
+
+            - type: prompt
+              file: projects/css_lab/dialogue_levers/pilot_2/game/attitude_attribute_instructions_A.md
+            - type: prompt
+              file: "projects/css_lab/dialogue_levers/pilot_2/topics/${topicName}.md"
+            - type: display
+              reference: prompt.presurvey_${topicName}
+              position: player
+
+            - type: prompt
+              file: projects/css_lab/dialogue_levers/pilot_2/game/attitude_attribute_instructions_B.md
+            - type: survey
+              name: attitude_attributes_pre
+              surveyName: AttitudeAttributes
+
+        - name: pre_discussion_intervention
+          duration: 300
+          elements:
+            - template: ${arm}_pre
+              fields:
+                topicName: "${topicName}"
+
+        - name: discussion
+          duration: 900 # 15 minutes exactly
+          discussion:
+            chatType: video
+            showNickname: true
+            showTitle: false # Should we display "In Favor" / "Opposed" next to names?
+          elements:
+            # Persistent instructions
+            - type: prompt
+              file: projects/css_lab/dialogue_levers/pilot_2/arms/${arm}/mid_A.md
+            - type: prompt
+              file: "projects/css_lab/dialogue_levers/pilot_2/topics/${topicName}.md"
+            - type: prompt
+              file: projects/css_lab/dialogue_levers/pilot_2/arms/${arm}/mid_B.md
+
+            # End-of-call alert (after 14 minutes)
+            - type: prompt
+              file: projects/css_lab/dialogue_levers/pilot_2/game/call_end_alert.md
+              displayTime: 840
+            - type: audio
+              file: shared/counter_bell.mp3
+              displayTime: 840
+
+        - name: describe_partner_views
+          duration: 300
+          elements:
+            - type: prompt
+              file: projects/css_lab/dialogue_levers/pilot_2/game/describe_partner_views.md
+              name: describe_partner_views
+
+            - type: submitButton
+              buttonText: Continue
+              name: describe_partner_views
+              displayTime: 180 # Require they spend at least 3 minutes on this step # TODO: change the instructions to say this
+              conditions:
+                - reference: prompt.describe_partner_views
+                  comparator: hasLengthAtLeast
+                  value: 300 # Require at least 300 characters
+
+      exitSequence:
+        - name: WTR_post
+          elements:
+            - type: prompt
+              file: projects/css_lab/dialogue_levers/pilot_2/exit/WTR_partner_post.md
+              name: WTR_partner_post
+            - type: prompt
+              file: projects/css_lab/dialogue_levers/pilot_2/exit/WTR_general_post.md
+              name: WTR_general_post
+              # TODO: maybe add a general question asking about how important it is to engage with people who have different views, especially on difficult topics?
+            - type: submitButton
+              buttonText: Continue
+              name: WTR_post
+              conditions:
+                - reference: prompt.WTR_partner_post
+                  comparator: exists
+                - reference: prompt.WTR_general_post
+                  comparator: exists
+
+        - name: WTR_behavioral
+          elements:
+            - type: prompt
+              file: projects/css_lab/dialogue_levers/pilot_2/exit/WTR_behavioral_invite.md
+            # - type: link
+            #   name: WTR_behavioral_link
+            #   url: "https://studyScheduler.com" #TBD
+            #   linkText: Sign Up for a Conversation
+            #   params:
+            #     id: playerId
+            - type: prompt
+              file: projects/css_lab/dialogue_levers/pilot_2/exit/WTR_behavioral_reason.md
+              name: WTR_behavioral_reason
+            - type: submitButton
+              buttonText: Continue
+              name: WTR_behavioral # can we make this secondary until they click the link?
+
+        - name: attitude_attributes_post
+          elements:
+            - type: prompt
+              file: projects/css_lab/dialogue_levers/pilot_2/exit/attitude_attribute_instructions_post.md
+            - type: prompt
+              file: "projects/css_lab/dialogue_levers/pilot_2/topics/${topicName}.md"
+
+            - type: prompt
+              name: postsurvey_${topicName}
+              file: projects/css_lab/dialogue_levers/pilot_2/intro/topic_opinion.md
+
+            - type: survey
+              name: attitude_attributes_post
+              surveyName: AttitudeAttributes
+              # conditions: # Bug: https://github.com/Watts-Lab/deliberation-empirica/issues/1064
+              #   - reference: prompt.postsurvey_${topicName}
+              #     comparator: exists
+
+        - name: perception_of_discussion
+          elements:
+            - type: survey
+              name: discussion_general
+              surveyName: DiscussionGeneral
+
+        - name: perception_of_partner
+          elements:
+            - type: prompt
+              file: projects/css_lab/ct_topic/consider_partner.md
+
+            - type: display
+              reference: participantInfo.name
+              position: 0
+              showToPositions: [1]
+            - type: display
+              reference: participantInfo.name
+              position: 1
+              showToPositions: [0]
+
+            - type: survey
+              name: perception_of_partner
+              surveyName: PerceptionOfOthers
+
+        - name: ability_to_comply
+          elements:
+            - type: prompt
+              file: projects/css_lab/dialogue_levers/pilot_2/exit/ability_to_comply.md
+              name: ability_to_comply
+            - type: prompt
+              file: projects/css_lab/dialogue_levers/pilot_2/exit/ability_to_comply_elaboration.md
+              name: ability_to_comply_elaboration
+            - type: submitButton
+              buttonText: Continue
+              name: ability_to_comply
+
+        - name: demographics
+          elements:
+            - type: survey
+              name: demographics
+              surveyName: DemographicsShortUS
+
+        - name: rate_partner_description
+          elements:
+            - type: prompt
+              file: projects/css_lab/dialogue_levers/pilot_2/exit/score_description_instructions.md
+
+            - type: display
+              reference: prompt.describe_partner_views
+              position: 0
+              showToPositions: [1]
+
+            - type: display
+              reference: prompt.describe_partner_views
+              position: 1
+              showToPositions: [0]
+
+            - type: prompt
+              name: score_description_accuracy
+              file: projects/css_lab/dialogue_levers/pilot_2/exit/score_description_accuracy.md
+
+            - type: prompt
+              name: score_description_completeness
+              file: projects/css_lab/dialogue_levers/pilot_2/exit/score_description_completeness.md
+
+            - type: prompt
+              name: score_description_fairness
+              file: projects/css_lab/dialogue_levers/pilot_2/exit/score_description_fairness.md
+
+            - type: submitButton
+              buttonText: Submit
+              name: rate_partner_description
+              conditions:
+                - reference: prompt.score_description_accuracy
+                  comparator: exists
+                - reference: prompt.score_description_completeness
+                  comparator: exists
+                - reference: prompt.score_description_fairness
+                  comparator: exists
+
+####### INTRO SEQUENCES #######
+introSequences:
+  - name: default
+    introSteps:
+      - name: big_5_personality # 10 questions
+        elements:
+          - type: survey
+            name: big_5_personality
+            surveyName: TIPI
+
+      - name: party_affiliation # Two-part party ID plus identity importance
+        elements:
+          - type: survey
+            name: party_affiliation
+            surveyName: PoliticalPartyUS
+
+      - name: receptiveness # 4 Questions
+        elements:
+          - type: survey
+            name: receptiveness
+            surveyName: Receptiveness4
+
+      - template: topicPrompt
+        broadcast:
+          d0:
+            - topicName: abortion
+            - topicName: assault_weapons
+            - topicName: death_penalty
+            - topicName: DEI
+            - topicName: misinformation
+            - topicName: reparations
+            - topicName: support_ICE
+            - topicName: attention_check
+            - topicName: tax_religion
+            - topicName: trans_sports
+            - topicName: vaccination
+
+      - name: WTR_pre
+        elements:
+          - type: prompt
+            file: projects/css_lab/dialogue_levers/pilot_2/intro/WTR_general_pre.md
+            name: WTR_general_pre
+          - type: prompt
+            file: projects/css_lab/dialogue_levers/pilot_2/intro/WTR_partner_pre.md
+            name: WTR_partner_pre
+          - type: submitButton
+            buttonText: Continue
+            name: WTR_pre
+            conditions:
+              - reference: prompt.WTR_general_pre
+                comparator: exists
+              - reference: prompt.WTR_partner_pre
+                comparator: exists
+
+####### TREATMENT DEFINITIONS #######
+treatments:
+  - template: condition
+    fields:
+      conditionName: ${topicName}-${arm}
+    broadcast:
+      d0:
+        - topicName: abortion
+        - topicName: assault_weapons
+        - topicName: death_penalty
+        - topicName: DEI
+        - topicName: misinformation
+        - topicName: reparations
+        - topicName: support_ICE
+        - topicName: tax_religion
+        - topicName: trans_sports
+        - topicName: vaccination
+      d1:
+        - arm: c_conversation_only
+        - arm: t_prep_general
+        - arm: t_go_around
+        - arm: t_goal_understanding
