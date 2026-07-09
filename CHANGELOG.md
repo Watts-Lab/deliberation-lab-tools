@@ -4,6 +4,13 @@ All notable changes to the "deliberation-lab-tools" extension will be documented
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+## [Deprecated]
+
+This extension is **deprecated and no longer maintained.** It has been superseded
+by [Stagebook](https://github.com/talkbench/stagebook) (`stagebook-vscode`), which
+supports the current `.stagebook.yaml` / `.prompt.md` formats. See the README for
+migration and install details.
+
 ## [0.0.4]
 
 ### Added

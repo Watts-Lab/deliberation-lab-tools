@@ -1,5 +1,31 @@
 # Deliberation Lab Experiment Development Tools
 
+> ## ⚠️ Deprecated — use Stagebook instead
+>
+> This extension is **deprecated and no longer maintained.** It has been
+> superseded by **[Stagebook](https://github.com/talkbench/stagebook)**
+> (`stagebook-vscode`, publisher `talkbench`), which provides validation,
+> syntax highlighting, and preview for the current Stagebook treatment
+> (`.stagebook.yaml`) and prompt (`.prompt.md`) file formats.
+>
+> The format this extension validates (`.treatments.yaml`) is no longer
+> current, so its diagnostics will be wrong for present-day studies.
+>
+> **Install Stagebook instead.** It is not on the VS Code Marketplace yet —
+> download the latest `.vsix` from the
+> [Stagebook releases](https://github.com/talkbench/stagebook/releases/latest)
+> page and install it:
+>
+> ```bash
+> curl -L -o stagebook-vscode.vsix \
+>   https://github.com/talkbench/stagebook/releases/latest/download/stagebook-vscode.vsix
+> code --install-extension stagebook-vscode.vsix
+> ```
+>
+> See the
+> [Stagebook VS Code README](https://github.com/talkbench/stagebook/tree/main/apps/vscode)
+> for details.
+
 This repository contains tools for researchers and experiment designers to create, validate, and manage experiments for the Deliberation Lab. The main functionality includes a Visual Studio Code (VS Code) extension for syntax highlighting, validation, YAML schema validation of experiment configuration files (.treatments.yaml + elements built in markdown), commands to create default experiment files, and visual previews of markdown elements.
 
 ## Features
@@ -18,7 +44,11 @@ This repository contains tools for researchers and experiment designers to creat
 
 ## Installation for use
 
-- Find our extension here: https://marketplace.visualstudio.com/items?itemName=deliberation-lab.deliberation-lab-tools
+> **Deprecated.** Install [Stagebook](https://github.com/talkbench/stagebook)
+> instead — see the deprecation notice at the top of this README. The
+> Marketplace listing below is retained only for reference.
+
+- ~~Find our extension here: https://marketplace.visualstudio.com/items?itemName=deliberation-lab.deliberation-lab-tools~~
 
 ## Installation for development/contribution
 
