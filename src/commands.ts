@@ -2,7 +2,7 @@ import { get } from "http";
 import * as vscode from "vscode";
 import { getExtensionUri } from "./contextStore";
 import { dump as dumpYaml, load as loadYaml } from "js-yaml";
-import { EXP_SCHEME } from "./fillTemplates";
+import { EXP_SCHEME } from "./fillTemplatesWrapper";
 import { fillTemplates } from "./fillTemplates";
 
 // Command to create default treatments YAML file

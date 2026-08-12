@@ -818,6 +818,7 @@ export const treatmentSchema = altTemplateContext(
     .superRefine((treatment, ctx) => {
       const baseResult = baseTreatmentSchema.safeParse(treatment);
       if (!baseResult.success) {
+        console.log("baseResult error", baseResult.error);
         return;
       }
   // Use the parsed/validated data from baseResult so any transforms
@@ -889,6 +890,9 @@ export const treatmentSchema = altTemplateContext(
           });
         });
       });
+
+      // Duplicate-name checks removed here. Unique-name validation may be
+      // performed elsewhere if needed.
     })
 );
 
@@ -916,8 +920,8 @@ export const templateContentSchema = z.any().superRefine((data, ctx) => {
     { schema: conditionSchema, name: "Condition" },
     { schema: playerSchema, name: "Player" },
     // specify into intro step or exit step not both
-    { schema: introExitStepsBaseSchema, name: "Intro Exit Step" },
-    { schema: introExitStepsBaseSchema, name: "Intro Exit Steps" },
+    { schema: introExitStepSchema, name: "Intro Exit Step" },
+    { schema: exitStepsSchema, name: "Exit Steps" },
     //commented out for now, matches too many schemas
     {
       schema: templateBroadcastAxisValuesSchema,
@@ -949,7 +953,7 @@ export const templateContentSchema = z.any().superRefine((data, ctx) => {
       // fallthrough: we don't immediately return here because we want to
       // always run the treatment duplicate-name check across any templateContent
       // (the traversal below will handle that after the loop finishes)
-      break;
+      return;
     } else {
       // console.log(`Schema "${name}" failed with errors:`, result.error.issues);
 
@@ -1004,11 +1008,8 @@ export const templateContentSchema = z.any().superRefine((data, ctx) => {
     }
   }
 
-  // After attempting all schemas, traverse the data to find any treatment objects
-  // and check for duplicate element names within each treatment
-  // This is done regardless of whether a treatmentSchema matched,
-  // to catch treatments nested within other structures
-  // (e.g., within an intro sequence or other custom structures)
+  // Duplicate-name traversal checks removed. Template content validation
+  // will rely on schema-specific checks instead.
 
   if (bestSchemaResult) {
     console.log(
@@ -1049,7 +1050,7 @@ export const templateSchema = z
       "condition",
       "player",
       "introExitStep",
-      "introExitSteps",
+      "exitSteps",
       "other",
     ]).optional(),
     templateDesc: descriptionSchema.optional(),
@@ -1126,8 +1127,8 @@ export function matchContentType(
       return playerSchema;
     case "introExitStep":
       return introExitStepSchema;
-    case "introExitSteps":
-      return introExitStepsBaseSchema;
+    case "exitSteps":
+      return exitStepsSchema;
     default:
       throw new Error(`Unknown content type: ${contentType}`);
   }

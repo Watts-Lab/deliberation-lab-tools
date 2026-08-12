@@ -5,7 +5,7 @@ import { parseMarkdown } from "./parsers/parseMarkdown";
 import { parseDlConfig } from "./parsers/parseDlConfig";
 import { parseBatchConfig } from "./parsers/parseBatchConfig";
 import { defaultMarkdown, inlineSuggestion, defaultYaml, markdownPreview, expandedTemplatesPreview } from "./commands";
-import { ExpandedTemplatesProvider, EXP_SCHEME } from "./fillTemplates";
+import { ExpandedTemplatesProvider, EXP_SCHEME } from "./fillTemplatesWrapper";
 import { setExtensionContext } from "./contextStore";
 import { FileFixCodeActionProvider } from "./codeActionProvider";
 import * as yaml from "js-yaml";

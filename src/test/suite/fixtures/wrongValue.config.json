@@ -16,7 +16,7 @@
     "lobbyTimeout": "E300",
     "failedEquipmentCheck": "E400"
   },
-  "launchDate": "2025-12-01T12:00:00.000Z",
+  "launchDate": "2026-12-01T12:00:00.000Z",
   "customIdInstructions": {
     "default": "default-instructions.md",
     "group1": "group1-instructions.md"

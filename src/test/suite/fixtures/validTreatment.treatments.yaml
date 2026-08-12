@@ -19,3 +19,4 @@ treatments:
         duration: 60
         elements:
           - type: "prompt"
+
